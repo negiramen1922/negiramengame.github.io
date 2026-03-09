@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-		<title>Abyss Redive ver2.1</title>
+		<title>Abyss Redive ver1.41</title>
 		<style>
 		:root {
 			--bg-dark: #0d0d0d;
@@ -2801,33 +2801,249 @@ const SHOP_ITEMS = {
 		}
 		function openHelpModal() {
 			const c = document.getElementById('modal-content')
-			c.innerHTML = `
-				<h2>ヘルプ</h2>
-				<div style="max-height:70vh;overflow-y:auto;text-align:left; font-size:0.9rem; line-height:1.6; padding-right:5px;">
-					<h3 style="color:var(--accent-blue); border-bottom:1px solid #333; padding-bottom:5px; margin-bottom:10px;">Abyss REDive ガイド</h3>
-					
-					<h4 style="color:var(--text-main); margin-top:10px;">■ ゲームの基本</h4>
-					<p style="color:#aaa;">深淵を探索し、装備を集めてキャラを強化するハクスラRPGです。</p>
-					<ul style="padding-left:20px; color:#ccc;">
-						<li><b>探索</b>: イベントが発生します。階段を見つけると深く潜れます。</li>
-						<li><b>帰還</b>: 街に戻ると所持金が確定し、HP/MPが全回復します。</li>
-						<li><b>全滅</b>: その探索で得たゴールドをすべて失います。</li>
-					</ul>
+			const helpSections = [
+				{
+					id: 'basic', icon: '🗺️', title: 'ゲームの基本',
+					body: `
+					<p style="color:#aaa; margin:0 0 8px;">Abyss Rediveは<b style="color:#eee;">テキストベースのハック＆スラッシュRPG</b>です。<br>地下に広がる深淵ダンジョン（全50階）を探索し、<b style="color:var(--accent-red);">原初神アルケーネシア（50F）</b>の討伐を目指します。</p>
+					<div style="background:#111; border:1px solid #2a2a2a; border-radius:6px; padding:10px; margin-bottom:8px;">
+						<b style="color:var(--accent-blue);">探索フロー</b>
+						<p style="color:#aaa; font-size:0.82rem; margin:5px 0 0;">拠点 → ダンジョン突入 → 探索/戦闘/階段 → ボス討伐 → 帰還・拠点で回復・強化</p>
+					</div>
+					<ul style="padding-left:18px; color:#ccc; margin:0; line-height:2.0;">
+						<li><b>探索</b>: ランダムイベント（戦闘・宝箱・罠など）が発生</li>
+						<li><b>戦闘</b>: 現在フロアのモンスターと交戦</li>
+						<li><b>階段</b>: 次のフロアへ進む（発見率は運次第）</li>
+						<li><b>帰還</b>: 拠点に戻る。所持金が確定しHP/MPが全回復</li>
+						<li><b>全滅</b>: 探索中に得た仮ゴールドをすべて失い、拠点へ戻る</li>
+					</ul>`
+				},
+				{
+					id: 'combat', icon: '⚔️', title: '戦闘システム',
+					body: `
+					<p style="color:#aaa; margin:0 0 8px;">戦闘はキャラクター全員の<b style="color:var(--gold);">速度（AGI）の高い順</b>に行動します。</p>
+					<div style="display:flex; flex-direction:column; gap:6px; margin-bottom:8px;">
+						<div style="background:#111; border-left:3px solid #fb923c; border-radius:0 6px 6px 0; padding:7px 10px;">
+							<b style="color:#fb923c;">通常攻撃</b>
+							<p style="color:#aaa; font-size:0.82rem; margin:3px 0 0;">敵を選択してダメージ。武器の倍率と物攻（STR）で決まる。会心が出ると150%ダメージ。</p>
+						</div>
+						<div style="background:#111; border-left:3px solid var(--accent-blue); border-radius:0 6px 6px 0; padding:7px 10px;">
+							<b style="color:var(--accent-blue);">スキル</b>
+							<p style="color:#aaa; font-size:0.82rem; margin:3px 0 0;">MPを消費してアクティブスキルを発動。攻撃・回復・バフ・デバフなどの種類がある。クールダウン（2T）あり。</p>
+						</div>
+						<div style="background:#111; border-left:3px solid var(--accent-green); border-radius:0 6px 6px 0; padding:7px 10px;">
+							<b style="color:var(--accent-green);">アイテム</b>
+							<p style="color:#aaa; font-size:0.82rem; margin:3px 0 0;">カバン内の道具（ポーション等）をその場で使用できる。</p>
+						</div>
+					</div>
+					<p style="color:#aaa; font-size:0.82rem; margin:0;"><b style="color:#eee;">ダメージ計算：</b>物理は物耐（VIT）、魔法は特耐（MDEF）で軽減。属性デバフで防御を下げると大ダメージが狙えます。</p>`
+				},
+				{
+					id: 'stats', icon: '📊', title: 'ステータス詳細',
+					body: `
+					<div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px;">
+							<b style="color:#f87171;">HP</b><p style="color:#aaa; font-size:0.8rem; margin:3px 0 0;">最大体力。0になると戦闘不能。拠点帰還で全回復。</p>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px;">
+							<b style="color:#60a5fa;">MP</b><p style="color:#aaa; font-size:0.8rem; margin:3px 0 0;">スキル使用に必要。戦闘終了ごとに少し回復。MPポーションで回復可能。</p>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px;">
+							<b style="color:#fb923c;">STR（物攻）</b><p style="color:#aaa; font-size:0.8rem; margin:3px 0 0;">物理攻撃のダメージ量。武器装備で大幅上昇。</p>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px;">
+							<b style="color:#a78bfa;">MATK（特攻）</b><p style="color:#aaa; font-size:0.8rem; margin:3px 0 0;">魔法攻撃・回復量に影響。魔法職は最重要。</p>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px;">
+							<b style="color:#34d399;">VIT（物耐）</b><p style="color:#aaa; font-size:0.8rem; margin:3px 0 0;">物理ダメージを軽減。防具で上昇。</p>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px;">
+							<b style="color:#38bdf8;">MDEF（特耐）</b><p style="color:#aaa; font-size:0.8rem; margin:3px 0 0;">魔法ダメージを軽減。魔法系ボスに有効。</p>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px;">
+							<b style="color:#facc15;">AGI（速度）</b><p style="color:#aaa; font-size:0.8rem; margin:3px 0 0;">行動順を決定。高いほど先に動ける。</p>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px;">
+							<b style="color:#fb7185;">LUK（幸運）</b><p style="color:#aaa; font-size:0.8rem; margin:3px 0 0;">レアアイテム入手率・会心率に影響。</p>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px; grid-column:1/-1;">
+							<b style="color:#fde68a;">CRI（会心）</b><p style="color:#aaa; font-size:0.8rem; margin:3px 0 0;">確率でダメージが150%になる。最大50%まで上昇可能。レンジャーが得意。</p>
+						</div>
+					</div>`
+				},
+				{
+					id: 'equipment', icon: '📦', title: '装備とアイテム',
+					body: `
+					<p style="color:#aaa; margin:0 0 8px;">装備は<b style="color:#eee;">武器・防具・装飾品・ルーン</b>の4種類。キャラクター1人につき各1枠（ルーンは3枠）。</p>
+					<div style="display:flex; flex-direction:column; gap:6px; margin-bottom:10px;">
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px 10px;">
+							<b style="color:#fb923c;">⚔️ 武器</b>
+							<p style="color:#aaa; font-size:0.82rem; margin:3px 0 0;">攻撃力を強化。物理・魔法の属性あり。攻撃回数（1〜4回）も重要なパラメータ。</p>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px 10px;">
+							<b style="color:#38bdf8;">🛡️ 防具</b>
+							<p style="color:#aaa; font-size:0.82rem; margin:3px 0 0;">防御・魔法防御・HPを強化。物理型と魔法型がある。</p>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px 10px;">
+							<b style="color:#c084fc;">💍 装飾品</b>
+							<p style="color:#aaa; font-size:0.82rem; margin:3px 0 0;">様々なステータスを%で強化。カバン容量を増やすものも。</p>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px 10px;">
+							<b style="color:#a3e635;">🔮 ルーン</b>
+							<p style="color:#aaa; font-size:0.82rem; margin:3px 0 0;">1キャラ最大3つ装着可能。ダンジョンからのドロップのみ。ショップでは売っていない。</p>
+						</div>
+					</div>
+					<b style="color:#eee; font-size:0.88rem;">レアリティとサブ効果</b>
+					<div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:6px;">
+						<span style="background:#222; border:1px solid #333; border-radius:4px; padding:3px 8px; font-size:0.78rem; color:#ccc;">コモン</span>
+						<span style="background:#222; border:1px solid #4caf50; border-radius:4px; padding:3px 8px; font-size:0.78rem; color:#4caf50;">アンコモン +1</span>
+						<span style="background:#222; border:1px solid #2196f3; border-radius:4px; padding:3px 8px; font-size:0.78rem; color:#2196f3;">レア +2</span>
+						<span style="background:#222; border:1px solid #9c27b0; border-radius:4px; padding:3px 8px; font-size:0.78rem; color:#c084fc;">エピック +3</span>
+						<span style="background:#222; border:1px solid #ff9800; border-radius:4px; padding:3px 8px; font-size:0.78rem; color:#ff9800;">レジェンダリー +4</span>
+						<span style="background:#222; border:1px solid #f44336; border-radius:4px; padding:3px 8px; font-size:0.78rem; color:#f44336;">ミシック +5</span>
+					</div>
+					<p style="color:#666; font-size:0.78rem; margin:6px 0 0;">深層ほど高レア・高Tierが出やすい。🔒ロック機能で誤売却防止ができます。</p>`
+				},
+				{
+					id: 'skill', icon: '📈', title: 'スキルと育成',
+					body: `
+					<p style="color:#aaa; margin:0 0 8px;">キャラカードの「育成」ボタンからスキルツリーを開きます。決まったレベルに達すると<b style="color:var(--gold);">2択でスキルを1つ選択</b>します（変更不可）。</p>
+					<div style="display:flex; flex-direction:column; gap:6px; margin-bottom:10px;">
+						<div style="background:#111; border-left:3px solid var(--accent-green); border-radius:0 6px 6px 0; padding:8px 10px;">
+							<b style="color:var(--accent-green);">パッシブスキル</b>
+							<p style="color:#aaa; font-size:0.82rem; margin:3px 0 0;">習得するだけで永続的にステータスが上昇。HP・攻撃力・防御力・MP・会心など。</p>
+						</div>
+						<div style="background:#111; border-left:3px solid var(--accent-blue); border-radius:0 6px 6px 0; padding:8px 10px;">
+							<b style="color:var(--accent-blue);">アクティブスキル (atk/heal/buff/debuff)</b>
+							<p style="color:#aaa; font-size:0.82rem; margin:3px 0 0;">戦闘中「スキル」から選択して使用。クールダウン（2ターン）と使用MPあり。</p>
+						</div>
+					</div>
+					<b style="color:#eee; font-size:0.88rem;">スキル習得マイルストーン（全職共通）</b>
+					<p style="color:#aaa; font-size:0.8rem; margin:5px 0 0;">Lv2 → 5 → 7 → 10 → 12 → 15 → 17 → 20 → 25 → 30 → 33 → 35 → 38 → 40 → 43 → 45 → 48 → 50（全18回）</p>`
+				},
+				{
+					id: 'jobs', icon: '👥', title: '職業の特徴',
+					body: `
+					<div style="display:flex; flex-direction:column; gap:7px;">
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px 10px; display:flex; gap:8px; align-items:flex-start;">
+							<span style="font-size:1.3rem;">⚔️</span>
+							<div><b style="color:#fb923c;">ウォリアー</b><p style="color:#aaa; font-size:0.8rem; margin:3px 0 0;">高HP・高物攻の前衛アタッカー。スキルは強力な物理攻撃中心。</p></div>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px 10px; display:flex; gap:8px; align-items:flex-start;">
+							<span style="font-size:1.3rem;">🛡️</span>
+							<div><b style="color:#60a5fa;">パラディン</b><p style="color:#aaa; font-size:0.8rem; margin:3px 0 0;">最高耐久・回復スキル持ちのタンク。魔法攻撃も扱える万能型。</p></div>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px 10px; display:flex; gap:8px; align-items:flex-start;">
+							<span style="font-size:1.3rem;">🔮</span>
+							<div><b style="color:#c084fc;">ウィザード</b><p style="color:#aaa; font-size:0.8rem; margin:3px 0 0;">最高特攻・全体魔法が強力。HPが低いので護衛が必要。</p></div>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px 10px; display:flex; gap:8px; align-items:flex-start;">
+							<span style="font-size:1.3rem;">🏹</span>
+							<div><b style="color:#4ade80;">レンジャー</b><p style="color:#aaa; font-size:0.8rem; margin:3px 0 0;">最高AGI・高会心のトリッカー。先手を取って連続攻撃が得意。</p></div>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px 10px; display:flex; gap:8px; align-items:flex-start;">
+							<span style="font-size:1.3rem;">✨</span>
+							<div><b style="color:#fbbf24;">プリースト</b><p style="color:#aaa; font-size:0.8rem; margin:3px 0 0;">回復・バフ専門の支援職。パーティを維持する要。後半はエリアヒールが強力。</p></div>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px 10px; display:flex; gap:8px; align-items:flex-start;">
+							<span style="font-size:1.3rem;">⚗️</span>
+							<div><b style="color:#34d399;">アルケミスト</b><p style="color:#aaa; font-size:0.8rem; margin:3px 0 0;">デバフ特化型。敵の防御を下げることで味方全体のダメージを底上げする。</p></div>
+						</div>
+					</div>`
+				},
+				{
+					id: 'boss', icon: '👹', title: 'ボスとフロア解放',
+					body: `
+					<p style="color:#aaa; margin:0 0 8px;">各フロアの節目にボスが登場します。ボスを倒すと<b style="color:var(--accent-green);">次回以降そのフロアから探索を開始</b>できます。</p>
+					<div style="overflow-x:auto;">
+					<table style="width:100%; border-collapse:collapse; font-size:0.8rem; color:#ccc;">
+						<tr style="border-bottom:1px solid #333; color:#888;">
+							<th style="text-align:left; padding:5px 8px;">フロア</th>
+							<th style="text-align:left; padding:5px 8px;">ボス</th>
+							<th style="text-align:left; padding:5px 8px;">解放</th>
+						</tr>
+						<tr style="border-bottom:1px solid #222;">
+							<td style="padding:5px 8px; color:var(--gold);">5F</td>
+							<td style="padding:5px 8px;">フォレストフェンリル</td>
+							<td style="padding:5px 8px; color:#4ade80;">6F〜</td>
+						</tr>
+						<tr style="border-bottom:1px solid #222;">
+							<td style="padding:5px 8px; color:var(--gold);">10F</td>
+							<td style="padding:5px 8px;">深淵の番人コルゴス</td>
+							<td style="padding:5px 8px; color:#4ade80;">11F〜</td>
+						</tr>
+						<tr style="border-bottom:1px solid #222;">
+							<td style="padding:5px 8px; color:var(--gold);">15F</td>
+							<td style="padding:5px 8px;">鋼鉄の魔将ゴルドラス</td>
+							<td style="padding:5px 8px; color:#4ade80;">16F〜</td>
+						</tr>
+						<tr style="border-bottom:1px solid #222;">
+							<td style="padding:5px 8px; color:var(--gold);">20F</td>
+							<td style="padding:5px 8px;">闇竜ヴァルナクス</td>
+							<td style="padding:5px 8px; color:#4ade80;">21F〜</td>
+						</tr>
+						<tr style="border-bottom:1px solid #222;">
+							<td style="padding:5px 8px; color:var(--gold);">25F〜50F</td>
+							<td style="padding:5px 8px;">深淵魔王、虚無神…</td>
+							<td style="padding:5px 8px; color:#4ade80;">次フロア〜</td>
+						</tr>
+					</table>
+					</div>
+					<p style="color:#aaa; font-size:0.8rem; margin:8px 0 0;">⚠️ ボス戦は準備が肝心。直前に帰還して回復・強化してから挑みましょう。</p>`
+				},
+				{
+					id: 'save', icon: '💾', title: 'セーブとデータ管理',
+					body: `
+					<div style="display:flex; flex-direction:column; gap:7px;">
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px 10px;">
+							<b style="color:var(--accent-green);">🔄 自動セーブ</b>
+							<p style="color:#aaa; font-size:0.82rem; margin:3px 0 0;">拠点への帰還・装備の変更などのタイミングで自動的にブラウザへ保存されます。</p>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px 10px;">
+							<b style="color:var(--accent-blue);">📋 セーブコード</b>
+							<p style="color:#aaa; font-size:0.82rem; margin:3px 0 0;">右上「💾」→「データ出力」でコードを取得。別の端末・ブラウザへのデータ移行に使います。定期的に控えておくと安全です。</p>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px 10px;">
+							<b style="color:#f87171;">⚠️ データ消失に注意</b>
+							<p style="color:#aaa; font-size:0.82rem; margin:3px 0 0;">ブラウザのキャッシュクリアやシークレットモードでの利用はデータが消える場合があります。重要なデータはセーブコードで外部保存してください。</p>
+						</div>
+					</div>`
+				},
+			]
 
-					<h4 style="color:var(--text-main); margin-top:20px;">■ 装備のレアリティ</h4>
-					<p style="color:#aaa;">アイテム入手時に自動で決定されます。</p>
-					<ul style="padding-left:20px; color:#ccc;">
-						<li><b style="color:#fff;">コモン</b>: 基本性能のみ</li>
-						<li><b style="color:#4caf50;">アンコモン</b>: サブ効果 1つ</li>
-						<li><b style="color:#2196f3;">レア</b>: サブ効果 2つ</li>
-						<li><b style="color:#9c27b0;">エピック</b>: サブ効果 3つ</li>
-						<li><b style="color:#ff9800;">レジェンダリー</b>: サブ効果 4つ</li>
-					</ul>
-					<p style="color:var(--text-dim); font-size:0.8rem;">※階層が深いほど高レアリティが出やすくなります。</p>
+			// タブ付きヘルプUI
+			const activeSection = gameState._helpTab || 'basic'
+			const tabHtml = helpSections.map(s =>
+				`<button onclick="setHelpTab('${s.id}')"
+					style="padding:6px 10px; font-size:0.75rem; border-radius:16px; border:1px solid ${activeSection===s.id?'var(--accent-blue)':'#333'};
+					background:${activeSection===s.id?'rgba(66,153,225,0.2)':'#111'};
+					color:${activeSection===s.id?'#fff':'#666'}; cursor:pointer; white-space:nowrap;">
+					${s.icon} ${s.title}
+				</button>`
+			).join('')
+			const sec = helpSections.find(s => s.id === activeSection) || helpSections[0]
+
+			c.innerHTML = `
+				<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+					<h2 style="margin:0;">❓ ヘルプ</h2>
+					<button onclick="openTutorial(0)" style="padding:6px 10px; font-size:0.75rem;
+						background:rgba(66,153,225,0.15); border:1px solid var(--accent-blue); border-radius:16px;
+						color:var(--accent-blue); cursor:pointer;">📖 チュートリアル</button>
 				</div>
-				<button onclick="closeModal()" class="btn-action btn-blue" style="margin-top:15px; width:100%;">閉じる</button>
+				<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid #222;">
+					${tabHtml}
+				</div>
+				<div style="max-height:54vh; overflow-y:auto; padding-right:3px; font-size:0.85rem; line-height:1.7;">
+					<h3 style="color:var(--accent-blue); margin:0 0 10px; font-size:1rem;">${sec.icon} ${sec.title}</h3>
+					${sec.body}
+				</div>
+				<button onclick="closeModal()" class="btn-action btn-blue" style="margin-top:12px; width:100%;">閉じる</button>
 			`
 			openModalWrapper()
+		}
+		function setHelpTab(id) {
+			gameState._helpTab = id
+			openHelpModal()
 		}
 		function openShopMenu() {
 			const c = document.getElementById('modal-content')
@@ -2873,7 +3089,44 @@ const SHOP_ITEMS = {
 				}
 			}
 
-			c.innerHTML = `<h2>${catMap[cat] || cat}</h2><p>所持金：${gameState.gold}G</p>${guideHtml}${filterHtml}<div style="display:grid; gap:10px;">${items.map(i => `<div style="background:#222; padding:12px; border-radius:8px; display:flex; justify-content:space-between;align-items:center;"><div><b style="font-size:1rem;">${i.n}</b> <span style="color:var(--gold)">${i.p}G</span><br><small style="color:#aaa;">${i.d}</small></div><button class="btn-icon btn-green" style="padding:10px 15px;" onclick="buyItem('${cat}','${i.id}')">購入</button></div>`).join('')}</div><button onclick="openShopMenu()" class="btn-action btn-red" style="margin-top:20px; width:100%;">戻る</button>`
+			// Tier / タイプ表示ヘルパー
+			const tierColors = ['','#999','#7dc','#4af','#c8f','#fa4','#f80','#f44','#f0f']
+			const tierStars  = t => '★'.repeat(Math.min(t,8)) + '☆'.repeat(Math.max(0,8-t))
+			const tierBadge  = t => t ? `<span style="font-size:0.68rem; color:${tierColors[t]||'#fff'}; background:rgba(0,0,0,0.5); border:1px solid ${tierColors[t]||'#555'}; border-radius:4px; padding:1px 5px; letter-spacing:0.5px; white-space:nowrap;">Tier${t} ${tierStars(t)}</span>` : ''
+			const dTypeIcon  = dt => dt === 'magic' ? '<span style="color:#a78bfa; font-size:0.7rem; margin-left:2px;">✦魔法</span>' : dt === 'physical' ? '<span style="color:#fb923c; font-size:0.7rem; margin-left:2px;">✦物理</span>' : ''
+
+			const itemCards = items.map(i => {
+				const canAfford = gameState.gold >= i.p
+				const topMeta = [tierBadge(i.tier), i.dType ? dTypeIcon(i.dType) : ''].filter(Boolean).join(' ')
+				return `<div style="background:${canAfford ? '#1a1a1a' : '#111'}; padding:10px 12px; border-radius:8px;
+					border:1px solid ${canAfford ? '#333' : '#1e1e1e'};
+					display:flex; justify-content:space-between; align-items:center; gap:8px;">
+					<div style="flex:1; min-width:0;">
+						${topMeta ? `<div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap; margin-bottom:4px;">${topMeta}</div>` : ''}
+						<b style="font-size:0.92rem; color:${canAfford ? '#eee' : '#555'};">${i.n}</b>
+						<div style="font-size:0.77rem; color:#666; margin-top:2px;">${i.d}</div>
+					</div>
+					<div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0;">
+						<span style="color:${canAfford ? 'var(--gold)' : '#555'}; font-weight:bold; font-size:0.88rem; white-space:nowrap;">${i.p.toLocaleString()}G</span>
+						<button class="btn-icon btn-green" style="padding:6px 12px; font-size:0.8rem; ${canAfford ? '' : 'opacity:0.3; cursor:not-allowed;'}"
+							onclick="${canAfford ? `buyItem('${cat}','${i.id}')` : ''}">${canAfford ? '購入' : '不足'}</button>
+					</div>
+				</div>`
+			}).join('')
+
+			c.innerHTML = `
+				<div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+					<h2 style="margin:0;">${catMap[cat] || cat}</h2>
+					<span style="color:var(--gold); font-weight:bold; font-size:0.9rem;">💰 ${gameState.gold.toLocaleString()}G</span>
+				</div>
+				<div style="font-size:0.72rem; color:#555; margin-bottom:10px;">
+					販売上限 Tier${maxTier}（最深 ${gameState.maxFloor}F 到達）
+				</div>
+				${guideHtml}${filterHtml}
+				<div style="display:grid; gap:7px; max-height:56vh; overflow-y:auto; padding-right:2px;">
+					${itemCards || '<p style="text-align:center; color:#555; padding:20px;">販売中のアイテムがありません</p>'}
+				</div>
+				<button onclick="openShopMenu()" class="btn-action btn-red" style="margin-top:12px; width:100%;">← ショップへ戻る</button>`
 			openModalWrapper()
 		}
 		function buyItem(cat, id) {
@@ -3464,21 +3717,235 @@ const SHOP_ITEMS = {
 			closeModal()
 			addLog(`${name}が入隊しました。`, 'log-sys')
 		}
-		function openFirstCharModal() {
+		// ═══════════════════════════════════════════════════════
+		// チュートリアルシステム
+		// ═══════════════════════════════════════════════════════
+		const TUTORIAL_STEPS = [
+			{
+				title: '🗺️ ゲームの目的',
+				icon: '🏚️',
+				body: `<p style="margin:0 0 10px;">Abyss Rediveは<b style="color:var(--accent-blue);">テキストベースのハック＆スラッシュRPG</b>です。</p>
+				<p style="margin:0 0 10px;">あなたの目標は、<b style="color:var(--gold);">地下に広がる深淵ダンジョン</b>を探索し、最深部に潜む<b style="color:var(--accent-red);">原初神アルケーネシア（50F）</b>を倒すことです。</p>
+				<p style="margin:0; color:#aaa; font-size:0.85rem;">まずは仲間を集め、装備を整えながら少しずつ深部へ進みましょう。</p>`,
+			},
+			{
+				title: '🏠 拠点でできること',
+				icon: '🏠',
+				body: `<div style="display:flex; flex-direction:column; gap:8px;">
+				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
+					<b style="color:var(--accent-blue);">⚔️ ダンジョン探索</b>
+					<p style="margin:4px 0 0; font-size:0.82rem; color:#aaa;">メイン画面の「ダンジョン」ボタンから探索を開始します。探索・戦闘・階段の3つの行動があります。</p>
+				</div>
+				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
+					<b style="color:var(--gold);">🏪 ショップ</b>
+					<p style="margin:4px 0 0; font-size:0.82rem; color:#aaa;">ダンジョンで稼いだゴールドで武器・防具・アイテムを購入できます。ショップのラインナップはフロア進行で解放されます。</p>
+				</div>
+				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
+					<b style="color:var(--accent-green);">⚗️ ギルド</b>
+					<p style="margin:4px 0 0; font-size:0.82rem; color:#aaa;">仲間を雇用できます。リーダーがLv10で2人目、Lv20で3人目まで仲間にできます。</p>
+				</div>
+				</div>`,
+			},
+			{
+				title: '⚔️ 戦闘の仕組み',
+				icon: '⚔️',
+				body: `<p style="margin:0 0 8px;">戦闘はキャラクターの<b style="color:var(--gold);">速度（AGI）が高い順</b>に行動します。</p>
+				<div style="display:flex; flex-direction:column; gap:7px;">
+				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
+					<b style="color:#eee;">通常攻撃</b>
+					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">敵を選択して攻撃。物理防御を参照したダメージを与えます。</p>
+				</div>
+				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
+					<b style="color:var(--accent-blue);">スキル</b>
+					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">「スキル」ボタンで習得済みのアクティブスキルを使用。MPを消費します。育成画面でスキルを習得しましょう。</p>
+				</div>
+				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
+					<b style="color:var(--accent-green);">アイテム</b>
+					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">ポーションなどの道具をカバンから使用できます。MPポーションでMPを回復可能です。</p>
+				</div>
+				</div>`,
+			},
+			{
+				title: '📦 装備とカバン',
+				icon: '📦',
+				body: `<p style="margin:0 0 8px;">アイテムは<b style="color:var(--accent-blue);">カバン</b>に保管されます。ヘッダーの👜マークから開けます。</p>
+				<div style="display:flex; flex-direction:column; gap:7px;">
+				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
+					<b style="color:var(--gold);">装備できるもの</b>
+					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">⚔️武器 / 🛡️防具 / 💍装飾品 / 🔮ルーン（最大3つ）。カバンから「装備」を押してキャラを選択。</p>
+				</div>
+				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
+					<b style="color:#aaa;">カバン容量</b>
+					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">基本15枠＋キャラのレベル5ごとに+1枠。装飾品やゴールドで拡張できます。溢れたアイテムはギルド倉庫へ。</p>
+				</div>
+				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
+					<b style="color:var(--accent-red);">レア度</b>
+					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">ダンジョンで拾うアイテムには<span style="color:#7dc;">上等品</span>・<span style="color:#4af;">稀少品</span>・<span style="color:#c8f;">至宝</span>・<span style="color:#fa4;">神話</span>などのレア度があります。サブ効果が付いており強力です。</p>
+				</div>
+				</div>`,
+			},
+			{
+				title: '📈 育成とスキル',
+				icon: '📈',
+				body: `<p style="margin:0 0 8px;">キャラカードの<b style="color:var(--accent-blue);">「育成」ボタン</b>からスキルを習得できます。</p>
+				<div style="display:flex; flex-direction:column; gap:7px;">
+				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
+					<b style="color:var(--accent-green);">パッシブスキル</b>
+					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">習得するだけで永続的にステータスが上昇します。HP・攻撃力・防御力など様々な効果があります。</p>
+				</div>
+				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
+					<b style="color:var(--accent-blue);">アクティブスキル</b>
+					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">戦闘中に「スキル」から使用。攻撃・回復・バフ・デバフなど種類が豊富。各スキルにはMPコストとクールダウンがあります。</p>
+				</div>
+				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
+					<b style="color:var(--gold);">マイルストーン選択</b>
+					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">Lv2・5・7・10…と決まったレベルに達するたびに<b>2択のスキルを1つ選択</b>します。選択したら変更できません。</p>
+				</div>
+				</div>`,
+			},
+			{
+				title: '💾 セーブについて',
+				icon: '💾',
+				body: `<p style="margin:0 0 8px;">ゲームは<b style="color:var(--accent-green);">ブラウザに自動セーブ</b>されます。右上の「💾セーブ」ボタンで手動保存もできます。</p>
+				<div style="display:flex; flex-direction:column; gap:7px;">
+				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
+					<b style="color:var(--accent-blue);">セーブコード</b>
+					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">「セーブ」→「データ出力」でコードを取得できます。このコードを控えておけば、<b>別の端末やブラウザ</b>でも同じデータで再開できます。</p>
+				</div>
+				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
+					<b style="color:var(--gold);">⚠️ 注意</b>
+					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">ブラウザのキャッシュをクリアするとセーブデータが消える場合があります。定期的にセーブコードを控えておくことをおすすめします。</p>
+				</div>
+				</div>
+				<p style="margin:10px 0 0; font-size:0.88rem; color:var(--accent-green);">✅ チュートリアルは以上です。冒険の準備ができました！</p>`,
+			},
+		]
+
+		function openTitleScreen() {
 			const c = document.getElementById('modal-content')
-			c.innerHTML = `<h2>キャラクター作成</h2><input type="text" id="first-name" placeholder="名前を入力" maxlength="10" style="padding:15px; width:100%; margin-bottom:15px; background:#000; border:1px solid #444; color:#fff; font-size:1.2rem; text-align:center;">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                    <button class="btn-icon" style="padding:15px;" onclick="confirmFirstHire('Warrior')"><b>ウォリアー</b><br><small>物理攻撃重視</small></button>
-                    <button class="btn-icon" style="padding:15px;" onclick="confirmFirstHire('Paladin')"><b>パラディン</b><br><small>防御・回復重視</small></button>
-                    <button class="btn-icon" style="padding:15px;" onclick="confirmFirstHire('Wizard')"><b>ウィザード</b><br><small>魔法攻撃重視</small></button>
-                    <button class="btn-icon" style="padding:15px;" onclick="confirmFirstHire('Ranger')"><b>レンジャー</b><br><small>速度・会心重視</small></button>
-                    <button class="btn-icon" style="padding:15px;" onclick="confirmFirstHire('Priest')"><b>プリースト</b><br><small>回復特化</small></button>
-                    <button class="btn-icon" style="padding:15px;" onclick="confirmFirstHire('Alchemist')"><b>アルケミスト</b><br><small>弱体化特化</small></button>
-                </div>`
+			c.innerHTML = `
+				<div style="text-align:center; padding:10px 0 6px;">
+					<div style="font-size:2.8rem; margin-bottom:6px;">🌑</div>
+					<h1 style="font-size:1.6rem; color:var(--accent-blue); letter-spacing:3px; margin:0 0 4px;">ABYSS REDIVE</h1>
+					<p style="font-size:0.8rem; color:#555; letter-spacing:2px; margin:0 0 18px;">深淵への再潜入</p>
+					<p style="font-size:0.9rem; color:#aaa; margin:0 0 24px;">初めてのプレイですか？<br>ゲームの基本を説明するチュートリアルがあります。</p>
+					<div style="display:flex; flex-direction:column; gap:10px; max-width:280px; margin:0 auto;">
+						<button class="btn-action btn-blue" style="padding:14px; font-size:1rem;" onclick="openTutorial(0)">
+							📖 チュートリアルを見る
+						</button>
+						<button class="btn-action btn-green" style="padding:14px; font-size:1rem;" onclick="openFirstCharModal()">
+							⚔️ すぐに始める
+						</button>
+					</div>
+					<p style="font-size:0.75rem; color:#444; margin:16px 0 0;">※ チュートリアルはいつでもヘルプから確認できます</p>
+				</div>`
 			openModalWrapper()
 		}
+
+		function openTutorial(step) {
+			const c = document.getElementById('modal-content')
+			const s = TUTORIAL_STEPS[step]
+			const total = TUTORIAL_STEPS.length
+			const isLast = step === total - 1
+			const dots = TUTORIAL_STEPS.map((_, i) =>
+				`<span style="display:inline-block; width:8px; height:8px; border-radius:50%; margin:0 3px;
+				background:${i === step ? 'var(--accent-blue)' : '#333'}; vertical-align:middle;"></span>`
+			).join('')
+
+			c.innerHTML = `
+				<div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+					<span style="font-size:1.5rem;">${s.icon}</span>
+					<div>
+						<div style="font-size:0.72rem; color:#555; letter-spacing:1px;">TUTORIAL ${step + 1} / ${total}</div>
+						<h2 style="margin:0; font-size:1.1rem; color:var(--accent-blue);">${s.title}</h2>
+					</div>
+				</div>
+				<div style="font-size:0.88rem; color:#ddd; line-height:1.7; margin-bottom:16px; max-height:52vh; overflow-y:auto; padding-right:2px;">
+					${s.body}
+				</div>
+				<div style="text-align:center; margin-bottom:12px;">${dots}</div>
+				<div style="display:flex; gap:8px;">
+					${step > 0
+						? `<button class="btn-action" style="flex:1; background:#222; border-color:#444; padding:10px;" onclick="openTutorial(${step - 1})">◀ 前へ</button>`
+						: `<button class="btn-action" style="flex:1; background:#111; border-color:#333; padding:10px; color:#555;" onclick="openFirstCharModal()">スキップ</button>`
+					}
+					${isLast
+						? `<button class="btn-action btn-green" style="flex:2; padding:10px; font-size:0.95rem;" onclick="openFirstCharModal()">✅ キャラ作成へ進む</button>`
+						: `<button class="btn-action btn-blue"  style="flex:2; padding:10px; font-size:0.95rem;" onclick="openTutorial(${step + 1})">次へ ▶</button>`
+					}
+				</div>`
+			openModalWrapper()
+		}
+
+		function openFirstCharModal() {
+			const c = document.getElementById('modal-content')
+			c.innerHTML = `
+				<h2 style="margin-bottom:4px;">⚔️ キャラクター作成</h2>
+				<p style="font-size:0.78rem; color:#555; margin:0 0 12px;">名前を入力して職業を選んでください</p>
+				<input type="text" id="first-name" placeholder="冒険者の名前（最大10文字）" maxlength="10"
+					style="padding:12px; width:100%; margin-bottom:12px; background:#0a0a0a; border:1px solid #444;
+					color:#fff; font-size:1rem; text-align:center; border-radius:6px; box-sizing:border-box;">
+				<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;">
+					${[
+						{ key:'Warrior',   icon:'⚔️',  desc:'高HP・物理攻撃特化' },
+						{ key:'Paladin',   icon:'🛡️',  desc:'高耐久・聖魔法支援' },
+						{ key:'Wizard',    icon:'🔮',  desc:'高魔力・魔法攻撃特化' },
+						{ key:'Ranger',    icon:'🏹',  desc:'高速・会心攻撃特化' },
+						{ key:'Priest',    icon:'✨',  desc:'回復・バフ支援特化' },
+						{ key:'Alchemist', icon:'⚗️',  desc:'妨害・デバフ特化' },
+					].map(j => `
+						<button class="btn-icon" style="padding:12px 8px; text-align:center; line-height:1.5;"
+							onclick="confirmFirstHire('${j.key}')">
+							<div style="font-size:1.4rem;">${j.icon}</div>
+							<b style="font-size:0.9rem;">${JOB_DATA[j.key].name}</b>
+							<div style="font-size:0.72rem; color:#888; margin-top:2px;">${j.desc}</div>
+						</button>`).join('')}
+				</div>
+				<div style="border-top:1px solid #222; padding-top:12px;">
+					<p style="font-size:0.75rem; color:#555; text-align:center; margin:0 0 8px;">すでにセーブコードをお持ちですか？</p>
+					<button onclick="openLoadFromStart()" style="width:100%; padding:9px; font-size:0.82rem;
+						border-radius:6px; border:1px solid #444; background:#111; color:#888; cursor:pointer;">
+						💾 セーブコードを読み込んで再開する
+					</button>
+				</div>`
+			openModalWrapper()
+		}
+
+		function openLoadFromStart() {
+			const c = document.getElementById('modal-content')
+			c.innerHTML = `
+				<h2 style="margin-bottom:6px;">💾 セーブコード読み込み</h2>
+				<p style="font-size:0.82rem; color:#aaa; margin:0 0 12px;">以前のセーブデータのコードを貼り付けてください。</p>
+				<textarea id="load-code-start" placeholder="セーブコードをここに貼り付け…"
+					style="width:100%; height:110px; background:#0a0a0a; color:#fff; font-family:monospace;
+					padding:10px; border:1px solid #444; border-radius:6px; box-sizing:border-box; font-size:0.82rem; resize:none;"></textarea>
+				<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;">
+					<button onclick="openFirstCharModal()" class="btn-action" style="background:#222; border-color:#444; padding:10px;">◀ 戻る</button>
+					<button onclick="confirmLoadFromStart()" class="btn-action btn-blue" style="padding:10px;">読み込む</button>
+				</div>`
+			openModalWrapper()
+		}
+
+		function confirmLoadFromStart() {
+			try {
+				const raw = document.getElementById('load-code-start').value.trim()
+				const json = decodeURIComponent(escape(atob(raw)))
+				gameState = JSON.parse(json)
+				gameState.inDungeon = false
+				recoverParty()
+				returnToTown()
+				closeModal()
+				addLog('セーブデータのロードに成功しました。冒険を再開します。', 'log-sys')
+			} catch (e) {
+				const el = document.getElementById('load-code-start')
+				if (el) el.style.borderColor = 'var(--accent-red)'
+				showMsg('エラー：無効なセーブコードです。\n正しいコードを貼り付けてください。')
+				playSE('error')
+			}
+		}
+
 		function confirmFirstHire(key) {
-			const name = document.getElementById('first-name').value || '冒険者'
+			const name = document.getElementById('first-name').value.trim() || '冒険者'
 			const jobData = JOB_DATA[key]
 			gameState.party.push({ name: name, job: jobData.name, lv: 1, exp: 0, nextExp: 100, learnedSkills: {}, equip: { weapon: null, armor: null, acc: null, runes: [] } })
 			const p = gameState.party[0]
@@ -3487,7 +3954,7 @@ const SHOP_ITEMS = {
 			p.mp = fs.maxMp
 			updateUI()
 			closeModal()
-			addLog(`新たな冒険者、${name}（${jobData.name}）が誕生した。`, 'log-sys')
+			addLog(`新たな冒険者、${name}（${jobData.name}）が誕生した。深淵への扉が開かれる…`, 'log-sys')
 		}
 		function enterDungeon() {
 			if (gameState.party.length === 0) {
@@ -3730,14 +4197,16 @@ const SHOP_ITEMS = {
 		window.onload = () => {
 			if (load_game()) {
 				addLog('セーブデータをロードしました。', 'log-sys')
+				updateUI()
+				if (gameState.party.length === 0) {
+					openTitleScreen()
+				}
 			} else {
 				addLog('深淵へ続く物語が幕を開ける。')
+				updateUI()
+				openTitleScreen()
 			}
-			updateUI()
-			if (gameState.party.length === 0) {
-				openFirstCharModal()
-			}
-			playBGM('town');
+			playBGM('town')
 		}
 		window.onresize = function () {
 			console.log('Window resized')
