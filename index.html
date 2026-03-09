@@ -1,0 +1,3747 @@
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<title>Abyss Redive ver2.1</title>
+		<style>
+		:root {
+			--bg-dark: #0d0d0d;
+			--panel-bg: #1a1a1a;
+			--border-color: #333;
+			--text-main: #e0e0e0;
+			--text-dim: #999;
+			--accent-green: #4caf50;
+			--accent-blue: #2196f3;
+			--accent-purple: #9c27b0;
+			--accent-red: #e91e63;
+			--gold: #ffc107;
+			--hp-color: #ff5252;
+			--mp-color: #448aff;
+			--exp-color: #9c27b0;
+			--transition: all 0.1s ease;
+		}
+		
+		* {
+			box-sizing: border-box;
+			word-break: break-word;
+			overflow-wrap: break-word;
+		}
+
+		body {
+			background-color: #000;
+			color: var(--text-main);
+			font-family: "Segoe UI", sans-serif;
+			margin: 0;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+			height: 100dvh;
+			overflow: hidden;
+		}
+		#game-wrapper {
+			width: 100%;
+			max-width: 1200px;
+			height: 100%;
+			max-height: 100dvh;
+			background-color: var(--bg-dark);
+			border: 1px solid var(--border-color);
+			display: flex;
+			flex-direction: column;
+			position: relative;
+		}
+		header {
+			height: auto;
+			min-height: 50px;
+			background: #151515;
+			border-bottom: 1px solid var(--border-color);
+			display: flex;
+			align-items: center;
+			padding: 5px 15px;
+			justify-content: space-between;
+			flex-shrink: 0;
+			flex-wrap: wrap;
+			gap: 8px;
+		}
+		.header-left,
+		.header-right {
+			display: flex;
+			gap: 10px;
+			align-items: center;
+			flex-wrap: wrap;
+		}
+		.stat-badge {
+			display: flex;
+			align-items: center;
+			gap: 4px;
+			font-weight: bold;
+			font-size: 0.9rem;
+			cursor: pointer;
+			white-space: nowrap;
+		}
+		#main-container {
+			flex: 1;
+			display: grid;
+			grid-template-columns: 1fr 340px;
+			overflow: hidden;
+			min-height: 0;
+		}
+		#viewport {
+			padding: 10px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			background: radial-gradient(circle at center, #1e1e1e 0%, #0d0d0d 100%);
+			position: relative;
+			overflow-y: auto;
+			width: 100%;
+		}
+		aside {
+			background: #111;
+			border-left: 1px solid var(--border-color);
+			padding: 10px;
+			overflow-y: auto;
+		}
+		#log-area {
+			height: 150px;
+			flex-shrink: 0;
+			background: #050505;
+			border-top: 1px solid var(--border-color);
+			padding: 10px 20px;
+			overflow-y: auto;
+			font-family: "Consolas", monospace;
+			font-size: 0.9rem;
+		}
+		.log-entry {
+			margin-bottom: 2px;
+			line-height: 1.4;
+			border-bottom: 1px solid #111;
+		}
+		.log-p-atk { color: #fff; }
+		.log-e-atk { color: var(--accent-red); }
+		.log-crit { color: var(--gold); font-weight: bold; }
+		.log-sys { color: #8bc34a; }
+		.log-gold { color: var(--gold); }
+		.log-red { color: var(--accent-red); }
+
+		button {
+			font-family: inherit;
+			transition: var(--transition);
+			cursor: pointer;
+			border: none;
+			outline: none;
+			white-space: normal;
+			line-height: 1.3;
+		}
+		button:disabled {
+			opacity: 0.2;
+			cursor: not-allowed;
+			filter: grayscale(1);
+		}
+		
+		.btn-icon {
+			padding: 10px 14px;
+			border-radius: 4px;
+			border: 1px solid #444;
+			background: #222;
+			color: #eee;
+			font-size: 0.95rem;
+		}
+header .btn-icon {
+			padding: 8px 10px;
+			font-size: 0.85rem;
+		}
+		.btn-action {
+			padding: 16px;
+			font-size: clamp(1rem, 4vw, 1.1rem);
+			font-weight: bold;
+			border-radius: 8px;
+			color: white;
+			text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+			width: 100%;
+			margin-bottom: 10px;
+			min-height: 54px;
+		}		
+		.btn-green { background: var(--accent-green); }
+		.btn-blue { background: var(--accent-blue); }
+		.btn-purple { background: var(--accent-purple); }
+		.btn-red { background: var(--accent-red); }
+
+		.modal-overlay {
+			position: absolute;
+			inset: 0;
+			background: rgba(0, 0, 0, 0.9);
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			z-index: 1000;
+		}
+		.modal {
+			background: var(--panel-bg);
+			border: 1px solid var(--accent-blue);
+			padding: 20px;
+			width: 98%;
+			max-width: 700px;
+			border-radius: 12px;
+			max-height: 90vh;
+			max-height: 90dvh;
+			overflow-y: auto;
+		}
+		.active-turn {
+			border-color: var(--accent-green) !important;
+			box-shadow: 0 0 15px var(--accent-green);
+			transform: translateY(-3px);
+		}
+		.bar-bg {
+			width: 100%;
+			height: 8px;
+			background: #000;
+			border-radius: 3px;
+			margin: 4px 0;
+			border: 1px solid #333;
+			overflow: hidden;
+		}
+		.bar-fill {
+			height: 100%;
+			transition: width 0.2s ease;
+		}
+		.char-card {
+			background: #1a1a1a;
+			border: 1px solid #333;
+			padding: 12px;
+			margin-bottom: 10px;
+			border-radius: 8px;
+		}
+		.enemy-container {
+			display: flex;
+			gap: 8px;
+			justify-content: center;
+			min-height: 100px;
+			width: 100%;
+			flex-wrap: wrap;
+			margin-bottom: 10px;
+		}
+		.cursor-pointer {
+			cursor: pointer;
+		}
+		.targeting-active {
+			animation: pulse-border 1.5s infinite;
+		}
+		@keyframes pulse-border {
+			0% { border-color: #444; box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+			70% { border-color: #4caf50; box-shadow: 0 0 10px 5px rgba(76, 175, 80, 0); }
+			100% { border-color: #444; box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+		}
+		.battle-unit-box {
+			flex: 1 1 calc(50% - 16px);
+			min-width: 140px;
+			max-width: 200px;
+			background: #151515;
+			border: 2px solid #444;
+			padding: 10px;
+			border-radius: 8px;
+			text-align: center;
+			font-size: 0.9rem;
+		}
+		.party-battle-container {
+			display: flex;
+			gap: 8px;
+			justify-content: center;
+			margin-bottom: 10px;
+			flex-wrap: wrap;
+			width: 100%;
+		}
+		.hidden {
+			display: none !important;
+		}
+		.skill-milestone {
+			border: 1px solid #333;
+			padding: 8px;
+			border-radius: 8px;
+			background: #111;
+			margin-bottom: 8px;
+		}
+		.skill-milestone h3 {
+			margin: 0 0 8px 0;
+			font-size: 0.85rem;
+			color: var(--accent-purple);
+			border-bottom: 1px solid #222;
+		}
+		.skill-options {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 8px;
+		}
+		.skill-card {
+			border: 1px solid #444;
+			padding: 10px;
+			border-radius: 6px;
+			text-align: left;
+			background: #1a1a1a;
+			font-size: 0.8rem;
+			position: relative;
+		}
+		.skill-card b {
+			display: block;
+			color: #fff;
+			margin-bottom: 4px;
+			font-size: 0.9rem;
+		}
+		.skill-card small {
+			color: var(--text-dim);
+			display: block;
+			line-height: 1.3;
+		}
+		.skill-card.available {
+			border-color: var(--accent-blue);
+			cursor: pointer;
+		}
+		.skill-card.available:hover {
+			background: #252525;
+			border-color: #fff;
+		}
+		.skill-card.selected {
+			border-color: var(--accent-green);
+			background: rgba(76, 175, 80, 0.15);
+			box-shadow: inset 0 0 10px rgba(76, 175, 80, 0.2);
+		}
+		.skill-card.locked {
+			opacity: 0.3;
+			pointer-events: none;
+		}
+
+		@media (max-width: 900px) {
+			#main-container {
+				grid-template-columns: 1fr;
+				grid-template-rows: 1fr 40%;
+			}
+			aside {
+				border-left: none;
+				border-top: 1px solid var(--border-color);
+				padding: 10px;
+			}
+			.stat-badge {
+				font-size: 0.8rem;
+			}
+			header .btn-icon {
+				padding: 5px 8px;
+				font-size: 0.8rem;
+			}
+		}
+
+		@media (max-width: 600px) {
+			#log-area {
+				height: 120px;
+				font-size: 0.85rem;
+				padding: 8px 12px;
+			}
+			.battle-unit-box {
+				flex: 1 1 calc(50% - 10px);
+				padding: 6px;
+				font-size: 0.8rem;
+				min-width: 120px;
+			}
+			.char-card {
+				padding: 10px;
+			}
+			.char-card div[style*="font-size:0.6rem"] {
+				font-size: 0.75rem !important;
+				line-height: 1.4;
+			}
+			.skill-options {
+				grid-template-columns: 1fr !important;
+			}
+		}
+
+		@media (max-height: 600px) {
+			#log-area {
+				height: 80px;
+			}
+			.modal {
+				max-height: 95vh;
+			}
+			#viewport {
+				padding: 5px;
+			}
+		}
+		</style>
+	</head>
+	<body>
+		<div id="game-wrapper">
+			<header>
+				<div class="header-left">
+					<div class="stat-badge">
+						<span style="color:var(--gold)">💰</span>
+						<span id="h-gold">0</span>
+					</div>
+					<div class="stat-badge" style="color:var(--accent-blue)">
+						<span>🏰</span>
+						<span id="h-max-floor">1F</span>
+					</div>
+					<button class="btn-icon" onclick="openInventory()" id="header-bag-btn" style="display:flex; align-items:center; gap:6px;" title="カバン">
+						<span style="color:var(--accent-red)">👜</span> <span id="h-cap">0</span>/<span id="h-max-cap">15</span><span id="h-lv-bonus" style="font-size:0.7rem; color:#7dc; display:none;"> (+Lv)</span>
+					</button>
+				</div>
+				<div class="header-right">
+					<button id="btn-mute" class="btn-icon" onclick="toggleMute()">🔊</button>
+					<button class="btn-icon" onclick="openHelpModal()">❓</button>
+					<button class="btn-icon" onclick="openSaveModal()">💾</button>
+					<button class="btn-icon" onclick="openLoadModal()">📂</button>
+					<button class="btn-icon" onclick="window.open('https://discord.gg/z9RnYzQjBn', '_blank')" title="Discord">💬</button>
+				</div>
+			</header>
+
+			<div id="main-container">
+				<div id="viewport">
+					<div id="town-ui">
+						<div style="font-size: 1.8rem; letter-spacing: 6px; text-align: center; color: var(--accent-blue); margin-bottom:20px;">【 拠点都市 】</div>
+						<div style="display:flex; flex-direction:column; gap:10px; width:100%; max-width:320px; margin: 0 auto;">
+							<button class="btn-action btn-green" onclick="enterDungeon()">ダンジョン探索</button>
+							<button class="btn-action btn-blue" onclick="openShopMenu()">ショップ</button>
+							<button class="btn-action btn-purple" onclick="openGuild()">ギルド</button>
+						</div>
+					</div>
+
+					<div id="dungeon-ui" class="hidden">
+						<div style="font-size: 1.5rem; color: var(--accent-red); font-weight: bold; letter-spacing: 4px;">
+							FLOOR <span id="floor-num-disp">1</span>
+						</div>
+						<div id="event-display" style="margin: 20px 0; min-height: 60px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 1.1rem; padding: 0 10px;">不気味な静寂...</div>
+						<div style="display:flex; flex-direction:column; gap:8px; width:100%; max-width:400px; margin: 0 auto;">
+							<div style="display:flex; gap:8px;">
+								<button class="btn-action btn-green" style="flex:1;" onclick="explore()">探索を続ける</button>
+							</div>
+							<button class="btn-action btn-red" onclick="retreat()">街に戻る</button>
+							<button id="btn-next-floor" class="btn-action btn-blue hidden" onclick="nextFloor()">階段を下りる</button>
+						</div>
+					</div>
+
+					<div id="battle-view" class="hidden">
+						<div class="enemy-container" id="enemy-container"></div>
+						<div id="battle-msg" style="margin:5px 0; font-weight:bold; color:var(--gold); min-height:24px; text-align:center; font-size:1rem;"></div>
+						<div id="party-battle-container" class="party-battle-container"></div>
+						<div style="margin-top:15px; width:100%; max-width:400px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+							<button id="atk-btn" class="btn-action btn-red" onclick="playerAttack()">通常攻撃</button>
+							<button id="skl-btn" class="btn-action btn-purple" onclick="toggleBattleSkillMenu()">スキル</button>
+						</div>
+						<div id="battle-skill-menu" class="hidden" style="width:100%; max-width:400px; margin:10px auto; display:grid; gap:8px;"></div>
+					</div>
+				</div>
+
+				<aside>
+					<div style="font-size: 0.8rem; font-weight:bold; color: var(--accent-blue); margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom:5px;">🛡️ PARTY STATUS</div>
+					<div id="party-list"></div>
+				</aside>
+			</div>
+
+			<div id="log-area"></div>
+			<div id="modal-layer" class="modal-overlay hidden">
+				<div class="modal" id="modal-content"></div>
+			</div>
+		</div>
+
+		<script>
+		console.log('Game Initialized')
+
+		// ==========================================
+		// オーディオシステム (BGM & SE)
+		// ==========================================
+		const AudioContext = window.AudioContext || window.webkitAudioContext;
+		let audioCtx = null;
+		let masterGain = null;
+		let isMuted = false;
+		let currentBGM = null;
+		let bgmNodes = [];
+		let bgmInterval = null;
+
+		function initAudio() {
+			if(audioCtx) return;
+			audioCtx = new AudioContext();
+			masterGain = audioCtx.createGain();
+			masterGain.gain.value = 0.1; // 全体音量
+			masterGain.connect(audioCtx.destination);
+		}
+
+		function toggleMute() {
+			initAudio();
+			isMuted = !isMuted;
+			masterGain.gain.value = isMuted ? 0 : 0.1;
+			document.getElementById('btn-mute').innerText = isMuted ? '🔇' : '🔊';
+			if (!isMuted && audioCtx.state === 'suspended') {
+				audioCtx.resume();
+			}
+		}
+
+		// 画面のどこかをクリックしたらオーディオ再生許可＆クリック音
+		document.addEventListener('click', (e) => {
+			initAudio();
+			if (audioCtx && audioCtx.state === 'suspended') {
+				audioCtx.resume();
+			}
+			const target = e.target.closest('button, .cursor-pointer, .stat-badge, .skill-card.available');
+			if(target && !target.disabled && target.id !== 'btn-mute') {
+				playSE('click');
+			}
+		});
+
+		function playSE(type) {
+			if(!audioCtx || isMuted) return;
+			const t = audioCtx.currentTime;
+			const osc = audioCtx.createOscillator();
+			const gain = audioCtx.createGain();
+			osc.connect(gain);
+			gain.connect(masterGain);
+
+			if (type === 'click') {
+				osc.type = 'sine';
+				osc.frequency.setValueAtTime(800, t);
+				gain.gain.setValueAtTime(0.3, t);
+				gain.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
+				osc.start(t);
+				osc.stop(t + 0.05);
+			} else if (type === 'attack') { // 物理攻撃
+				osc.type = 'square';
+				osc.frequency.setValueAtTime(800, t);
+				osc.frequency.exponentialRampToValueAtTime(100, t + 0.1);
+				gain.gain.setValueAtTime(0.4, t);
+				gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+				osc.start(t);
+				osc.stop(t + 0.1);
+			} else if (type === 'enemy_attack') { // 敵の攻撃ダメージ
+				osc.type = 'sawtooth';
+				osc.frequency.setValueAtTime(200, t);
+				osc.frequency.linearRampToValueAtTime(50, t + 0.15);
+				gain.gain.setValueAtTime(0.5, t);
+				gain.gain.linearRampToValueAtTime(0.01, t + 0.15);
+				osc.start(t);
+				osc.stop(t + 0.15);
+			} else if (type === 'heal' || type === 'item') { // 回復・アイテム
+				osc.type = 'sine';
+				osc.frequency.setValueAtTime(400, t);
+				osc.frequency.linearRampToValueAtTime(800, t + 0.2);
+				gain.gain.setValueAtTime(0.4, t);
+				gain.gain.linearRampToValueAtTime(0.01, t + 0.2);
+				osc.start(t);
+				osc.stop(t + 0.2);
+			} else if (type === 'magic') { // 魔法
+				osc.type = 'sine';
+				osc.frequency.setValueAtTime(600, t);
+				osc.frequency.linearRampToValueAtTime(1200, t + 0.3);
+				gain.gain.setValueAtTime(0.3, t);
+				gain.gain.linearRampToValueAtTime(0.01, t + 0.3);
+				osc.start(t);
+				osc.stop(t + 0.3);
+			} else if (type === 'debuff') { // デバフ
+				osc.type = 'triangle';
+				osc.frequency.setValueAtTime(400, t);
+				osc.frequency.linearRampToValueAtTime(100, t + 0.3);
+				gain.gain.setValueAtTime(0.4, t);
+				gain.gain.linearRampToValueAtTime(0.01, t + 0.3);
+				osc.start(t);
+				osc.stop(t + 0.3);
+			} else if (type === 'error') { // エラー
+				osc.type = 'sawtooth';
+				osc.frequency.setValueAtTime(150, t);
+				gain.gain.setValueAtTime(0.3, t);
+				gain.gain.linearRampToValueAtTime(0.01, t + 0.1);
+				osc.start(t);
+				osc.stop(t + 0.1);
+			} else if (type === 'win') { // 勝利ファンファーレ
+				[400, 500, 600, 800].forEach((freq, i) => {
+					const o = audioCtx.createOscillator();
+					const g = audioCtx.createGain();
+					o.type = 'square';
+					o.connect(g);
+					g.connect(masterGain);
+					let startTime = t + i * 0.1;
+					o.frequency.setValueAtTime(freq, startTime);
+					g.gain.setValueAtTime(0.2, startTime);
+					g.gain.linearRampToValueAtTime(0.01, startTime + 0.2);
+					o.start(startTime);
+					o.stop(startTime + 0.2);
+				});
+			}
+		}
+
+		function playBGM(scene) {
+			if(!audioCtx) initAudio();
+			if(currentBGM === scene) return;
+			
+			stopBGM();
+			currentBGM = scene;
+			
+			if(isMuted) return;
+
+			const t = audioCtx.currentTime;
+			
+			if(scene === 'town') {
+				const freqs = [261.63, 329.63, 392.00]; // C E G
+				freqs.forEach(f => {
+					const osc = audioCtx.createOscillator();
+					const gain = audioCtx.createGain();
+					osc.type = 'sine';
+					osc.frequency.value = f;
+					
+					const lfo = audioCtx.createOscillator();
+					lfo.type = 'sine';
+					lfo.frequency.value = 0.2;
+					const lfoGain = audioCtx.createGain();
+					lfoGain.gain.value = 0.1;
+					lfo.connect(lfoGain);
+					lfoGain.connect(gain.gain);
+					
+					gain.gain.setValueAtTime(0.01, t);
+					gain.gain.linearRampToValueAtTime(0.15, t + 2);
+					
+					osc.connect(gain);
+					gain.connect(masterGain);
+					osc.start();
+					lfo.start();
+					bgmNodes.push({osc, gain, lfo});
+				});
+			} else if (scene === 'dungeon') {
+				const freqs = [65.41, 73.42]; // C2, D2
+				freqs.forEach(f => {
+					const osc = audioCtx.createOscillator();
+					const gain = audioCtx.createGain();
+					osc.type = 'triangle';
+					osc.frequency.value = f;
+					
+					gain.gain.setValueAtTime(0.01, t);
+					gain.gain.linearRampToValueAtTime(0.2, t + 2);
+					
+					osc.connect(gain);
+					gain.connect(masterGain);
+					osc.start();
+					bgmNodes.push({osc, gain});
+				});
+			} else if (scene === 'battle') {
+				let step = 0;
+				const sequence = [130.81, 130.81, 146.83, 155.56, 130.81, 0, 116.54, 130.81]; 
+				
+				bgmInterval = setInterval(() => {
+					if(isMuted) return;
+					const freq = sequence[step % sequence.length];
+					if(freq > 0) {
+						const osc = audioCtx.createOscillator();
+						const gain = audioCtx.createGain();
+						osc.type = 'square';
+						
+						const time = audioCtx.currentTime;
+						osc.frequency.setValueAtTime(freq, time);
+						gain.gain.setValueAtTime(0.15, time);
+						gain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+						
+						osc.connect(gain);
+						gain.connect(masterGain);
+						osc.start(time);
+						osc.stop(time + 0.15);
+					}
+					step++;
+				}, 150);
+			}
+		}
+
+		function stopBGM() {
+			const t = audioCtx ? audioCtx.currentTime : 0;
+			bgmNodes.forEach(node => {
+				if(node.gain) {
+					node.gain.gain.cancelScheduledValues(t);
+					node.gain.gain.linearRampToValueAtTime(0.01, t + 0.5);
+				}
+				setTimeout(() => {
+					if(node.osc) node.osc.stop();
+					if(node.lfo) node.lfo.stop();
+					if(node.osc) node.osc.disconnect();
+					if(node.gain) node.gain.disconnect();
+				}, 600);
+			});
+			bgmNodes = [];
+			if(bgmInterval) {
+				clearInterval(bgmInterval);
+				bgmInterval = null;
+			}
+			currentBGM = null;
+		}
+		// ==========================================
+
+		const MILESTONES = [2, 5, 7, 10, 12, 15, 17, 20, 25, 30, 33, 35, 38, 40, 43, 45, 48, 50]
+
+		function generateRune() {
+			const currentTier = Math.min(8, Math.floor((gameState.maxFloor - 1) / 10) + 1);
+			const isPct = Math.random() > 0.5;
+            
+			// 8属性の定義（全ステータス網羅）
+			const elements = [
+				{ id: 'fire',   n: '緋',   color: '#e91e63', stat: 'str' },   // 物理攻撃
+				{ id: 'magic',  n: '紫苑', color: '#9c27b0', stat: 'matk' },  // 特殊攻撃
+				{ id: 'earth',  n: '琥珀', color: '#ff9800', stat: 'vit' },   // 物理耐性
+				{ id: 'water',  n: '瑠璃', color: '#2196f3', stat: 'mdef' },  // 特殊耐性
+				{ id: 'life',   n: '翡翠', color: '#4caf50', stat: 'hp' },    // 最大HP
+				{ id: 'spirit', n: '蒼',   color: '#00bcd4', stat: 'mp' },    // 最大MP
+				{ id: 'wind',   n: '迅',   color: '#8bc34a', stat: 'agi' },   // 速度
+				{ id: 'star',   n: '煌',   color: '#ffc107', stat: 'luk' }    // 幸運・会心
+			];
+			const el = elements[Math.floor(Math.random() * elements.length)];
+
+			// 煌(star)の場合は幸運か会心に分岐
+			let targetStat = el.stat;
+			if (el.id === 'star') {
+				targetStat = Math.random() > 0.5 ? 'luk' : 'cri';
+			}
+
+			let val = 0;
+			let statKey = targetStat;
+			let d = '';
+
+			if (targetStat === 'cri') {
+				val = Math.floor(Math.random() * 5 + 1) + currentTier * 2; 
+				d = `会心+${val}%`;
+				val = val / 100;
+			} else {
+				const statNameMap = {str:'物攻', matk:'特攻', vit:'物耐', mdef:'特耐', agi:'速度', luk:'幸運', hp:'HP', mp:'MP'};
+				if (isPct) {
+					val = Math.floor(Math.random() * 3 + 1) + currentTier * 2; 
+					statKey = targetStat + 'Pct';
+					d = `${statNameMap[targetStat]} ${val}%UP`;
+				} else {
+					let base = Math.floor(Math.random() * 20) + 10; 
+					if (targetStat === 'hp') base *= 5; 
+					if (targetStat === 'mp') base *= 2;
+					val = base * (currentTier * currentTier); 
+					d = `${statNameMap[targetStat]} +${val}`;
+				}
+			}
+
+			// 色情報(color)も持たせておくことでUI描画が綺麗になります
+			let rune = { id: 'r_' + Date.now() + Math.random(), n: `${el.n}のルーン`, d: d, type: 'rune', element: el.id, color: el.color, s: {}, locked: false };
+			rune.s[statKey] = val;
+			return applyRarity(rune);
+		}
+
+const JOB_DATA = {
+			Warrior: {
+				name: 'ウォリアー',
+				base: { hp: 120, mp: 30, str: 32, matk: 5, vit: 15, mdef: 10, agi: 10, luk: 8, cri: 0.1 },
+				grow: { hp: 32.0, mp: 10.0, str: 5.2, matk: 0.5, vit: 3.8, mdef: 1.0, agi: 2.2, luk: 1.5, cri: 0.005 },
+				skills: {
+					// ─── Lv1〜10 ───
+					2:  [ { n: '腕力練歩',     type: 'passive', stat: 'str', val: 10 },
+					      { n: '肉体鍛錬',     type: 'passive', stat: 'vit', val: 10 } ],
+					5:  [ { n: 'ヘヴィスイング', type: 'atk', dType: 'physical', target: 'single', cost: 12, pow: 2.8 },
+					      { n: '横一文字',     type: 'atk', dType: 'physical', target: 'all',    cost: 15, pow: 1.6 } ],
+					7:  [ { n: '会心の心得',   type: 'passive', stat: 'cri', val: 0.05 },
+					      { n: '身軽な歩法',   type: 'passive', stat: 'agi', val: 10 } ],
+					10: [ { n: 'ドラゴン斬り', type: 'atk',    dType: 'physical', target: 'single', cost: 20, pow: 4.5 },
+					      { n: '威嚇の咆哮',   type: 'debuff', stat: 'def', target: 'all', cost: 15, val: 0.15 } ],
+					// ─── Lv11〜20 ───
+					12: [ { n: '剛腕',         type: 'passive', stat: 'str', val: 20 },
+					      { n: '不屈の精神',   type: 'passive', stat: 'hp',  val: 150 } ],
+					15: [ { n: '達人の技',     type: 'passive', stat: 'cri', val: 0.10 },
+					      { n: '金剛',         type: 'passive', stat: 'vit', val: 20 } ],
+					17: [ { n: '狂乱',         type: 'passive', stat: 'str', val: 30 },
+					      { n: '鉄壁の構え',   type: 'passive', stat: 'vit', val: 30 } ],
+					20: [ { n: '地砕き',       type: 'atk',    dType: 'physical', target: 'all',    cost: 40, pow: 3.5 },
+					      { n: '戦神の加護',   type: 'buff',   stat: 'str', target: 'single', cost: 25, val: 0.3 } ],
+					// ─── Lv21〜30 ───
+					25: [ { n: '覇王のオーラ', type: 'passive', stat: 'str', val: 50 },
+					      { n: '不死鳥の鼓動', type: 'passive', stat: 'hp',  val: 300 } ],
+					30: [ { n: 'ラグナロク',   type: 'atk',    dType: 'physical', target: 'all',    cost: 60, pow: 7.0 },
+					      { n: '無敵の盾',     type: 'buff',   stat: 'vit', target: 'single', cost: 50, val: 0.5 } ],
+					// ─── Lv31〜40 ───
+					33: [ { n: '武神の極意',   type: 'passive', stat: 'str', val: 80 },
+					      { n: '闘気纏い',     type: 'passive', stat: 'cri', val: 0.08 } ],
+					35: [ { n: '奈落断',       type: 'atk',    dType: 'physical', target: 'single', cost: 70, pow: 10.0 },
+					      { n: '戦場の覇者',   type: 'buff',   stat: 'str', target: 'all',    cost: 60, val: 0.35 } ],
+					38: [ { n: '鋼の肉体',     type: 'passive', stat: 'vit', val: 80 },
+					      { n: '巨躯の意志',   type: 'passive', stat: 'hp',  val: 600 } ],
+					40: [ { n: '神速連斬',     type: 'atk',    dType: 'physical', target: 'all',    cost: 80, pow: 5.5 },
+					      { n: '武神覚醒',     type: 'buff',   stat: 'cri', target: 'single', cost: 50, val: 0.5 } ],
+					// ─── Lv41〜50 ───
+					43: [ { n: '神域の剛力',   type: 'passive', stat: 'str', val: 130 },
+					      { n: '原初の鼓動',   type: 'passive', stat: 'hp',  val: 1000 } ],
+					45: [ { n: '天地崩壊斬',   type: 'atk',    dType: 'physical', target: 'all',    cost: 100, pow: 9.0 },
+					      { n: '戦神降臨',     type: 'buff',   stat: 'str', target: 'all',    cost:  80, val: 0.5 } ],
+					48: [ { n: '超越の闘気',   type: 'passive', stat: 'cri', val: 0.12 },
+					      { n: '覇王の護り',   type: 'passive', stat: 'vit', val: 150 } ],
+					50: [ { n: '覇滅・神断剣', type: 'atk',    dType: 'physical', target: 'all',    cost: 130, pow: 14.0 },
+					      { n: '不壊の絶対盾', type: 'buff',   stat: 'vit', target: 'all',    cost: 100, val: 0.7 } ],
+				},
+			},
+			Paladin: {
+				name: 'パラディン',
+				base: { hp: 160, mp: 50, str: 24, matk: 15, vit: 25, mdef: 20, agi: 8, luk: 6, cri: 0.05 },
+				grow: { hp: 42.0, mp: 12.0, str: 3.8, matk: 1.5, vit: 6.5, mdef: 2.5, agi: 1.8, luk: 1.2, cri: 0.003 },
+				skills: {
+					// ─── Lv1〜10 ───
+					2:  [ { n: '加護',         type: 'passive', stat: 'vit', val: 12 },
+					      { n: '信仰',         type: 'passive', stat: 'mp',  val: 30 } ],
+					5:  [ { n: '聖なる盾',     type: 'buff',    stat: 'vit', target: 'single', cost: 10, val: 0.20 },
+					      { n: '祈りの手',     type: 'heal',    scale: 'self_hp', target: 'single', cost: 12, val: 0.25 } ],
+					7:  [ { n: '鉄壁の信仰',   type: 'passive', stat: 'vit', val: 18 },
+					      { n: '聖光の守護',   type: 'passive', stat: 'mdef',val: 15 } ],
+					10: [ { n: '裁きの光',     type: 'atk',    dType: 'magic', target: 'all',    cost: 25, pow: 2.2 },
+					      { n: 'ホーリー',     type: 'atk',    dType: 'magic', target: 'single', cost: 20, pow: 4.0 } ],
+					// ─── Lv11〜20 ───
+					12: [ { n: '堅固な体躯',   type: 'passive', stat: 'hp',  val: 200 },
+					      { n: '献身の祈り',   type: 'passive', stat: 'mdef',val: 20 } ],
+					15: [ { n: '聖域の壁',     type: 'buff',    stat: 'mdef',target: 'single', cost: 20, val: 0.30 },
+					      { n: '浄化の波動',   type: 'heal',    scale: 'self_hp', target: 'all', cost: 30, val: 0.20 } ],
+					17: [ { n: '神盾の心得',   type: 'passive', stat: 'vit', val: 35 },
+					      { n: '神聖なる魂',   type: 'passive', stat: 'mp',  val: 80 } ],
+					20: [ { n: '神罰',         type: 'atk',    dType: 'magic', target: 'all',    cost: 45, pow: 4.5 },
+					      { n: '救済の祈り',   type: 'heal',    scale: 'self_hp', target: 'all', cost: 50, val: 0.25 } ],
+					// ─── Lv21〜30 ───
+					25: [ { n: '神威',         type: 'passive', stat: 'vit', val: 40 },
+					      { n: '不滅の心',     type: 'passive', stat: 'hp',  val: 400 } ],
+					30: [ { n: '究極守護',     type: 'buff',    stat: 'vit', target: 'all',    cost: 80, val: 0.40 },
+					      { n: '聖域展開',     type: 'debuff',  stat: 'atk', target: 'all',    cost: 60, val: 0.30 } ],
+					// ─── Lv31〜40 ───
+					33: [ { n: '神盾の極意',   type: 'passive', stat: 'vit', val: 70 },
+					      { n: '聖なる生命力', type: 'passive', stat: 'hp',  val: 700 } ],
+					35: [ { n: '天罰降臨',     type: 'atk',    dType: 'magic', target: 'all',    cost: 80, pow: 7.0 },
+					      { n: '聖守の誓い',   type: 'buff',    stat: 'vit', target: 'all',    cost: 70, val: 0.50 } ],
+					38: [ { n: '神聖な意志',   type: 'passive', stat: 'mdef',val: 60 },
+					      { n: '不撓の魂',     type: 'passive', stat: 'mp',  val: 200 } ],
+					40: [ { n: '神裁・大光明', type: 'atk',    dType: 'magic', target: 'all',    cost: 100, pow: 9.0 },
+					      { n: '鉄壁の聖域',   type: 'buff',    stat: 'mdef',target: 'all',    cost:  80, val: 0.50 } ],
+					// ─── Lv41〜50 ───
+					43: [ { n: '絶対不敗の盾', type: 'passive', stat: 'vit', val: 120 },
+					      { n: '天命の守護',   type: 'passive', stat: 'hp',  val: 1200 } ],
+					45: [ { n: '神光爆裂陣',   type: 'atk',    dType: 'magic', target: 'all',    cost: 120, pow: 12.0 },
+					      { n: '神聖防壁',     type: 'buff',    stat: 'vit', target: 'all',    cost: 100, val: 0.70 } ],
+					48: [ { n: '天使の加護',   type: 'passive', stat: 'mdef',val: 100 },
+					      { n: '不死の誓約',   type: 'passive', stat: 'mp',  val: 400 } ],
+					50: [ { n: '聖光神滅断',   type: 'atk',    dType: 'magic', target: 'all',    cost: 150, pow: 16.0 },
+					      { n: '神の絶対守護', type: 'buff',    stat: 'vit', target: 'all',    cost: 120, val: 0.80 } ],
+				},
+			},
+			Wizard: {
+				name: 'ウィザード',
+				base: { hp: 80, mp: 150, str: 10, matk: 30, vit: 8, mdef: 15, agi: 14, luk: 12, cri: 0.15 },
+				grow: { hp: 20.0, mp: 35.0, str: 1.0, matk: 5.5, vit: 1.5, mdef: 3.5, agi: 2.8, luk: 2.5, cri: 0.008 },
+				skills: {
+					// ─── Lv1〜10 ───
+					2:  [ { n: '魔力増幅',     type: 'passive', stat: 'matk',val: 10 },
+					      { n: '瞑想の心得',   type: 'passive', stat: 'mp',  val: 60 } ],
+					5:  [ { n: '火球',         type: 'atk',    dType: 'magic', target: 'single', cost: 15, pow: 3.8 },
+					      { n: '氷結',         type: 'debuff', stat: 'agi', target: 'single', cost: 10, val: 0.15 } ],
+					7:  [ { n: '魔道の才覚',   type: 'passive', stat: 'matk',val: 15 },
+					      { n: '精霊の加護',   type: 'passive', stat: 'mdef',val: 12 } ],
+					10: [ { n: '雷鳴',         type: 'atk',    dType: 'magic', target: 'all',    cost: 35, pow: 2.5 },
+					      { n: '魔力集中',     type: 'buff',   stat: 'matk',target: 'single', cost: 20, val: 0.30 } ],
+					// ─── Lv11〜20 ───
+					12: [ { n: '魔導師の知恵', type: 'passive', stat: 'matk',val: 25 },
+					      { n: '魔力の泉',     type: 'passive', stat: 'mp',  val: 120 } ],
+					15: [ { n: '暴風',         type: 'atk',    dType: 'magic', target: 'all',    cost: 45, pow: 3.5 },
+					      { n: '魔法障壁',     type: 'buff',   stat: 'mdef',target: 'single', cost: 25, val: 0.30 } ],
+					17: [ { n: '深淵の知識',   type: 'passive', stat: 'matk',val: 40 },
+					      { n: '大魔法の才',   type: 'passive', stat: 'cri', val: 0.06 } ],
+					20: [ { n: '隕石落とし',   type: 'atk',    dType: 'magic', target: 'all',    cost: 60, pow: 5.5 },
+					      { n: '咒詛',         type: 'debuff', stat: 'mdef',target: 'all',    cost: 40, val: 0.20 } ],
+					// ─── Lv21〜30 ───
+					25: [ { n: '賢者の叡智',   type: 'passive', stat: 'matk',val: 50 },
+					      { n: '魔道の極み',   type: 'passive', stat: 'mp',  val: 200 } ],
+					30: [ { n: 'アビスノヴァ', type: 'atk',    dType: 'magic', target: 'all',    cost: 100, pow: 8.5 },
+					      { n: '時の静止',     type: 'debuff', stat: 'agi', target: 'all',    cost:  80, val: 0.50 } ],
+					// ─── Lv31〜40 ───
+					33: [ { n: '宇宙の理解',   type: 'passive', stat: 'matk',val: 80 },
+					      { n: '無限の魔力',   type: 'passive', stat: 'mp',  val: 400 } ],
+					35: [ { n: '星霊爆裂陣',   type: 'atk',    dType: 'magic', target: 'all',    cost: 120, pow: 10.0 },
+					      { n: '時空歪曲',     type: 'debuff', stat: 'mdef',target: 'all',    cost:  90, val: 0.35 } ],
+					38: [ { n: '大賢者の境地', type: 'passive', stat: 'matk',val: 120 },
+					      { n: '魔力完全制御', type: 'passive', stat: 'cri', val: 0.10 } ],
+					40: [ { n: '消滅光線',     type: 'atk',    dType: 'magic', target: 'all',    cost: 140, pow: 12.0 },
+					      { n: '全魔法無効化', type: 'buff',   stat: 'mdef',target: 'all',    cost: 100, val: 0.60 } ],
+					// ─── Lv41〜50 ───
+					43: [ { n: '神域魔力覚醒', type: 'passive', stat: 'matk',val: 180 },
+					      { n: '超越の魔泉',   type: 'passive', stat: 'mp',  val: 800 } ],
+					45: [ { n: '天地万象崩壊', type: 'atk',    dType: 'magic', target: 'all',    cost: 160, pow: 15.0 },
+					      { n: '時空凍結',     type: 'debuff', stat: 'agi', target: 'all',    cost: 120, val: 0.70 } ],
+					48: [ { n: '原初の魔道理', type: 'passive', stat: 'matk',val: 250 },
+					      { n: '無尽の魔力炉', type: 'passive', stat: 'cri', val: 0.15 } ],
+					50: [ { n: '絶対魔法・創世崩壊', type: 'atk', dType: 'magic', target: 'all', cost: 200, pow: 20.0 },
+					      { n: '魔王解放',     type: 'debuff', stat: 'mdef',target: 'all',    cost: 150, val: 0.60 } ],
+				},
+			},
+			Ranger: {
+				name: 'レンジャー',
+				base: { hp: 100, mp: 45, str: 28, matk: 10, vit: 10, mdef: 10, agi: 22, luk: 18, cri: 0.2 },
+				grow: { hp: 26.0, mp: 15.0, str: 4.2, matk: 0.5, vit: 2.0, mdef: 1.0, agi: 5.2, luk: 3.5, cri: 0.012 },
+				skills: {
+					// ─── Lv1〜10 ───
+					2:  [ { n: '足運び',       type: 'passive', stat: 'agi', val: 12 },
+					      { n: '目利き',       type: 'passive', stat: 'luk', val: 15 } ],
+					5:  [ { n: '毒矢',         type: 'atk',    dType: 'physical', target: 'single', cost: 12, pow: 3.2 },
+					      { n: '残像',         type: 'buff',   stat: 'agi', target: 'single', cost: 10, val: 0.25 } ],
+					7:  [ { n: '鷹の目',       type: 'passive', stat: 'cri', val: 0.06 },
+					      { n: '風読みの術',   type: 'passive', stat: 'agi', val: 15 } ],
+					10: [ { n: '影縫い',       type: 'debuff', stat: 'agi', target: 'all',    cost: 18, val: 0.20 },
+					      { n: '五月雨',       type: 'atk',    dType: 'physical', target: 'all', cost: 30, pow: 2.0 } ],
+					// ─── Lv11〜20 ───
+					12: [ { n: '疾風の走法',   type: 'passive', stat: 'agi', val: 25 },
+					      { n: '幸運の微笑み', type: 'passive', stat: 'luk', val: 30 } ],
+					15: [ { n: '烈風連矢',     type: 'atk',    dType: 'physical', target: 'all',    cost: 40, pow: 3.0 },
+					      { n: '鷹の加護',     type: 'buff',   stat: 'cri', target: 'single', cost: 20, val: 0.20 } ],
+					17: [ { n: '神速の足技',   type: 'passive', stat: 'agi', val: 40 },
+					      { n: '星の恵み',     type: 'passive', stat: 'luk', val: 40 } ],
+					20: [ { n: '狙撃',         type: 'atk',    dType: 'physical', target: 'single', cost: 40, pow: 8.0 },
+					      { n: '幸運の導き',   type: 'buff',   stat: 'luk', target: 'single', cost: 20, val: 0.50 } ],
+					// ─── Lv21〜30 ───
+					25: [ { n: '神速',         type: 'passive', stat: 'agi', val: 40 },
+					      { n: '星の加護',     type: 'passive', stat: 'luk', val: 50 } ],
+					30: [ { n: '滅殺の矢',     type: 'atk',    dType: 'physical', target: 'all',    cost: 80, pow: 6.0 },
+					      { n: '極限回避',     type: 'passive', stat: 'agi', val: 80 } ],
+					// ─── Lv31〜40 ───
+					33: [ { n: '疾風神速の極', type: 'passive', stat: 'agi', val: 100 },
+					      { n: '天運の申し子', type: 'passive', stat: 'luk', val: 80 } ],
+					35: [ { n: '千矢滅殺陣',   type: 'atk',    dType: 'physical', target: 'all',    cost:  90, pow: 8.5 },
+					      { n: '神業の狙い',   type: 'buff',   stat: 'cri', target: 'single', cost:  60, val: 0.40 } ],
+					38: [ { n: '霞を掴む速さ', type: 'passive', stat: 'agi', val: 140 },
+					      { n: '奇跡の会心',   type: 'passive', stat: 'cri', val: 0.10 } ],
+					40: [ { n: '消えぬ星の矢', type: 'atk',    dType: 'physical', target: 'all',    cost: 110, pow: 11.0 },
+					      { n: '神速乱舞',     type: 'buff',   stat: 'agi', target: 'all',    cost:  80, val: 0.50 } ],
+					// ─── Lv41〜50 ───
+					43: [ { n: '神域の疾走',   type: 'passive', stat: 'agi', val: 200 },
+					      { n: '運命の申し子', type: 'passive', stat: 'luk', val: 150 } ],
+					45: [ { n: '星砕き・神弓', type: 'atk',    dType: 'physical', target: 'all',    cost: 140, pow: 14.0 },
+					      { n: '天運覚醒',     type: 'buff',   stat: 'cri', target: 'all',    cost: 100, val: 0.50 } ],
+					48: [ { n: '神風の加護',   type: 'passive', stat: 'agi', val: 280 },
+					      { n: '絶対会心',     type: 'passive', stat: 'cri', val: 0.15 } ],
+					50: [ { n: '天地貫く一矢', type: 'atk',    dType: 'physical', target: 'all',    cost: 160, pow: 18.0 },
+					      { n: '滅世疾風陣',   type: 'buff',   stat: 'agi', target: 'all',    cost: 130, val: 0.80 } ],
+				},
+			},
+			Priest: {
+				name: 'プリースト',
+				base: { hp: 110, mp: 140, str: 5, matk: 15, vit: 20, mdef: 15, agi: 6, luk: 10, cri: 0.05 },
+				grow: { hp: 30.0, mp: 25.0, str: 0.5, matk: 1.5, vit: 4.0, mdef: 2.5, agi: 1.0, luk: 2.0, cri: 0.005 },
+				skills: {
+					// ─── Lv1〜10 ───
+					2:  [ { n: 'マナ温存',     type: 'passive', stat: 'mp',  val: 50 },
+					      { n: '信仰心',       type: 'passive', stat: 'matk',val: 10 } ],
+					5:  [ { n: 'ヒール',       type: 'heal',    scale: 'matk', target: 'single', cost: 12, val: 1.5 },
+					      { n: '攻撃祝福',     type: 'buff',   stat: 'str', target: 'single', cost: 15, val: 0.20 } ],
+					7:  [ { n: '守護の心得',   type: 'passive', stat: 'vit', val: 15 },
+					      { n: '機敏の祈り',   type: 'passive', stat: 'agi', val: 8 } ],
+					10: [ { n: '聖なる壁',     type: 'buff',   stat: 'vit', target: 'single', cost: 15, val: 0.25 },
+					      { n: '聖なる光',     type: 'atk',    dType: 'magic', target: 'single', cost: 20, pow: 3.0 } ],
+					// ─── Lv11〜20 ───
+					12: [ { n: 'マナ回廊',     type: 'passive', stat: 'mp',  val: 100 },
+					      { n: '聖女の導き',   type: 'passive', stat: 'mdef',val: 20 } ],
+					15: [ { n: '蘇生',         type: 'heal',    scale: 'matk', target: 'single', cost: 40, val: 2.0 },
+					      { n: 'エリアヒール', type: 'heal',    scale: 'matk', target: 'all',    cost: 35, val: 1.0 } ],
+					17: [ { n: '不屈の肉体',   type: 'passive', stat: 'hp',  val: 100 },
+					      { n: '鋼の意志',     type: 'passive', stat: 'vit', val: 20 } ],
+					20: [ { n: '神威の祈り',   type: 'buff',   stat: 'str', target: 'all',    cost: 30, val: 0.20 },
+					      { n: '魔防祝福',     type: 'buff',   stat: 'mdef',target: 'all',    cost: 30, val: 0.20 } ],
+					// ─── Lv21〜30 ───
+					25: [ { n: '魔導の極意',   type: 'passive', stat: 'mp',  val: 200 },
+					      { n: '輝きの源',     type: 'passive', stat: 'matk',val: 40 } ],
+					30: [ { n: '奇跡の復活',   type: 'heal',    scale: 'target_hp', target: 'all', cost: 80, val: 0.50 },
+					      { n: '浄化の光',     type: 'debuff', stat: 'def', target: 'all',    cost: 60, val: 0.25 } ],
+					// ─── Lv31〜40 ───
+					33: [ { n: '聖泉の加護',   type: 'passive', stat: 'mp',  val: 350 },
+					      { n: '神授の癒し',   type: 'passive', stat: 'matk',val: 70 } ],
+					35: [ { n: '大奇跡の光',   type: 'heal',    scale: 'target_hp', target: 'all', cost: 100, val: 0.70 },
+					      { n: '神聖爆裂',     type: 'atk',    dType: 'magic', target: 'all',  cost:  80, pow: 8.0 } ],
+					38: [ { n: '天使の庇護',   type: 'passive', stat: 'vit', val: 60 },
+					      { n: '神光の盾',     type: 'passive', stat: 'mdef',val: 50 } ],
+					40: [ { n: '全能の祝福',   type: 'buff',   stat: 'str', target: 'all',    cost: 80, val: 0.40 },
+					      { n: '神の加護・全', type: 'buff',   stat: 'mdef',target: 'all',    cost: 80, val: 0.40 } ],
+					// ─── Lv41〜50 ───
+					43: [ { n: '神聖魔力の極', type: 'passive', stat: 'matk',val: 100 },
+					      { n: '天命の泉',     type: 'passive', stat: 'mp',  val: 600 } ],
+					45: [ { n: '神の奇跡',     type: 'heal',    scale: 'target_hp', target: 'all', cost: 130, val: 1.00 },
+					      { n: '聖光裁き',     type: 'atk',    dType: 'magic', target: 'all',  cost: 120, pow: 13.0 } ],
+					48: [ { n: '天使降臨の加護', type: 'passive', stat: 'vit', val: 120 },
+					      { n: '不死の誓い',   type: 'passive', stat: 'hp',  val: 1000 } ],
+					50: [ { n: '神聖全能回復', type: 'heal',    scale: 'target_hp', target: 'all', cost: 160, val: 1.50 },
+					      { n: '天上神滅の光', type: 'debuff', stat: 'def', target: 'all',    cost: 140, val: 0.60 } ],
+				},
+			},
+			Alchemist: {
+				name: 'アルケミスト',
+				base: { hp: 85, mp: 140, str: 8, matk: 25, vit: 12, mdef: 18, agi: 18, luk: 12, cri: 0.1 },
+				grow: { hp: 20.0, mp: 35.0, str: 1.0, matk: 5.0, vit: 2.0, mdef: 2.5, agi: 3.0, luk: 1.5, cri: 0.01 },
+				skills: {
+					// ─── Lv1〜10 ───
+					2:  [ { n: '錬金術知識',   type: 'passive', stat: 'matk',val: 15 },
+					      { n: '素材採集',     type: 'passive', stat: 'luk', val: 10 } ],
+					5:  [ { n: '毒液',         type: 'atk',    dType: 'magic', target: 'single', cost:  8, pow: 1.8 },
+					      { n: '装甲劣化',     type: 'debuff', stat: 'def', target: 'single', cost: 12, val: 0.20 } ],
+					7:  [ { n: '素早い調合',   type: 'passive', stat: 'agi', val: 10 },
+					      { n: '毒耐性',       type: 'passive', stat: 'vit', val: 10 } ],
+					10: [ { n: '酸の雨',       type: 'atk',    dType: 'magic', target: 'all',    cost: 18, pow: 1.8 },
+					      { n: '戦渇の呪詛',   type: 'debuff', stat: 'atk', target: 'all',    cost: 15, val: 0.15 } ],
+					// ─── Lv11〜20 ───
+					12: [ { n: '薬学の極意',   type: 'passive', stat: 'matk',val: 30 },
+					      { n: '魔導の心得',   type: 'passive', stat: 'mp',  val: 100 } ],
+					15: [ { n: '猛毒の研究',   type: 'passive', stat: 'matk',val: 50 },
+					      { n: '慎重な動作',   type: 'passive', stat: 'cri', val: 0.05 } ],
+					17: [ { n: '毒素拡散',     type: 'passive', stat: 'matk',val: 40 },
+					      { n: '魔力循環',     type: 'passive', stat: 'mp',  val: 200 } ],
+					20: [ { n: '腐敗の霧',     type: 'atk',    dType: 'magic', target: 'all',    cost: 40, pow: 4.5 },
+					      { n: '防御奔流',     type: 'debuff', stat: 'def', target: 'all',    cost: 30, val: 0.25 } ],
+					// ─── Lv21〜30 ───
+					25: [ { n: '賢者の錬金術', type: 'passive', stat: 'matk',val: 80 },
+					      { n: '大魔瓶の構築', type: 'passive', stat: 'mp',  val: 400 } ],
+					30: [ { n: 'アルケミック・ボム', type: 'atk', dType: 'magic', target: 'all', cost: 100, pow: 9.0 },
+					      { n: '全能力低下の儀',    type: 'debuff', stat: 'atk', target: 'all', cost: 80, val: 0.35 } ],
+					// ─── Lv31〜40 ───
+					33: [ { n: '奈落の毒素研究', type: 'passive', stat: 'matk',val: 120 },
+					      { n: '魔力精製の極意', type: 'passive', stat: 'mp',  val: 600 } ],
+					35: [ { n: '深淵毒霧陣',   type: 'atk',    dType: 'magic', target: 'all',    cost: 120, pow: 11.0 },
+					      { n: '全耐性崩壊',   type: 'debuff', stat: 'def', target: 'all',    cost:  90, val: 0.40 } ],
+					38: [ { n: '超毒素錬成',   type: 'passive', stat: 'matk',val: 160 },
+					      { n: '完全な調合術', type: 'passive', stat: 'cri', val: 0.08 } ],
+					40: [ { n: '星喰いの腐蝕液', type: 'atk',   dType: 'magic', target: 'all',   cost: 140, pow: 13.0 },
+					      { n: '魔耐完全崩壊',  type: 'debuff', stat: 'mdef',target: 'all',   cost: 110, val: 0.50 } ],
+					// ─── Lv41〜50 ───
+					43: [ { n: '原初毒素の覚醒', type: 'passive', stat: 'matk',val: 220 },
+					      { n: '虚無の錬金炉',   type: 'passive', stat: 'mp',  val: 1000 } ],
+					45: [ { n: '創世腐滅の霧',   type: 'atk',   dType: 'magic', target: 'all',   cost: 160, pow: 16.0 },
+					      { n: '神域全能力崩壊', type: 'debuff', stat: 'atk', target: 'all',   cost: 130, val: 0.55 } ],
+					48: [ { n: '虚無毒素の極致', type: 'passive', stat: 'matk',val: 300 },
+					      { n: '絶対精製の秘法', type: 'passive', stat: 'cri', val: 0.12 } ],
+					50: [ { n: '絶滅・原初腐滅爆', type: 'atk',  dType: 'magic', target: 'all',   cost: 200, pow: 21.0 },
+					      { n: '神滅全耐性消去',   type: 'debuff', stat: 'def', target: 'all',   cost: 160, val: 0.70 } ],
+				},
+			},
+		}
+
+		const MONSTERS = [
+			// ===== 1F〜5F : 浅層 =====
+			{ id: 'm1',  name: 'スライム',      hp:  40, atk:  15, def:  5, mdef:  5, agi:  6, gold:  15, exp:  40, minFloor:  1, maxFloor:  5, variance: 0.05 },
+			{ id: 'm2',  name: 'ホグ',          hp:  70, atk:  25, def: 12, mdef: 10, agi:  4, gold:  35, exp:  60, minFloor:  1, maxFloor:  5, variance: 0.10 },
+			{ id: 'm3',  name: 'ホーンラビット', hp:  40, atk:  28, def:  5, mdef:  2, agi: 18, gold:  45, exp:  70, minFloor:  2, maxFloor:  5, variance: 0.20 },
+			{ id: 'm4',  name: 'ウルフ',        hp:  60, atk:  32, def:  8, mdef:  5, agi: 15, gold:  60, exp:  90, minFloor:  2, maxFloor:  5, variance: 0.15 },
+			{ id: 'm5',  name: 'ゴブリン',      hp: 110, atk:  35, def: 22, mdef: 15, agi: 10, gold:  90, exp: 120, minFloor:  3, maxFloor:  5, variance: 0.10 },
+			// ===== 6F〜10F : 中層前半 =====
+			{ id: 'm6',  name: 'コボルト',      hp: 100, atk:  45, def: 15, mdef: 12, agi: 22, gold: 110, exp: 150, minFloor:  6, maxFloor: 10, variance: 0.15 },
+			{ id: 'm7',  name: 'オーク',        hp: 220, atk:  65, def: 30, mdef: 20, agi: 12, gold: 150, exp: 220, minFloor:  6, maxFloor: 10, variance: 0.10 },
+			{ id: 'm8',  name: 'マンドレイク',  hp: 150, atk:  30, def: 20, mdef: 25, agi: 10, gold: 130, exp: 180, minFloor:  6, maxFloor: 10, variance: 0.20 },
+			{ id: 'm9',  name: 'トレント',      hp: 350, atk:  50, def: 50, mdef: 40, agi:  7, gold: 180, exp: 280, minFloor:  6, maxFloor: 10, variance: 0.05 },
+			{ id: 'm10', name: 'ワイルドベア',  hp: 300, atk:  72, def: 35, mdef: 25, agi: 25, gold: 250, exp: 400, minFloor:  6, maxFloor: 10, variance: 0.15 },
+			// ===== 11F〜15F : 中層 =====
+			// アーマードリザード: 重装甲トカゲ。高DEFで物理攻撃をほぼ無効化するが魔法には弱い。
+			{ id: 'm11', name: 'アーマードリザード', hp: 280, atk: 110, def: 80, mdef: 25, agi: 12, gold: 320, exp: 500, minFloor: 11, maxFloor: 15, variance: 0.10 },
+			// ダークゴブリン: ゴブリンの上位種。素早さと攻撃力が増した群れ型の敵。
+			{ id: 'm12', name: 'ダークゴブリン',     hp: 220, atk: 130, def: 35, mdef: 30, agi: 28, gold: 280, exp: 460, minFloor: 11, maxFloor: 15, variance: 0.15 },
+			// アイスウィスプ: 氷の精霊体。物理耐性が高く、魔法攻撃専門の難敵。
+			{ id: 'm13', name: 'アイスウィスプ',     hp: 180, atk:  90, def: 20, mdef: 70, agi: 30, gold: 300, exp: 480, minFloor: 11, maxFloor: 15, variance: 0.20 },
+			// ストーンゴーレム: 岩石でできた守護者。超高DEF・超低AGIの鈍重な壁役。
+			{ id: 'm14', name: 'ストーンゴーレム',   hp: 480, atk:  95, def:110, mdef: 50, agi:  5, gold: 350, exp: 560, minFloor: 13, maxFloor: 15, variance: 0.05 },
+			// ヴェノムスコーピオン: 毒の尾を持つ大蠍。中程度の能力バランスが取れた万能型。
+			{ id: 'm15', name: 'ヴェノムスコーピオン', hp: 260, atk: 145, def: 45, mdef: 40, agi: 20, gold: 330, exp: 520, minFloor: 12, maxFloor: 15, variance: 0.12 },
+			// ===== 16F〜20F : 中層後半 =====
+			// ダークナイト: 闇の鎧を纏った堕落した騎士。高い物理攻撃と防御を誇るバランス型強敵。
+			{ id: 'm16', name: 'ダークナイト',       hp: 450, atk: 210, def: 90, mdef: 60, agi: 18, gold: 500, exp: 820, minFloor: 16, maxFloor: 20, variance: 0.10 },
+			// リッチ: 死霊魔術師の成れの果て。物理耐性が高く強力な魔法を操る術者型。
+			{ id: 'm17', name: 'リッチ',             hp: 300, atk: 180, def: 30, mdef:100, agi: 22, gold: 480, exp: 790, minFloor: 16, maxFloor: 20, variance: 0.15 },
+			// マグマスライム: 溶岩に生息する変異スライム。スライムより格段に強く炎属性を持つ。
+			{ id: 'm18', name: 'マグマスライム',     hp: 380, atk: 170, def: 55, mdef: 65, agi: 10, gold: 460, exp: 750, minFloor: 16, maxFloor: 20, variance: 0.10 },
+			// チェインゴースト: 鎖に縛られた怨霊。物理・魔法両方の耐性を持つ難敵だが速度は遅め。
+			{ id: 'm19', name: 'チェインゴースト',   hp: 350, atk: 155, def: 65, mdef: 80, agi: 15, gold: 490, exp: 800, minFloor: 17, maxFloor: 20, variance: 0.15 },
+			// ブラッドオーガ: 赤い肌を持つ巨人族。生き血を求めて暴れ回る超火力型。
+			{ id: 'm20', name: 'ブラッドオーガ',     hp: 520, atk: 260, def: 70, mdef: 40, agi: 20, gold: 550, exp: 880, minFloor: 18, maxFloor: 20, variance: 0.12 },
+			// ===== 21F〜25F : 深層 =====
+			// シャドウアサシン: 影の中に潜む暗殺者。驚異的な速度と会心率で急所を突いてくる。
+			{ id: 'm21', name: 'シャドウアサシン',   hp: 500, atk: 380, def: 60, mdef: 70, agi: 55, gold: 800, exp: 1300, minFloor: 21, maxFloor: 25, variance: 0.20 },
+			// ヴァンパイアロード: 吸血鬼の王。攻撃・魔法・速度すべてが高水準の万能強敵。
+			{ id: 'm22', name: 'ヴァンパイアロード',  hp: 620, atk: 340, def: 80, mdef: 95, agi: 40, gold: 850, exp: 1400, minFloor: 21, maxFloor: 25, variance: 0.10 },
+			// 古代石像: 深層の番人。極めて高い物理耐性を持ち魔法が弱点のボス級雑魚。
+			{ id: 'm23', name: '古代石像',           hp: 900, atk: 300, def:160, mdef: 55, agi:  8, gold: 780, exp: 1250, minFloor: 21, maxFloor: 25, variance: 0.05 },
+			// ドレイクウォリアー: 竜人族の戦士。炎のブレスで後列も容赦なく焼き払う。
+			{ id: 'm24', name: 'ドレイクウォリアー',  hp: 680, atk: 420, def: 95, mdef: 75, agi: 30, gold: 900, exp: 1500, minFloor: 22, maxFloor: 25, variance: 0.12 },
+			// アビスジェリー: 深淵に棲む知性体。あらゆる属性をある程度吸収する難敵。
+			{ id: 'm25', name: 'アビスジェリー',     hp: 750, atk: 280, def: 85, mdef: 90, agi: 18, gold: 820, exp: 1350, minFloor: 23, maxFloor: 25, variance: 0.10 },
+			// ===== 26F〜30F : 最深層 =====
+			// デスナイト: 死の騎士。ダークナイトを超える圧倒的な攻撃力と重装甲を誇る。
+			{ id: 'm26', name: 'デスナイト',         hp: 900, atk: 650, def:150, mdef: 90, agi: 22, gold: 1300, exp: 2200, minFloor: 26, maxFloor: 30, variance: 0.10 },
+			// アークデーモン: 上位悪魔。高い魔法攻撃と物理攻撃を使い分ける最凶の術者。
+			{ id: 'm27', name: 'アークデーモン',     hp: 780, atk: 580, def: 80, mdef:150, agi: 38, gold: 1250, exp: 2100, minFloor: 26, maxFloor: 30, variance: 0.12 },
+			// 深淵の番竜: 最深層の守護竜。耐久・攻撃力・魔法耐性すべてが超高水準。
+			{ id: 'm28', name: '深淵の番竜',         hp:1200, atk: 720, def:130, mdef:130, agi: 28, gold: 1500, exp: 2500, minFloor: 27, maxFloor: 30, variance: 0.08 },
+			// ソウルイーター: 魂を喰らう怪物。攻撃力は低めだが超高速かつ全ステが均一な難敵。
+			{ id: 'm29', name: 'ソウルイーター',     hp: 850, atk: 530, def:100, mdef:120, agi: 60, gold: 1200, exp: 2000, minFloor: 27, maxFloor: 30, variance: 0.15 },
+			// ヴォイドゴーレム: 虚無から生まれた巨人。物理・魔法ともに最高水準の耐性を誇る鉄壁の壁役。
+			{ id: 'm30', name: 'ヴォイドゴーレム',   hp:1600, atk: 480, def:200, mdef:180, agi:  6, gold: 1400, exp: 2300, minFloor: 28, maxFloor: 30, variance: 0.05 },
+			// ===== 31F〜35F : 奈落前層 =====
+			// 奈落の衛兵: 深淵の番人。均整のとれた高い全能力で前衛を脅かすバランス型。
+			{ id: 'm31', name: '奈落の衛兵',         hp:1800, atk: 700, def:230, mdef:200, agi: 28, gold: 1800, exp: 3200, minFloor: 31, maxFloor: 35, variance: 0.10 },
+			// 煉獄の炎魔: 業火を纏う上位デーモン。物理耐性が高く魔法攻撃で全体を焼き払う。
+			{ id: 'm32', name: '煉獄の炎魔',         hp:1500, atk: 650, def:180, mdef:260, agi: 35, gold: 1900, exp: 3400, minFloor: 31, maxFloor: 35, variance: 0.12 },
+			// 深淵の鎧武者: 冥界に堕ちた武士の怨霊。超高DEFと高ATKを誇る重装甲型の強敵。
+			{ id: 'm33', name: '深淵の鎧武者',       hp:2200, atk: 820, def:310, mdef:180, agi: 15, gold: 2000, exp: 3600, minFloor: 31, maxFloor: 35, variance: 0.08 },
+			// 滅亡の使者: 終末を告げる翼持つ悪魔。高速かつ高火力で後衛を狙う奇襲型。
+			{ id: 'm34', name: '滅亡の使者',         hp:1400, atk: 900, def:200, mdef:220, agi: 55, gold: 2100, exp: 3800, minFloor: 32, maxFloor: 35, variance: 0.15 },
+			// 混沌の巨兵: 混沌から生まれた異形の巨人。HP・DEF・MDEFが全て最高水準の超タフな壁役。
+			{ id: 'm35', name: '混沌の巨兵',         hp:3200, atk: 750, def:280, mdef:260, agi:  8, gold: 2200, exp: 4000, minFloor: 33, maxFloor: 35, variance: 0.05 },
+			// ===== 36F〜40F : 奈落層 =====
+			// 冥府の死神: 死の鎌を持つ収穫者。物理・魔法を無差別に振るう全能攻撃型。
+			{ id: 'm36', name: '冥府の死神',         hp:2200, atk:1050, def:280, mdef:260, agi: 42, gold: 2800, exp: 5000, minFloor: 36, maxFloor: 40, variance: 0.10 },
+			// 星喰いの獣: 星の光を喰らう巨大獣。驚異的なHPと攻撃力を持つ超火力タンク型。
+			{ id: 'm37', name: '星喰いの獣',         hp:3500, atk:1200, def:300, mdef:230, agi: 20, gold: 3000, exp: 5400, minFloor: 36, maxFloor: 40, variance: 0.08 },
+			// 虚空の魔導師: 虚空から呪文を放つ上位魔術師。物理無効・魔法攻撃が非常に強力。
+			{ id: 'm38', name: '虚空の魔導師',       hp:1800, atk: 950, def:150, mdef:380, agi: 48, gold: 2900, exp: 5200, minFloor: 36, maxFloor: 40, variance: 0.15 },
+			// 奈落の番竜: 奈落を守護する古龍の末裔。全能力が高水準で特に物理攻撃が猛烈。
+			{ id: 'm39', name: '奈落の番竜',         hp:2800, atk:1400, def:320, mdef:290, agi: 32, gold: 3200, exp: 5800, minFloor: 37, maxFloor: 40, variance: 0.08 },
+			// 終末の鉄塊: 全身鋼鉄の破壊兵器。ATK・DEF・MDEFいずれも突出した最強重装甲型。
+			{ id: 'm40', name: '終末の鉄塊',         hp:4800, atk: 900, def:420, mdef:380, agi:  5, gold: 3400, exp: 6200, minFloor: 38, maxFloor: 40, variance: 0.05 },
+			// ===== 41F〜45F : 深淵核心部 =====
+			// 虚無の騎士王: 廃滅した王国の魔王。圧倒的な物理攻撃と高い耐久を兼ね備えた支配者型。
+			{ id: 'm41', name: '虚無の騎士王',       hp:3500, atk:1800, def:400, mdef:320, agi: 38, gold: 4500, exp: 8000, minFloor: 41, maxFloor: 45, variance: 0.10 },
+			// 深淵の賢者龍: 知性を持つ古代龍。魔法攻撃と物理攻撃を使い分ける最難敵。
+			{ id: 'm42', name: '深淵の賢者龍',       hp:3000, atk:1600, def:340, mdef:450, agi: 44, gold: 4800, exp: 8600, minFloor: 41, maxFloor: 45, variance: 0.10 },
+			// 滅世の鬼将: 千の戦場を渡り歩いた不死の将軍。HPが高く手数で削る持久戦型。
+			{ id: 'm43', name: '滅世の鬼将',         hp:5000, atk:1500, def:450, mdef:350, agi: 22, gold: 4600, exp: 8200, minFloor: 41, maxFloor: 45, variance: 0.08 },
+			// 奈落の女帝: 奈落を統治する魔女。高い魔法攻撃と速度で嵐のように攻め立てる。
+			{ id: 'm44', name: '奈落の女帝',         hp:2800, atk:2000, def:300, mdef:500, agi: 60, gold: 5000, exp: 9000, minFloor: 42, maxFloor: 45, variance: 0.12 },
+			// 混沌の創世兵: 世界を壊すために生まれた兵器。物理・魔法の両耐性が極めて高い難攻不落の壁。
+			{ id: 'm45', name: '混沌の創世兵',       hp:7000, atk:1200, def:550, mdef:500, agi:  4, gold: 5200, exp: 9400, minFloor: 43, maxFloor: 45, variance: 0.05 },
+			// ===== 46F〜50F : 原初の深淵 =====
+			// 原初の悪魔: 世界の始まりから存在する根源悪。凶暴な物理攻撃と魔法攻撃を同時に繰り出す。
+			{ id: 'm46', name: '原初の悪魔',         hp:5000, atk:2500, def:500, mdef:480, agi: 52, gold: 7000, exp:13000, minFloor: 46, maxFloor: 50, variance: 0.10 },
+			// 神殺しの兵器: 神代に作られた対神兵器。破滅的な攻撃力と難攻不落の防御を誇る。
+			{ id: 'm47', name: '神殺しの兵器',       hp:4500, atk:2900, def:580, mdef:420, agi: 35, gold: 7500, exp:14000, minFloor: 46, maxFloor: 50, variance: 0.08 },
+			// 深淵竜帝: 深淵を統べる竜の皇帝。全ステータスが最高峰の超強敵。
+			{ id: 'm48', name: '深淵竜帝',           hp:6000, atk:3000, def:550, mdef:550, agi: 45, gold: 8000, exp:15000, minFloor: 46, maxFloor: 50, variance: 0.08 },
+			// 虚無の審判者: 存在の終わりを告げる者。攻撃は低めだが物魔両方に無尽蔵の耐性を持つ。
+			{ id: 'm49', name: '虚無の審判者',       hp:9000, atk:2000, def:700, mdef:700, agi: 18, gold: 7800, exp:14500, minFloor: 47, maxFloor: 50, variance: 0.05 },
+			// 原初混沌体: 全ての混沌の根源。HP・攻撃・速度が全て最上級の最終雑魚敵。
+			{ id: 'm50', name: '原初混沌体',         hp:7500, atk:3500, def:620, mdef:620, agi: 62, gold: 9000, exp:17000, minFloor: 48, maxFloor: 50, variance: 0.08 },
+		]
+		const BOSS_DATA = {
+			 5: { name: 'ジャイアントスライム',   hp:   800, maxHp:   800, atk:  60, def:  40, mdef:  30, agi:  8, gold:  2000, exp:   5000, isBoss: true },
+			10: { name: 'フォレストフェンリル',   hp:  1500, maxHp:  1500, atk:  95, def:  55, mdef:  40, agi: 35, gold:  4500, exp:  12000, isBoss: true },
+			15: { name: '鋼鉄の魔将ゴルドラス',   hp:  3500, maxHp:  3500, atk: 180, def: 100, mdef:  70, agi: 20, gold: 10000, exp:  28000, isBoss: true },
+			20: { name: '闇竜ヴァルナクス',       hp:  6000, maxHp:  6000, atk: 280, def: 120, mdef: 110, agi: 32, gold: 22000, exp:  60000, isBoss: true },
+			25: { name: '深淵魔王ゼラファル',     hp: 10000, maxHp: 10000, atk: 450, def: 160, mdef: 150, agi: 45, gold: 45000, exp: 130000, isBoss: true },
+			30: { name: '虚無神アビサリオン',       hp:  18000, maxHp:  18000, atk:  700, def: 220, mdef: 220, agi:  55, gold:  90000, exp:  280000, isBoss: true },
+			35: { name: '奈落皇帝ガルガデス',       hp:  32000, maxHp:  32000, atk: 1100, def: 320, mdef: 300, agi:  48, gold: 180000, exp:  600000, isBoss: true },
+			40: { name: '星食らいの神獣ヴォラティア', hp:  55000, maxHp:  55000, atk: 1800, def: 420, mdef: 390, agi:  62, gold: 350000, exp: 1200000, isBoss: true },
+			45: { name: '深淵の創造神ルキファリス', hp:  90000, maxHp:  90000, atk: 2900, def: 560, mdef: 540, agi:  75, gold: 700000, exp: 2500000, isBoss: true },
+			50: { name: '原初神アルケーネシア',     hp: 150000, maxHp: 150000, atk: 4500, def: 750, mdef: 750, agi:  90, gold:1500000, exp: 6000000, isBoss: true },
+		}
+const SHOP_ITEMS = {
+			weapon: [
+				// --- Tier 1 (1〜10F) ---
+				{ id: 'w1_1', tier: 1, n: '遺された錆剣', p: 200, s: { str: 10 }, m: 1.0, d: '攻+10', dType: 'physical' },
+				{ id: 'w1_2', tier: 1, n: '新緑の小杖', p: 300, s: { matk: 12, mp: 20 }, m: 1.2, d: '特攻+12 / MP+20', dType: 'magic' },
+				{ id: 'w1_3', tier: 1, n: '探窟家の双刃', p: 800, s: { str: 15, agi: 10 }, m: 0.8, d: '2回攻撃 / 攻+15 / 速+10', dType: 'physical', hits: 2 },
+				{ id: 'w1_4', tier: 1, n: '処刑人の断斧', p: 1000, s: { str: 25, agi: -5 }, m: 1.4, d: '攻+25 / 速-5', dType: 'physical' },
+				// --- Tier 2 (11〜20F) ---
+				{ id: 'w2_1', tier: 2, n: '深層鉱の戦剣', p: 3000, s: { str: 60 }, m: 1.1, d: '攻+60', dType: 'physical' },
+				{ id: 'w2_2', tier: 2, n: '赤熱の魔道杖', p: 3500, s: { matk: 75, mp: 50 }, m: 1.3, d: '特攻+75 / MP+50', dType: 'magic' },
+				{ id: 'w2_3', tier: 2, n: '白銀の連撃剣', p: 5500, s: { str: 45, agi: 20 }, m: 0.85, d: '2回攻撃 / 攻+45 / 速+20', dType: 'physical', hits: 2 },
+				{ id: 'w2_4', tier: 2, n: '重鉄の大剣', p: 6000, s: { str: 90, vit: 20, agi: -10 }, m: 1.5, d: '攻+90 / 防+20 / 速-10', dType: 'physical' },
+				// --- Tier 3 (21〜30F) ---
+				{ id: 'w3_1', tier: 3, n: '幻鋼ミスリル刃', p: 15000, s: { str: 220, cri: 0.05 }, m: 1.2, d: '攻+220 / 会心+5%', dType: 'physical' },
+				{ id: 'w3_2', tier: 3, n: 'アーク・タワーの杖', p: 18000, s: { matk: 280, mp: 150 }, m: 1.4, d: '特攻+280 / MP+150', dType: 'magic' },
+				{ id: 'w3_3', tier: 3, n: '暗殺者の血刃', p: 25000, s: { str: 180, luk: 50 }, m: 0.7, d: '3回攻撃 / 攻+180 / 運+50', dType: 'physical', hits: 3 },
+				{ id: 'w3_4', tier: 3, n: '地裂の戦鎚', p: 28000, s: { str: 350, vit: 50, agi: -20 }, m: 1.6, d: '攻+350 / 防+50 / 速-20', dType: 'physical' },
+				// --- Tier 4 (31〜40F) ---
+				{ id: 'w4_1', tier: 4, n: '古代機神の光剣', p: 80000, s: { str: 850, agi: 50 }, m: 1.2, d: '攻+850 / 速+50', dType: 'physical' },
+				{ id: 'w4_2', tier: 4, n: '星詠みの賢杖', p: 95000, s: { matk: 1100, mp: 400 }, m: 1.5, d: '特攻+1100 / MP+400', dType: 'magic' },
+				{ id: 'w4_3', tier: 4, n: '九頭龍の穿牙', p: 120000, s: { str: 600, cri: 0.1 }, m: 0.75, d: '3回攻撃 / 攻+600 / 会心+10%', dType: 'physical', hits: 3 },
+				{ id: 'w4_4', tier: 4, n: '巨神滅しの竜斧', p: 140000, s: { str: 1400, vit: 150, agi: -40 }, m: 1.7, d: '攻+1400 / 防+150', dType: 'physical' },
+				// --- Tier 5 (41〜50F) ---
+				{ id: 'w5_1', tier: 5, n: '【神話】アビス・ブレイカー', p: 500000, s: { str: 3200, all: 100 }, m: 1.3, d: '攻+3200 / 究極の物理剣', dType: 'physical' },
+				{ id: 'w5_2', tier: 5, n: '【神話】深淵竜の魔帝杖', p: 550000, s: { matk: 4000, mp: 1000 }, m: 1.6, d: '特攻+4000 / MP+1000', dType: 'magic' },
+				{ id: 'w5_3', tier: 5, n: '【神話】千刃神・阿修羅', p: 800000, s: { str: 2500, agi: 300, cri: 0.15 }, m: 0.8, d: '4回攻撃 / 攻+2500', dType: 'physical', hits: 4 },
+				// --- Tier 6 (21〜30F) ---
+				{ id: 'w6_1', tier: 6, n: '深淵鋼の覇剣', p: 200000, s: { str: 1200, cri: 0.08 }, m: 1.3, d: '攻+1200 / 会心+8%', dType: 'physical' },
+				{ id: 'w6_2', tier: 6, n: '虚無詠唱の杖', p: 240000, s: { matk: 1600, mp: 600 }, m: 1.5, d: '特攻+1600 / MP+600', dType: 'magic' },
+				{ id: 'w6_3', tier: 6, n: '魔将の双刃', p: 320000, s: { str: 900, agi: 120, cri: 0.12 }, m: 0.78, d: '3回攻撃 / 攻+900 / 会心+12%', dType: 'physical', hits: 3 },
+				{ id: 'w6_4', tier: 6, n: '滅竜の巨大鎚', p: 380000, s: { str: 2000, vit: 300, agi: -30 }, m: 1.8, d: '攻+2000 / 防+300 / 速-30', dType: 'physical' },
+				// --- Tier 7 (31〜40F) ---
+				{ id: 'w7_1', tier: 7, n: '奈落覇王の刃', p: 650000, s: { str: 3500, cri: 0.10 }, m: 1.35, d: '攻+3500 / 会心+10%', dType: 'physical' },
+				{ id: 'w7_2', tier: 7, n: '星砕きの魔槍', p: 700000, s: { str: 3000, agi: 180, cri: 0.15 }, m: 0.80, d: '3回攻撃 / 攻+3000 / 速+180', dType: 'physical', hits: 3 },
+				{ id: 'w7_3', tier: 7, n: '冥府の霊術杖', p: 750000, s: { matk: 4500, mp: 1200 }, m: 1.6, d: '特攻+4500 / MP+1200', dType: 'magic' },
+				{ id: 'w7_4', tier: 7, n: '終末の大破壊鎚', p: 850000, s: { str: 5500, vit: 500, agi: -50 }, m: 2.0, d: '攻+5500 / 防+500 / 速-50', dType: 'physical' },
+				// --- Tier 8 (41〜50F) ---
+				{ id: 'w8_1', tier: 8, n: '【創世】神断剣クリエイティオ', p: 1500000, s: { str: 8000, cri: 0.15 }, m: 1.4, d: '攻+8000 / 会心+15%', dType: 'physical' },
+				{ id: 'w8_2', tier: 8, n: '【創世】原初の魔導書', p: 1800000, s: { matk: 10000, mp: 2000 }, m: 1.7, d: '特攻+10000 / MP+2000', dType: 'magic' },
+				{ id: 'w8_3', tier: 8, n: '【創世】虚空四刃・原初', p: 2200000, s: { str: 6000, agi: 400, cri: 0.20 }, m: 0.82, d: '4回攻撃 / 攻+6000 / 会心+20%', dType: 'physical', hits: 4 },
+			],
+			armor: [
+				// --- Tier 1 & 2 ---
+				{ id: 'a1_1', tier: 1, n: '探索者の革鎧', p: 300, s: { vit: 15 }, d: '防+15', dType: 'physical' },
+				{ id: 'a1_2', tier: 1, n: '見習い魔道士の服', p: 400, s: { mdef: 20, mp: 20 }, d: '魔防+20 / MP+20', dType: 'magic' },
+				{ id: 'a2_1', tier: 2, n: '黒鉄の重鎧', p: 4000, s: { vit: 80, agi: -5 }, d: '防+80 / 速-5', dType: 'physical' },
+				{ id: 'a2_2', tier: 2, n: '精霊の絹衣', p: 4500, s: { mdef: 100, mp: 80, matk: 15 }, d: '魔防+100 / MP+80 / 特攻+15', dType: 'magic' },
+				// --- Tier 3 & 4 ---
+				{ id: 'a3_1', tier: 3, n: 'ミスリル・メイル', p: 18000, s: { vit: 300, str: 30 }, d: '防+300 / 攻+30', dType: 'physical' },
+				{ id: 'a3_2', tier: 3, n: '賢者の霊装', p: 20000, s: { mdef: 350, mp: 250, matk: 60 }, d: '魔防+350 / MP+250 / 特攻+60', dType: 'magic' },
+				{ id: 'a4_1', tier: 4, n: '古代竜の逆鱗鎧', p: 90000, s: { vit: 1200, str: 150 }, d: '防+1200 / 攻+150', dType: 'physical' },
+				{ id: 'a4_2', tier: 4, n: '星光の神聖衣', p: 95000, s: { mdef: 1400, mp: 600, matk: 250 }, d: '魔防+1400 / 特攻+250', dType: 'magic' },
+				// --- Tier 5 ---
+				{ id: 'a5_1', tier: 5, n: '【神話】イージスの絶対盾', p: 600000, s: { vit: 4500, mdef: 1500, maxHp: 2000 }, d: '防+4500 / 物理無双の鎧', dType: 'physical' },
+				{ id: 'a5_2', tier: 5, n: '【神話】深淵の真理衣', p: 600000, s: { mdef: 4500, vit: 1500, matk: 800 }, d: '魔防+4500 / 魔法無双の衣', dType: 'magic' },
+				// --- Tier 6 (21~30F) ---
+				{ id: 'a6_1', tier: 6, n: '深淵魔将の黒鎧', p: 220000, s: { vit: 1800, str: 200 }, d: '防+1800 / 攻+200', dType: 'physical' },
+				{ id: 'a6_2', tier: 6, n: '虚無の霊装', p: 240000, s: { mdef: 2000, mp: 800, matk: 350 }, d: '魔防+2000 / MP+800 / 特攻+350', dType: 'magic' },
+				// --- Tier 7 (31〜40F) ---
+				{ id: 'a7_1', tier: 7, n: '奈落覇王の覇鎧', p: 700000, s: { vit: 5000, str: 600 }, d: '防+5000 / 攻+600', dType: 'physical' },
+				{ id: 'a7_2', tier: 7, n: '星砕きの霊衣', p: 750000, s: { mdef: 5500, mp: 1500, matk: 800 }, d: '魔防+5500 / MP+1500 / 特攻+800', dType: 'magic' },
+				// --- Tier 8 (41〜50F) ---
+				{ id: 'a8_1', tier: 8, n: '【創世】原初鋼の絶対鎧', p: 1600000, s: { vit: 12000, maxHp: 5000, str: 1200 }, d: '防+12000 / HP+5000 / 攻+1200', dType: 'physical' },
+				{ id: 'a8_2', tier: 8, n: '【創世】虚無の霊皇衣', p: 1800000, s: { mdef: 14000, mp: 3000, matk: 2000 }, d: '魔防+14000 / MP+3000 / 特攻+2000', dType: 'magic' },
+			],
+			acc: [
+				// アクセサリーの tier は進行度に応じた価格制限用です
+				{ id: 'ac1', tier: 1, n: '戦士の指輪', p: 1000, s: { str: 15, vit: 15 }, d: '攻+15 / 防+15' },
+				{ id: 'ac2', tier: 1, n: '盗賊の指輪', p: 1000, s: { agi: 20, luk: 20 }, d: '速+20 / 運+20' },
+				{ id: 'ac3', tier: 2, n: '狂戦士の指輪', p: 5000, s: { strPct: 10 }, d: '物理攻撃力 10%UP' },
+				{ id: 'ac4', tier: 2, n: '大賢者の指輪', p: 5000, s: { matkPct: 10 }, d: '特殊攻撃力 10%UP' },
+				{ id: 'ac5', tier: 3, n: '守護神の指輪', p: 20000, s: { vitPct: 15, mdefPct: 15 }, d: '全耐性 15%UP' },
+				{ id: 'ac6', tier: 4, n: '致命の首飾り', p: 80000, s: { cri: 0.15, strPct: 5 }, d: '会心+15% / 物理攻撃 5%UP' },
+				{ id: 'ac7', tier: 5, n: '【神宝】アビス・リング', p: 500000, s: { strPct: 20, matkPct: 20, vitPct: 20, mdefPct: 20 }, d: '全能力 20%UP' },
+				{ id: 'ac10', tier: 1, n: '小さなポーチ', p: 2000, s: { cap: 10 }, d: 'カバン容量+10' },
+				{ id: 'ac11', tier: 3, n: '探窟家のバックパック', p: 25000, s: { cap: 30 }, d: 'カバン容量+30' },
+				{ id: 'ac12', tier: 5, n: '四次元ポケット', p: 300000, s: { cap: 100 }, d: 'カバン容量+100' },
+				// --- Tier 6 (21~30F) ---
+				{ id: 'ac13', tier: 6, n: '深淵魔将の護符', p: 180000, s: { strPct: 12, vitPct: 12 }, d: '物攻+12% / 物耐+12%' },
+				{ id: 'ac14', tier: 6, n: '虚無の宝珠', p: 280000, s: { matkPct: 15, mdefPct: 15, cri: 0.1 }, d: '特攻+15% / 特耐+15% / 会心+10%' },
+				// --- Tier 7 (31〜40F) ---
+				{ id: 'ac15', tier: 7, n: '奈落皇帝の証', p: 600000, s: { strPct: 20, vitPct: 20 }, d: '物攻+20% / 物耐+20%' },
+				{ id: 'ac16', tier: 7, n: '星砕きの霊珠', p: 720000, s: { matkPct: 22, mdefPct: 22, cri: 0.12 }, d: '特攻+22% / 特耐+22% / 会心+12%' },
+				{ id: 'ac17', tier: 7, n: '冥府の万能指輪', p: 800000, s: { strPct: 15, matkPct: 15, vitPct: 10, mdefPct: 10 }, d: '全攻撃+15% / 全防御+10%' },
+				// --- Tier 8 (41〜50F) ---
+				{ id: 'ac18', tier: 8, n: '【創世】原初の覇王冠', p: 1500000, s: { strPct: 30, vitPct: 30, cri: 0.15 }, d: '物攻+30% / 物耐+30% / 会心+15%' },
+				{ id: 'ac19', tier: 8, n: '【創世】虚無神の霊冠', p: 1800000, s: { matkPct: 35, mdefPct: 35, cri: 0.10 }, d: '特攻+35% / 特耐+35% / 会心+10%' },
+				{ id: 'ac20', tier: 8, n: '【創世】全知全能の指輪', p: 2500000, s: { strPct: 20, matkPct: 20, vitPct: 20, mdefPct: 20 }, d: '全攻撃+20% / 全防御+20%' },
+			],
+			item: [
+				{ id: 'i1', tier: 1, n: '深淵の雫(小)', p: 50, d: 'HPを最大値の30%回復', e: { hpPct: 0.3 } },
+				{ id: 'i2', tier: 2, n: '深淵の雫(中)', p: 300, d: 'HPを最大値の60%回復', e: { hpPct: 0.6 } },
+				{ id: 'i3', tier: 4, n: '深淵の雫(大)', p: 1500, d: 'HPを最大値の100%回復', e: { hpPct: 1.0 } },
+				{ id: 'i4', tier: 2, n: '魔力の霊薬', p: 500, d: 'MPを最大値の50%回復', e: { mpPct: 0.5 } },
+				{ id: 'i5', tier: 5, n: '【神薬】エリクサー', p: 10000, d: 'HPとMPを全回復', e: { hpPct: 1.0, mpPct: 1.0 } },
+			],
+		}
+		let gameState = { gold: 500, floor: 1, inDungeon: false, party: [], inventory: [], tempGold: 0, exploreCount: 0, stairsFound: false, bossDefeated: [], maxFloor: 1, guildWarehouse: [], guildWarehouseCap: 50, bagExpansion: 0 }
+		let battle = { active: false, isProcessing: false, enemies: [], turn: 'player', activeUnitIndex: 0, buffs: [], enemyDebuffs: [], targeting: null, pendingSkill: null, remainingHits: 0 }
+
+		function applyRarity(item) {
+			if (item.type === 'item') return item;
+			const currentFloor = gameState.inDungeon ? gameState.floor : 50; 
+			const r = Math.random();
+			let rarity;
+			let subCount = 0;
+
+			if (currentFloor <= 5) {
+				if (r < 0.9) { rarity = { label: 'コモン', color: '#ffffff', mul: 1.0 }; subCount = 0; }
+				else { rarity = { label: 'アンコモン', color: '#4caf50', mul: 1.15 }; subCount = 1; }
+			} else if (currentFloor <= 10) {
+				if (r < 0.6) { rarity = { label: 'コモン', color: '#ffffff', mul: 1.0 }; subCount = 0; }
+				else if (r < 0.9) { rarity = { label: 'アンコモン', color: '#4caf50', mul: 1.15 }; subCount = 1; }
+				else { rarity = { label: 'レア', color: '#2196f3', mul: 1.4 }; subCount = 2; }
+			} else if (currentFloor <= 20) {
+				if (r < 0.6) { rarity = { label: 'コモン', color: '#ffffff', mul: 1.0 }; subCount = 0; }
+				else if (r < 0.8) { rarity = { label: 'アンコモン', color: '#4caf50', mul: 1.15 }; subCount = 1; }
+				else if (r < 0.94) { rarity = { label: 'レア', color: '#2196f3', mul: 1.4 }; subCount = 2; }
+				else { rarity = { label: 'エピック', color: '#9c27b0', mul: 1.8 }; subCount = 3; }
+			} else {
+				if (r < 0.60) { rarity = { label: 'コモン', color: '#ffffff', mul: 1.0 }; subCount = 0; }
+				else if (r < 0.80) { rarity = { label: 'アンコモン', color: '#4caf50', mul: 1.15 }; subCount = 1; }
+				else if (r < 0.90) { rarity = { label: 'レア', color: '#2196f3', mul: 1.4 }; subCount = 2; }
+				else if (r < 0.96) { rarity = { label: 'エピック', color: '#9c27b0', mul: 1.8 }; subCount = 3; }
+				else { rarity = { label: 'レジェンダリー', color: '#ff9800', mul: 2.5 }; subCount = 4; }
+			}
+
+			item.rarityLabel = rarity.label;
+			item.rarityColor = rarity.color;
+			if (item.s) {
+				for (let k in item.s) {
+					if (typeof item.s[k] === 'number' && k !== 'cap' && k !== 'cri') {
+						item.s[k] = Math.floor(item.s[k] * rarity.mul);
+					}
+				}
+			}
+			// 【削除またはコメントアウトする行】
+			// if (item.m) item.m = Number((item.m * rarity.mul).toFixed(2));
+
+			item.subEffects = [];
+			const subPool = [
+				{ k: 'str', n: '物理攻撃', v: 4 },
+				{ k: 'vit', n: '物理耐性', v: 4 },
+				{ k: 'matk', n: '特殊攻撃', v: 4 },
+				{ k: 'mdef', n: '特殊耐性', v: 4 },
+				{ k: 'agi', n: '速度', v: 3 },
+				{ k: 'luk', n: '幸運', v: 5 },
+				{ k: 'hp', n: 'HP', v: 40 },
+				{ k: 'mp', n: 'MP', v: 20 },
+				{ k: 'cri', n: '会心', v: 0.03 }
+			];
+			for(let i=0; i<subCount; i++) {
+				const eff = subPool[Math.floor(Math.random()*subPool.length)];
+				item.subEffects.push({...eff});
+			}
+
+			return item;
+		}
+
+		function getFinalStats(p) {
+			let job = Object.values(JOB_DATA).find(j => j.name === p.job)
+			if (!job) {
+				const legacyMap = { 戦士: 'Warrior', 騎士: 'Paladin', 魔術師: 'Wizard', 探索者: 'Ranger' }
+				if (legacyMap[p.job] && JOB_DATA[legacyMap[p.job]]) {
+					job = JOB_DATA[legacyMap[p.job]]
+					p.job = job.name
+				} else {
+					console.warn('Job data not found for character:', p)
+					return { maxHp: 100, maxMp: 10, str: 10, matk: 5, vit: 5, mdef: 5, agi: 5, luk: 5, cri: 0.05, multiplier: 1.0 }
+				}
+			}
+			let lvMod = (p.lv ?? 1) - 1
+			let fs = {
+				maxHp: Math.floor(job.base.hp + job.grow.hp * lvMod),
+				maxMp: Math.floor(job.base.mp + job.grow.mp * lvMod),
+				str: job.base.str + job.grow.str * lvMod,
+				matk: job.base.matk + job.grow.matk * lvMod,
+				vit: job.base.vit + job.grow.vit * lvMod,
+				mdef: job.base.mdef + job.grow.mdef * lvMod,
+				agi: job.base.agi + job.grow.agi * lvMod,
+				luk: job.base.luk + job.grow.luk * lvMod,
+				cri: job.base.cri + job.grow.cri * lvMod,
+				multiplier: 1.0,
+			}
+
+			const applySubEffects = (item) => {
+				if (!item || !item.subEffects) return;
+				item.subEffects.forEach(eff => {
+					let key = eff.k;
+					if (key === 'hp') key = 'maxHp';
+					if (key === 'mp') key = 'maxMp';
+					if (fs[key] !== undefined) fs[key] += eff.v;
+				});
+			};
+
+			if (p.equip.weapon) {
+				for (let k in p.equip.weapon.s) fs[k] += p.equip.weapon.s[k]
+				fs.multiplier = p.equip.weapon.m || 1.0
+				applySubEffects(p.equip.weapon);
+			}
+			if (p.equip.armor) {
+				for (let k in p.equip.armor.s) fs[k] += p.equip.armor.s[k]
+				applySubEffects(p.equip.armor);
+			}
+			gameState.party.forEach(m => {
+				if (m.equip && m.equip.acc && m.equip.acc.s) {
+					for (let k in m.equip.acc.s) {
+						let val = m.equip.acc.s[k]
+						if (k === 'cap') continue
+						if (k.endsWith('Pct')) {
+							let statKey = k.substring(0, k.length - 3)
+							if (fs[statKey] !== undefined) {
+								fs[statKey] += Math.floor(fs[statKey] * (val / 100))
+							}
+						} else {
+							fs[k] = (fs[k] || 0) + val
+						}
+					}
+					applySubEffects(m.equip.acc);
+				}
+			})
+			if (p.equip && p.equip.runes) {
+				// 8属性＋旧データ(ice)のカウント準備
+				let counts = { fire:0, magic:0, earth:0, water:0, life:0, spirit:0, wind:0, star:0, ice:0 };
+				p.equip.runes.forEach(r => {
+					if (counts[r.element] !== undefined) counts[r.element]++
+				})
+				
+				// セットボーナス適用
+				if (counts.fire >= 3) fs.str = Math.floor(fs.str * 1.15);
+				if (counts.magic >= 3) fs.matk = Math.floor(fs.matk * 1.15);
+				if (counts.earth >= 3) fs.vit = Math.floor(fs.vit * 1.15);
+				if (counts.water >= 3) fs.mdef = Math.floor(fs.mdef * 1.15);
+				if (counts.life >= 3) fs.maxHp = Math.floor(fs.maxHp * 1.20);
+				if (counts.spirit >= 3 || counts.ice >= 3) fs.maxMp = Math.floor(fs.maxMp * 1.20); // 旧データ救済
+				if (counts.wind >= 3) fs.agi = Math.floor(fs.agi * 1.15);
+				if (counts.star >= 3) {
+					fs.luk = Math.floor(fs.luk * 1.20);
+					fs.cri += 0.05; // 会心率+5%
+				}
+
+				p.equip.runes.forEach(rune => {
+					if (rune.s) {
+						for (let k in rune.s) {
+							let val = rune.s[k]
+							if (k.endsWith('Pct')) {
+								let statKey = k.substring(0, k.length - 3)
+								if (statKey === 'hp') statKey = 'maxHp'
+								if (statKey === 'mp') statKey = 'maxMp'
+								if (fs[statKey] !== undefined) {
+									fs[statKey] += Math.floor(fs[statKey] * (val / 100))
+								}
+							} else {
+								if (k === 'hp') fs.maxHp += val
+								else if (k === 'mp') fs.maxMp += val
+								else fs[k] = (fs[k] || 0) + val
+							}
+						}
+					}
+					applySubEffects(rune);
+				})
+			}
+			for (let lv in p.learnedSkills) {
+				const sIdx = p.learnedSkills[lv]
+				const skill = job.skills[lv][sIdx]
+				if (skill.type === 'passive') {
+					if (skill.stat === 'hp') fs.maxHp += skill.val
+					else if (skill.stat === 'mp') fs.maxMp += skill.val
+					else fs[skill.stat] += skill.val
+				}
+			}
+			battle.buffs
+				.filter(b => b.pIdx === gameState.party.indexOf(p))
+				.forEach(b => {
+					if(fs[b.stat] !== undefined) {
+						if (b.val >= 1) fs[b.stat] += b.val;
+						else fs[b.stat] = Math.floor(fs[b.stat] * (1 + b.val));
+					}
+				})
+			fs.cri = Math.min(fs.cri, 0.5)
+			return fs
+		}
+
+		function getMaxCapacity() {
+			let base = 15
+			// 全キャラのLv÷5の合計（1キャラ5Lvごとに+1枠）
+			gameState.party.forEach(p => {
+				base += Math.floor(p.lv / 5)
+			})
+			// アクセサリーのカバン拡張
+			gameState.party.forEach(p => {
+				if (p.equip && p.equip.acc && p.equip.acc.s && p.equip.acc.s.cap) {
+					base += p.equip.acc.s.cap
+				}
+			})
+			// ゴールドで購入した拡張枠
+			base += gameState.bagExpansion ?? 0
+			return base
+		}
+
+		function getBagCapBreakdown() {
+			const base = 15
+			let lvBonus = 0
+			gameState.party.forEach(p => { lvBonus += Math.floor(p.lv / 5) })
+			let accBonus = 0
+			gameState.party.forEach(p => {
+				if (p.equip?.acc?.s?.cap) accBonus += p.equip.acc.s.cap
+			})
+			const expand = gameState.bagExpansion ?? 0
+			return { base, lvBonus, accBonus, expand, total: base + lvBonus + accBonus + expand }
+		}
+
+		function calcTacticalDamage(attackerStats, defenderDef, defenderMDef, lv, isEnemy = false, dType = 'physical') {
+			let currentDef = dType === 'physical' ? defenderDef : defenderMDef
+			if (!isEnemy) {
+				battle.enemyDebuffs.forEach(d => {
+					if (dType === 'physical' && d.stat === 'def') {
+						currentDef = d.val >= 1 ? currentDef - d.val : Math.floor(currentDef * (1 - d.val));
+					} else if (dType === 'magic' && d.stat === 'mdef') {
+						currentDef = d.val >= 1 ? currentDef - d.val : Math.floor(currentDef * (1 - d.val));
+					}
+				})
+			}
+			currentDef = Math.max(0, currentDef)
+			let atkStat = dType === 'magic' ? attackerStats.matk : attackerStats.str
+			let atk = atkStat * attackerStats.multiplier
+			let baseDamage = atk * (100 / (100 + currentDef))
+			let isCrit = Math.random() < attackerStats.cri
+			let damage = isCrit ? baseDamage * 1.6 : baseDamage
+			let finalDamage = Math.floor(damage * (0.9 + Math.random() * 0.2))
+			return { val: Math.max(lv * 1, finalDamage), crit: isCrit }
+		}
+
+		function save_game() {
+			try {
+				const pid = window.projectId || 'default_game'
+				const saveKey = 'game_' + pid
+				localStorage.setItem(saveKey, JSON.stringify(gameState))
+				showMsg('保存しました。')
+				console.log('Game saved to', saveKey)
+			} catch (e) {
+				showMsg('保存失敗')
+				console.error(e)
+			}
+		}
+
+		function load_game() {
+			try {
+				const pid = window.projectId || 'default_game'
+				const saveKey = 'game_' + pid
+				const data = localStorage.getItem(saveKey)
+				if (data) {
+					const parsed = JSON.parse(data)
+					parsed.gold = parsed.gold ?? 0
+					parsed.floor = parsed.floor ?? 1
+					parsed.inDungeon = parsed.inDungeon ?? false
+					parsed.party = parsed.party ?? []
+					parsed.inventory = parsed.inventory ?? []
+					parsed.tempGold = parsed.tempGold ?? 0
+					parsed.exploreCount = parsed.exploreCount ?? 0
+					parsed.stairsFound = parsed.stairsFound ?? false
+					parsed.bossDefeated = parsed.bossDefeated ?? []
+					parsed.maxFloor = parsed.maxFloor ?? 1
+					parsed.guildWarehouse = parsed.guildWarehouse ?? (parsed.guildStorage ?? [])
+					parsed.guildWarehouseCap = parsed.guildWarehouseCap ?? (parsed.guildStorageCap ?? 50)
+					parsed.bagExpansion = parsed.bagExpansion ?? 0
+					parsed.party.forEach(p => {
+						if (p.job === '戦士') p.job = 'ウォリアー'
+						else if (p.job === '騎士') p.job = 'パラディン'
+						else if (p.job === '魔術師') p.job = 'ウィザード'
+						else if (p.job === '探索者') p.job = 'レンジャー'
+						p.equip = p.equip ?? { weapon: null, armor: null, acc: null, runes: [] }
+						p.learnedSkills = p.learnedSkills ?? {}
+						p.skillCooldowns = p.skillCooldowns || {}
+						p.exp = p.exp ?? 0
+						p.nextExp = p.nextExp ?? 100
+						p.lv = p.lv ?? 1
+						if (p.hp === undefined || p.mp === undefined) {
+							const fs = getFinalStats(p)
+							p.hp = p.hp ?? fs.maxHp
+							p.mp = p.mp ?? fs.maxMp
+						}
+					})
+					gameState = parsed
+					console.log('Game loaded')
+					return true
+				}
+			} catch (e) {
+				console.error(e)
+			}
+			return false
+		}
+
+		function exploreRandomEvent() {
+			if (!gameState.inDungeon) return
+			gameState.exploreCount++
+			const disp = document.getElementById('event-display')
+			if (BOSS_DATA[gameState.floor] && !gameState.bossDefeated.includes(gameState.floor)) {
+				startBattle()
+				return
+			}
+			const r = Math.random()
+			if (r < 0.6) {
+				startBattle()
+			} else if (r < 0.9) {
+				let baseGold = Math.floor(Math.random() * 80 * gameState.floor) + 60;
+				let msg = `宝箱！`;
+				
+				const lootRoll = Math.random();
+				let loot = null;
+
+				// 現在の階層からTierを算出 (10階層ごとにTierアップ、最大Tier5)
+				const currentTier = Math.min(8, Math.floor((gameState.floor - 1) / 10) + 1);
+
+				if (lootRoll < 0.25) { // ゴールド 25%
+					gameState.tempGold += baseGold;
+					msg = `宝箱！ ${baseGold}G`;
+				} else if (lootRoll < 0.30) { // 大当たりゴールド 5%
+					let jackpot = baseGold * 5 + 500;
+					gameState.tempGold += jackpot;
+					msg = `<span style="color:var(--gold); font-weight:bold;">✨大当たり宝箱✨ ${jackpot}G!!</span>`;
+					addLog(`大当たり！ ${jackpot}G獲得！`, 'log-gold');
+				} else if (lootRoll < 0.42) { // 武器 12%
+					// 現在のTier以下の武器のみプールにする
+					const pool = SHOP_ITEMS.weapon.filter(i => i.tier <= currentTier);
+					loot = applyRarity({ ...pool[Math.floor(Math.random() * pool.length)], type: 'weapon', locked: false });
+				} else if (lootRoll < 0.54) { // 防具 12%
+					const pool = SHOP_ITEMS.armor.filter(i => i.tier <= currentTier);
+					loot = applyRarity({ ...pool[Math.floor(Math.random() * pool.length)], type: 'armor', locked: false });
+				} else if (lootRoll < 0.60) { // 汎用 6%
+					const pool = SHOP_ITEMS.acc.filter(i => i.tier <= currentTier);
+					loot = applyRarity({ ...pool[Math.floor(Math.random() * pool.length)], type: 'acc', locked: false });
+				} else if (lootRoll < 0.70) { // アイテム 10%
+					// アイテムは1つ上のTierまで出やすくする（救済措置）
+					const pool = SHOP_ITEMS.item.filter(i => i.tier <= currentTier + 1);
+					loot = { ...pool[Math.floor(Math.random() * pool.length)], type: 'item', locked: false };
+				} else if (lootRoll < 0.90) { // ルーン 20%
+					loot = generateRune();
+				} else { // 残り 10% その他(小銭のみ)
+					gameState.tempGold += Math.floor(baseGold / 2);
+					msg = `宝箱！ ${Math.floor(baseGold / 2)}G`;
+				}
+
+				if (loot) {
+					if (gameState.inventory.length < getMaxCapacity()) {
+						gameState.inventory.push(loot);
+						msg = `宝箱！ ${baseGold}G & ${loot.n}`;
+						gameState.tempGold += baseGold;
+						addLog(`宝箱から獲得：${loot.n}`, 'log-sys');
+					} else {
+						msg = `宝箱！ ${baseGold}G (鞄が一杯でアイテムを諦めた...)`;
+						gameState.tempGold += baseGold;
+						addLog(`鞄が一杯でアイテムを諦めた...`, 'log-red');
+					}
+				}
+				
+				disp.innerHTML = `<span style="color:var(--gold)">${msg}</span>`
+				if(!lootRoll >= 0.25 && !lootRoll < 0.30) addLog(`${baseGold}G獲得。`, 'log-gold');
+			} else {
+				const p = gameState.party[0]
+				p.hp = Math.max(0, p.hp - 25)
+				disp.innerHTML = `<span style="color:var(--accent-red)">罠！</span> -25HP`
+				addLog(`罠：-25HP`, 'log-red')
+				if (p.hp <= 0) handleDeath()
+			}
+			if (!gameState.stairsFound) {
+				const pS = [0.2, 0.4, 0.6, 0.8, 0.9][Math.min(gameState.exploreCount - 1, 4)]
+				if (Math.random() < pS) {
+					gameState.stairsFound = true
+					document.getElementById('btn-next-floor').classList.remove('hidden')
+					addLog('階段発見。', 'log-sys')
+					disp.innerHTML += `<br><span style="color:var(--accent-blue)">▼ 階段</span>`
+				}
+			}
+			updateUI()
+		}
+
+		function openBossRematchModal() {
+			const c = document.getElementById('modal-content')
+			c.innerHTML = `
+				<div style="text-align:center; padding:20px;">
+					<h2>ボス再戦</h2>
+					<p style="color:var(--text-dim); margin-bottom:15px;">このフロアのボスは倒されました。<br>再戦しますか？それとも通常探索を行いますか？</p>
+					<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+						<button class="btn-action btn-red" onclick="closeModal(); exploreCountAndBattle();">再戦する</button>
+						<button class="btn-action btn-blue" onclick="closeModal(); exploreRandomEvent();">通常探索</button>
+					</div>
+				</div>`
+			openModalWrapper()
+		}
+
+		function exploreCountAndBattle() {
+			if (!gameState.inDungeon) return
+			gameState.exploreCount++
+			startBattle(true)
+		}
+
+		function explore() {
+			if (!gameState.inDungeon) return
+			const isBossFloor = BOSS_DATA[gameState.floor]
+			if (isBossFloor) {
+				if (!gameState.bossDefeated.includes(gameState.floor)) {
+					gameState.exploreCount++
+					startBattle()
+					return
+				} else {
+					openBossRematchModal()
+					return
+				}
+			}
+			exploreRandomEvent()
+		}
+
+		function startBattle(forceBoss = false) {
+			playBGM('battle');
+			battle.active = true
+			battle.isProcessing = false
+			battle.enemies = []
+			battle.enemyDebuffs = []
+			battle.buffs = []
+			battle.activeUnitIndex = 0
+			battle.turnCycle = 0
+			battle.remainingHits = 0
+			gameState.party.forEach(p => {
+				p.skillCooldowns = {}
+			})
+			if (BOSS_DATA[gameState.floor] && (!gameState.bossDefeated.includes(gameState.floor) || forceBoss)) {
+				const bossData = BOSS_DATA[gameState.floor]
+				const boss = { ...bossData, id: 0 }
+				boss.maxHp = boss.hp
+				battle.enemies.push(boss)
+				addLog('ボス出現！', 'log-red')
+			} else {
+				let count = Math.min(3, Math.floor(Math.random() * Math.min(3, gameState.floor)) + 1)
+				let available = MONSTERS.filter(m => m.minFloor <= gameState.floor && gameState.floor <= m.maxFloor)
+				if (available.length === 0) available = MONSTERS
+				for (let i = 0; i < count; i++) {
+					const b = available[Math.floor(Math.random() * available.length)]
+					const variance = b.variance || 0.1
+					const roll = 1 + (Math.random() * 2 - 1) * variance
+					battle.enemies.push({ ...b, id: i, hp: Math.floor(b.hp * roll), maxHp: Math.floor(b.hp * roll), atk: Math.floor(b.atk * roll), def: Math.floor(b.def * roll), mdef: Math.floor(b.mdef * roll), exp: Math.floor(b.exp * roll), gold: Math.floor(b.gold * roll) })
+				}
+			}
+			document.getElementById('dungeon-ui').classList.add('hidden')
+			document.getElementById('battle-view').classList.remove('hidden')
+			updateBattleUI()
+			setTurn('player')
+		}
+
+		function setTurn(side, unitIndex = 0) {
+			battle.turn = side
+			battle.activeUnitIndex = unitIndex
+			battle.isProcessing = false
+			battle.remainingHits = 0
+			updateBattleUI()
+			const isPlayerTurn = side === 'player'
+			document.getElementById('atk-btn').disabled = !isPlayerTurn
+			document.getElementById('skl-btn').disabled = !isPlayerTurn
+			document.getElementById('battle-skill-menu').classList.add('hidden')
+			if (isPlayerTurn) {
+				const p = gameState.party[battle.activeUnitIndex]
+				if (p.skillCooldowns) {
+					for (let k in p.skillCooldowns) {
+						if (p.skillCooldowns[k] > 0) p.skillCooldowns[k]--
+					}
+				}
+				document.getElementById('battle-msg').innerText = `${p.name}の行動`
+			} else {
+				document.getElementById('battle-msg').innerText = '敵の行動...'
+			}
+		}
+
+		function nextTurn() {
+			if (battle.turn === 'player') {
+				let nextIdx = battle.activeUnitIndex + 1
+				while (nextIdx < gameState.party.length) {
+					if (gameState.party[nextIdx].hp > 0) {
+						setTurn('player', nextIdx)
+						return
+					}
+					nextIdx++
+				}
+				setTurn('enemy')
+				setTimeout(enemyTurn, 500)
+			}
+		}
+
+		function playerAttack() {
+			if (battle.isProcessing || battle.turn !== 'player') return
+			if (battle.targeting !== null) return
+			const p = gameState.party[battle.activeUnitIndex]
+			if (p.hp <= 0) {
+				battle.isProcessing = false
+				nextTurn()
+				return
+			}
+			
+			if (battle.remainingHits <= 0) {
+				battle.remainingHits = (p.equip.weapon && p.equip.weapon.hits) ? p.equip.weapon.hits : 1;
+			}
+			
+			const aliveEnemies = battle.enemies.filter(e => e.hp > 0)
+			if (!aliveEnemies.length) {
+				battle.remainingHits = 0;
+				battle.isProcessing = false
+				nextTurn()
+				return
+			}
+			
+			if (aliveEnemies.length > 1) {
+				battle.targeting = 'attack'
+				updateBattleUI()
+				document.getElementById('battle-msg').innerText = `ターゲットを選択 (${battle.remainingHits})`
+				return
+			}
+			executeAttack(aliveEnemies[0])
+		}
+
+		function executeAttack(target) {
+			const p = gameState.party[battle.activeUnitIndex]
+			battle.isProcessing = true
+			battle.targeting = null
+			let dType = 'physical'
+			if (p.equip.weapon && p.equip.weapon.dType) {
+				dType = p.equip.weapon.dType
+			}
+			playSE('attack');
+			const res = calcTacticalDamage(getFinalStats(p), target.def, target.mdef, p.lv, false, dType)
+			addLog(`${p.name}の攻撃：${res.val}ダメージ ${res.crit ? '★' : ''}`, res.crit ? 'log-crit' : 'log-p-atk')
+			setTimeout(() => {
+				target.hp = Math.max(0, target.hp - res.val)
+				updateBattleUI()
+				
+				battle.remainingHits--;
+				const aliveEnemies = battle.enemies.filter(e => e.hp > 0);
+				
+				if (battle.remainingHits > 0 && aliveEnemies.length > 0) {
+					battle.isProcessing = false;
+					playerAttack();
+				} else {
+					battle.remainingHits = 0;
+					if (battle.enemies.every(e => e.hp <= 0)) winBattle()
+					else {
+						battle.isProcessing = false
+						nextTurn()
+					}
+				}
+			}, 200)
+		}
+
+		function useBattleSkill(s, lv) {
+			const p = gameState.party[battle.activeUnitIndex]
+			if (p.hp <= 0 || p.mp < s.cost) return
+			if (s.type === 'atk' && s.target === 'single') {
+				const aliveEnemies = battle.enemies.filter(e => e.hp > 0)
+				if (aliveEnemies.length === 0) return
+				if (aliveEnemies.length > 1) {
+					battle.targeting = 'skill'
+					battle.pendingSkill = s
+					battle.pendingSkillLv = lv
+					document.getElementById('battle-skill-menu').classList.add('hidden')
+					updateBattleUI()
+					document.getElementById('battle-msg').innerText = 'ターゲットを選んでください'
+					return
+				}
+			}
+			if (s.type === 'heal' && s.target === 'single') {
+				battle.targeting = 'heal'
+				battle.pendingSkill = s
+				battle.pendingSkillLv = lv
+				document.getElementById('battle-skill-menu').classList.add('hidden')
+				updateBattleUI()
+				document.getElementById('battle-msg').innerText = '回復対象を選択'
+				return
+			}
+			executeSkill(s, null, lv)
+		}
+
+		function executeSkill(s, explicitTarget = null, lv = null) {
+			const p = gameState.party[battle.activeUnitIndex]
+			if (p !== gameState.party[battle.activeUnitIndex]) return
+			p.mp -= s.cost
+			battle.isProcessing = true
+			battle.targeting = null
+			battle.pendingSkill = null
+			battle.pendingSkillLv = null
+			const skillMenu = document.getElementById('battle-skill-menu')
+			if (!skillMenu.classList.contains('hidden')) skillMenu.classList.add('hidden')
+
+			if (lv !== null) {
+				p.skillCooldowns = p.skillCooldowns || {}
+				p.skillCooldowns[lv] = 2
+			}
+
+			if (s.type === 'atk') {
+				if (s.dType === 'magic') playSE('magic');
+				else playSE('attack');
+			} else if (s.type === 'heal') {
+					const targets = s.target === 'all' ? gameState.party : [explicitTarget || p];
+					const casterFs = getFinalStats(p); // 発動者(自分)のステータス
+					
+					targets.forEach(tc => {
+						const targetFs = getFinalStats(tc); // 対象のステータス
+						let healAmt = 0;
+
+						// ▼ 参照元(scale)に応じた計算式の分岐
+						if (s.scale === 'self_hp') {
+							// 自身の最大HP依存（パラディン向け）
+							healAmt = Math.floor(casterFs.maxHp * s.val);
+						} else if (s.scale === 'target_hp') {
+							// 対象の最大HP依存（割合回復）
+							healAmt = Math.floor(targetFs.maxHp * s.val);
+						} else {
+							// デフォルトはMATK依存（プリースト向け / valが10以上の旧データは固定値扱い）
+							healAmt = s.val >= 10 ? s.val : Math.floor(casterFs.matk * s.val * 3);
+						}
+
+						// 死亡者には蘇生系のみ、生存者には回復系のみ適用
+						if((tc.hp > 0 && s.n !== '蘇生' && s.n !== '奇跡の復活') || 
+						   (tc.hp <= 0 && (s.n === '蘇生' || s.n === '奇跡の復活'))) {
+							tc.hp = Math.min(targetFs.maxHp, tc.hp + healAmt);
+						}
+					});
+					const targetName = targets.length > 1 ? '味方全体' : targets[0].name;
+					addLog(`${p.name}の回復スキル！ ${targetName}を癒やした。`, 'log-sys')
+				playSE('heal');
+			} else if (s.type === 'debuff') {
+				playSE('debuff');
+			} else if (s.type === 'buff') {
+				playSE('heal');
+			}
+
+			addLog(`${p.name}のスキル：${s.n}`, 'log-sys')
+			setTimeout(() => {
+				if (s.type === 'atk') {
+					const aliveEnemies = battle.enemies.filter(e => e.hp > 0)
+					if (aliveEnemies.length === 0) {
+						winBattle()
+						battle.isProcessing = false
+						return
+					}
+					const target = explicitTarget || (s.target === 'all' ? null : aliveEnemies[0])
+					const targets = s.target === 'all' ? aliveEnemies : target ? [target] : []
+					const fs = getFinalStats(p)
+					const skillDType = s.dType || 'physical'
+					const atkStat = skillDType === 'magic' ? fs.matk : fs.str
+					targets.forEach(t => {
+						const res = calcTacticalDamage({ ...fs, str: atkStat * s.pow, matk: atkStat * s.pow }, t.def, t.mdef, p.lv, false, skillDType)
+						t.hp = Math.max(0, t.hp - res.val)
+						addLog(`${t.name}に ${res.val}ダメージ`, 'log-p-atk')
+					})
+					} else if (s.type === 'heal') {
+					const targets = s.target === 'all' ? gameState.party : [explicitTarget || p];
+					const fs = getFinalStats(p); // 発動者(プリースト等)のステータスを取得
+					
+					// 魔法攻撃力(MATK) × スキル倍率(val) で回復量を計算
+					// 旧データ(固定値10以上)の場合はそのまま固定値回復として扱う
+					const healAmt = s.val >= 10 ? s.val : Math.floor(fs.matk * s.val * 3); // MATKの低い序盤でも使えるよう3倍補正
+					
+					targets.forEach(tc => {
+						const tFs = getFinalStats(tc);
+						if(tc.hp > 0 || s.n === '蘇生' || s.n === '奇跡の復活') {
+							tc.hp = Math.min(tFs.maxHp, tc.hp + healAmt);
+						}
+					});
+					const targetName = targets.length > 1 ? '味方全体' : targets[0].name;
+					addLog(`${p.name}の祈り！ ${targetName}を ${healAmt} 回復！`, 'log-sys')
+				} else if (s.type === 'debuff') {
+					battle.enemyDebuffs.push({ stat: s.stat, val: s.val })
+					addLog('敵を弱体化！', 'log-e-atk')
+				} else if (s.type === 'buff') {
+					const targets = s.target === 'all' ? gameState.party.map((_, i) => i) : [gameState.party.indexOf(p)]
+					targets.forEach(idx => {
+						battle.buffs.push({ pIdx: idx, stat: s.stat, val: s.val })
+					})
+					addLog('能力を強化！', 'log-sys')
+				}
+				updateBattleUI()
+				if (battle.enemies.every(e => e.hp <= 0)) winBattle()
+				else {
+					battle.isProcessing = false
+					nextTurn()
+				}
+			}, 300)
+		}
+
+		function selectEnemyTarget(index) {
+			if (battle.targeting !== 'attack' && battle.targeting !== 'skill') return
+			if (index < 0 || index >= battle.enemies.length) return
+			const target = battle.enemies[index]
+			if (target.hp <= 0) return
+			if (battle.targeting === 'attack') {
+				executeAttack(target)
+			} else if (battle.targeting === 'skill' && battle.pendingSkill) {
+				executeSkill(battle.pendingSkill, target, battle.pendingSkillLv)
+			}
+		}
+
+		function selectPartyTarget(index) {
+			if (battle.targeting !== 'heal') return;
+			const target = gameState.party[index];
+
+			// 死者への通常回復、生者への蘇生を防ぐ
+			if (target.hp <= 0 && battle.pendingSkill.n !== '蘇生') {
+				showMsg('戦闘不能の味方には使えません');
+				playSE('error');
+				return;
+			} else if (target.hp > 0 && battle.pendingSkill.n === '蘇生') {
+				showMsg('生存している味方には使えません');
+				playSE('error');
+				return;
+			}
+
+			executeSkill(battle.pendingSkill, target, battle.pendingSkillLv);
+		}
+
+		async function enemyTurn() {
+			if (!battle.active) return
+			battle.turnCycle = (battle.turnCycle || 0) + 1
+			const aliveParty = gameState.party.filter(p => p.hp > 0)
+			if (aliveParty.length === 0) {
+				handleDeath()
+				return
+			}
+			for (let e of battle.enemies) {
+				if (e.hp <= 0) continue
+
+				const targetIndex = Math.floor(Math.random() * aliveParty.length)
+				const targetP = aliveParty[targetIndex]
+
+				// ===== ボス固有行動パターン =====
+
+				// 5Fボス：ジャイアントスライム（修正版：係数1.8、4ターンごと）
+				let isGiantSlimePattern = e.name === 'ジャイアントスライム' && battle.turnCycle % 4 === 0
+
+				// 15Fボス：鋼鉄の魔将ゴルドラス
+				// ・3ターンごと「鋼鉄の衝撃」→全体に物理ATK×2.2の全体攻撃
+				// ・偶数ターン「鉄壁の構え」→自身DEFを1.4倍に強化（上限×2.0まで）
+				let isGoldrasPattern = e.name === '鋼鉄の魔将ゴルドラス'
+				// 20Fボス：闇竜ヴァルナクス
+				// ・3ターンごと「闇炎ブレス」→全体に魔法ATK×2.5のダメージ
+				// ・HPが50%以下で形態変化し全ステータス1.2倍
+				let isValnaxPattern = e.name === '闇竜ヴァルナクス'
+				// 25Fボス：深淵魔王ゼラファル
+				// ・毎ターン通常攻撃
+				// ・4ターンごと「深淵の呪詛」→全体ATK×1.5魔法ダメージ+敵全体の特耐15%ダウン
+				// ・HP33%以下で「絶望の叫び」→全体に固定300ダメージ
+				let isZerafarPattern = e.name === '深淵魔王ゼラファル'
+				// 30Fボス：虚無神アビサリオン
+				// ・3ターンごと「虚無の侵食」→全体に魔法ATK×3.0（最強全体魔法）
+				// ・5ターンごと「存在消去」→ランダム1人を即死級ダメージ（HP×0.9）
+				// ・HP50%以下で「位相転換」→毎ターン自己回復(maxHP×0.02)
+				let isAbyssalionPattern = e.name === '虚無神アビサリオン'
+				// 35Fボス：奈落皇帝ガルガデス
+				// ・毎ターン通常攻撃（高ATK）
+				// ・3ターンごと「奈落崩落」→全体物理ATK×2.5
+				// ・HP50%以下で「皇帝の激昂」→ATKとAGIが1.3倍に上昇（1回のみ）
+				let isGargadesPattern = e.name === '奈落皇帝ガルガデス'
+				// 40Fボス：星食らいの神獣ヴォラティア
+				// ・3ターンごと「星食いの咆哮」→全体魔法ATK×2.0
+				// ・4ターンごと「重力圧壊」→全体物理ATK×3.0、命中時DEF-15%デバフ
+				// ・HP33%以下で「星々の終末」→毎ターン全体固定ダメージ500
+				let isVolatiaPattern = e.name === '星食らいの神獣ヴォラティア'
+				// 45Fボス：深淵の創造神ルキファリス
+				// ・4ターンごと「創世の光」→全体魔法ATK×3.5（超強力）
+				// ・HP66%以下で「第二形態」→全能力1.2倍（1回のみ）
+				// ・HP33%以下で「第三形態」→さらに全能力1.15倍・毎ターン自己回復(maxHP×0.015)
+				let isLucifarisPattern = e.name === '深淵の創造神ルキファリス'
+				// 50Fボス：原初神アルケーネシア
+				// ・3ターンごと「原初の怒り」→全体魔法ATK×4.0（最終ボス最強技）
+				// ・5ターンごと「存在根絶」→全体HP×0.8の固定削り
+				// ・HP50%以下で「神の領域」→毎ターン自己回復(maxHP×0.025)＋ATK1.5倍(1回のみ)
+				// ・HP25%以下で「終焉の鐘」→全体固定1000ダメージを毎ターン追加
+				let isArkenesiaPattern = e.name === '原初神アルケーネシア'
+
+				if (isGiantSlimePattern) {
+					playSE('enemy_attack');
+					const oldDef = e.def
+					const oldMDef = e.mdef
+					e.def = 5
+					e.mdef = 5
+					const dmgVal = e.atk * 1.8  // 修正: 3.0→1.8
+					const defenderStats = getFinalStats(targetP)
+					const res = calcTacticalDamage({ str: 0, matk: dmgVal, cri: 0.15, multiplier: 1.0 }, defenderStats.vit, defenderStats.mdef, 1, true, 'magic')
+					targetP.hp = Math.max(0, targetP.hp - res.val)
+					addLog(`ジャイアントスライムの酸液放出！ ${targetP.name}に${res.val}ダメージ`, 'log-e-atk')
+					e.def = oldDef
+					e.mdef = oldMDef
+
+				} else if (isGoldrasPattern) {
+					// 偶数ターン：鉄壁の構え（DEF強化）
+					if (battle.turnCycle % 2 === 0 && battle.turnCycle % 3 !== 0) {
+						playSE('debuff');
+						if (e.baseDef === undefined) e.baseDef = e.def
+						e.def = Math.min(Math.floor(e.baseDef * 2.0), Math.floor(e.def * 1.4))
+						addLog('鋼鉄の魔将ゴルドラスが鉄壁の構えをとった！ DEFが上昇！', 'log-sys')
+						continue
+					}
+					// 3ターンごと：鋼鉄の衝撃（全体物理）
+					if (battle.turnCycle % 3 === 0) {
+						playSE('enemy_attack');
+						addLog('鋼鉄の魔将ゴルドラスの鋼鉄の衝撃！', 'log-e-atk')
+						const goldrasAtk = Math.floor(e.atk * 2.2)
+						const alivePG = gameState.party.filter(p => p.hp > 0)
+						for (let t of alivePG) {
+							const ds = getFinalStats(t)
+							const res = calcTacticalDamage({ str: goldrasAtk, matk: 0, cri: 0.1, multiplier: 1.0 }, ds.vit, ds.mdef, t.lv, true, 'physical')
+							t.hp = Math.max(0, t.hp - res.val)
+							addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+						}
+						updateBattleUI()
+						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
+						continue
+					}
+					// 通常攻撃（上記以外）
+					playSE('enemy_attack');
+					const dGS = getFinalStats(targetP)
+					const resGS = calcTacticalDamage({ str: e.atk, matk: 0, cri: 0.08, multiplier: 1.0 }, dGS.vit, dGS.mdef, 1, true, 'physical')
+					targetP.hp = Math.max(0, targetP.hp - resGS.val)
+					addLog(`${e.name}の攻撃：${targetP.name}に${resGS.val}ダメージ`, 'log-e-atk')
+
+				} else if (isValnaxPattern) {
+					// HP50%以下で形態変化（1回のみ）
+					if (e.hp <= e.maxHp * 0.5 && !e.phaseChanged) {
+						e.phaseChanged = true
+						e.atk = Math.floor(e.atk * 1.2)
+						e.def = Math.floor(e.def * 1.2)
+						e.mdef = Math.floor(e.mdef * 1.2)
+						e.agi = Math.floor(e.agi * 1.2)
+						addLog('闇竜ヴァルナクスが真の力を解放した！ 全能力が上昇！', 'log-e-atk')
+					}
+					// 3ターンごと：闇炎ブレス（全体魔法）
+					if (battle.turnCycle % 3 === 0) {
+						playSE('magic');
+						addLog('闇竜ヴァルナクスの闇炎ブレス！', 'log-e-atk')
+						const valnaxDmg = Math.floor(e.atk * 2.5)
+						const alivePV = gameState.party.filter(p => p.hp > 0)
+						for (let t of alivePV) {
+							const ds = getFinalStats(t)
+							const res = calcTacticalDamage({ str: 0, matk: valnaxDmg, cri: 0.15, multiplier: 1.0 }, ds.vit, ds.mdef, t.lv, true, 'magic')
+							t.hp = Math.max(0, t.hp - res.val)
+							addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+						}
+						updateBattleUI()
+						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
+						continue
+					}
+					// 通常攻撃
+					playSE('enemy_attack');
+					const dVN = getFinalStats(targetP)
+					const resVN = calcTacticalDamage({ str: e.atk, matk: 0, cri: 0.1, multiplier: 1.0 }, dVN.vit, dVN.mdef, 1, true, 'physical')
+					targetP.hp = Math.max(0, targetP.hp - resVN.val)
+					addLog(`${e.name}の攻撃：${targetP.name}に${resVN.val}ダメージ`, 'log-e-atk')
+
+				} else if (isZerafarPattern) {
+					// HP33%以下で「絶望の叫び」（全体固定ダメージ）
+					if (e.hp <= e.maxHp * 0.33 && battle.turnCycle % 5 === 0) {
+						playSE('enemy_attack');
+						addLog('深淵魔王ゼラファルの絶望の叫び！ 虚無が全てを侵食する！', 'log-e-atk')
+						const alivePZ2 = gameState.party.filter(p => p.hp > 0)
+						for (let t of alivePZ2) {
+							t.hp = Math.max(0, t.hp - 300)
+							addLog(`${t.name}に300の固定ダメージ！`, 'log-e-atk')
+						}
+						updateBattleUI()
+						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
+						continue
+					}
+					// 4ターンごと：深淵の呪詛（全体魔法＋デバフ）
+					if (battle.turnCycle % 4 === 0) {
+						playSE('debuff');
+						addLog('深淵魔王ゼラファルの深淵の呪詛！', 'log-e-atk')
+						const zerafarDmg = Math.floor(e.atk * 1.5)
+						const alivePZ = gameState.party.filter(p => p.hp > 0)
+						for (let t of alivePZ) {
+							const ds = getFinalStats(t)
+							const res = calcTacticalDamage({ str: 0, matk: zerafarDmg, cri: 0.2, multiplier: 1.0 }, ds.vit, ds.mdef, t.lv, true, 'magic')
+							t.hp = Math.max(0, t.hp - res.val)
+							addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+						}
+						battle.enemyDebuffs.push({ stat: 'mdef', val: 0.15 })
+						addLog('パーティ全体の特耐が15%低下した！', 'log-e-atk')
+						updateBattleUI()
+						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
+						continue
+					}
+					// 通常攻撃
+					playSE('enemy_attack');
+					const dZF = getFinalStats(targetP)
+					const resZF = calcTacticalDamage({ str: e.atk, matk: 0, cri: 0.12, multiplier: 1.0 }, dZF.vit, dZF.mdef, 1, true, 'physical')
+					targetP.hp = Math.max(0, targetP.hp - resZF.val)
+					addLog(`${e.name}の攻撃：${targetP.name}に${resZF.val}ダメージ`, 'log-e-atk')
+
+				} else if (isAbyssalionPattern) {
+					// HP50%以下：毎ターン自己回復
+					if (e.hp <= e.maxHp * 0.5) {
+						const selfHeal = Math.floor(e.maxHp * 0.02)
+						e.hp = Math.min(e.maxHp, e.hp + selfHeal)
+						addLog(`虚無神アビサリオンが虚無のエネルギーを吸収！ HP+${selfHeal}`, 'log-sys')
+					}
+					// 5ターンごと：存在消去（ランダム1人に即死級）
+					if (battle.turnCycle % 5 === 0) {
+						playSE('enemy_attack');
+						const alivePAR = gameState.party.filter(p => p.hp > 0)
+						const victimAR = alivePAR[Math.floor(Math.random() * alivePAR.length)]
+						if (victimAR) {
+							const ds = getFinalStats(victimAR)
+							const instaKillDmg = Math.floor(ds.maxHp * 0.9)
+							victimAR.hp = Math.max(0, victimAR.hp - instaKillDmg)
+							addLog(`虚無神アビサリオンの存在消去！ ${victimAR.name}に${instaKillDmg}ダメージ！`, 'log-e-atk')
+							updateBattleUI()
+							if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
+							continue
+						}
+					}
+					// 3ターンごと：虚無の侵食（全体魔法）
+					if (battle.turnCycle % 3 === 0) {
+						playSE('magic');
+						addLog('虚無神アビサリオンの虚無の侵食！', 'log-e-atk')
+						const abyssDmg = Math.floor(e.atk * 3.0)
+						const alivePAB = gameState.party.filter(p => p.hp > 0)
+						for (let t of alivePAB) {
+							const ds = getFinalStats(t)
+							const res = calcTacticalDamage({ str: 0, matk: abyssDmg, cri: 0.25, multiplier: 1.0 }, ds.vit, ds.mdef, t.lv, true, 'magic')
+							t.hp = Math.max(0, t.hp - res.val)
+							addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+						}
+						updateBattleUI()
+						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
+						continue
+					}
+					// 通常攻撃
+					playSE('enemy_attack');
+					const dAB = getFinalStats(targetP)
+					const resAB = calcTacticalDamage({ str: e.atk, matk: 0, cri: 0.15, multiplier: 1.0 }, dAB.vit, dAB.mdef, 1, true, 'physical')
+					targetP.hp = Math.max(0, targetP.hp - resAB.val)
+					addLog(`${e.name}の攻撃：${targetP.name}に${resAB.val}ダメージ`, 'log-e-atk')
+
+				} else if (isGargadesPattern) {
+					// HP50%以下で「皇帝の激昂」（1回のみ）
+					if (e.hp <= e.maxHp * 0.5 && !e.gargadesEnraged) {
+						e.gargadesEnraged = true
+						e.atk = Math.floor(e.atk * 1.3)
+						e.agi = Math.floor(e.agi * 1.3)
+						addLog('奈落皇帝ガルガデスが激昂した！ ATKとAGIが大幅上昇！', 'log-e-atk')
+					}
+					// 3ターンごと「奈落崩落」（全体物理）
+					if (battle.turnCycle % 3 === 0) {
+						playSE('enemy_attack');
+						addLog('奈落皇帝ガルガデスの奈落崩落！', 'log-e-atk')
+						const gDmg = Math.floor(e.atk * 2.5)
+						const aliveG = gameState.party.filter(p => p.hp > 0)
+						for (let t of aliveG) {
+							const ds = getFinalStats(t)
+							const res = calcTacticalDamage({ str: gDmg, matk: 0, cri: 0.12, multiplier: 1.0 }, ds.vit, ds.mdef, t.lv, true, 'physical')
+							t.hp = Math.max(0, t.hp - res.val)
+							addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+						}
+						updateBattleUI()
+						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
+						continue
+					}
+					// 通常攻撃
+					playSE('enemy_attack');
+					const dGG = getFinalStats(targetP)
+					const resGG = calcTacticalDamage({ str: e.atk, matk: 0, cri: 0.10, multiplier: 1.0 }, dGG.vit, dGG.mdef, 1, true, 'physical')
+					targetP.hp = Math.max(0, targetP.hp - resGG.val)
+					addLog(`${e.name}の攻撃：${targetP.name}に${resGG.val}ダメージ`, 'log-e-atk')
+
+				} else if (isVolatiaPattern) {
+					// HP33%以下で毎ターン全体固定500ダメージ追加
+					if (e.hp <= e.maxHp * 0.33) {
+						const aliveVT0 = gameState.party.filter(p => p.hp > 0)
+						for (let t of aliveVT0) {
+							t.hp = Math.max(0, t.hp - 500)
+						}
+						addLog('星々の終末が降り注ぐ！ 全体に500の固定ダメージ！', 'log-e-atk')
+						updateBattleUI()
+						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
+					}
+					// 4ターンごと「重力圧壊」（全体物理＋DEFデバフ）
+					if (battle.turnCycle % 4 === 0) {
+						playSE('enemy_attack');
+						addLog('星食らいの神獣ヴォラティアの重力圧壊！', 'log-e-atk')
+						const vDmg = Math.floor(e.atk * 3.0)
+						const aliveVT = gameState.party.filter(p => p.hp > 0)
+						for (let t of aliveVT) {
+							const ds = getFinalStats(t)
+							const res = calcTacticalDamage({ str: vDmg, matk: 0, cri: 0.15, multiplier: 1.0 }, ds.vit, ds.mdef, t.lv, true, 'physical')
+							t.hp = Math.max(0, t.hp - res.val)
+							addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+						}
+						battle.enemyDebuffs.push({ stat: 'vit', val: 0.15 })
+						addLog('パーティ全体の物理防御が15%低下した！', 'log-e-atk')
+						updateBattleUI()
+						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
+						continue
+					}
+					// 3ターンごと「星食いの咆哮」（全体魔法）
+					if (battle.turnCycle % 3 === 0) {
+						playSE('magic');
+						addLog('星食らいの神獣ヴォラティアの星食いの咆哮！', 'log-e-atk')
+						const vMDmg = Math.floor(e.atk * 2.0)
+						const aliveVTM = gameState.party.filter(p => p.hp > 0)
+						for (let t of aliveVTM) {
+							const ds = getFinalStats(t)
+							const res = calcTacticalDamage({ str: 0, matk: vMDmg, cri: 0.20, multiplier: 1.0 }, ds.vit, ds.mdef, t.lv, true, 'magic')
+							t.hp = Math.max(0, t.hp - res.val)
+							addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+						}
+						updateBattleUI()
+						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
+						continue
+					}
+					// 通常攻撃
+					playSE('enemy_attack');
+					const dVT = getFinalStats(targetP)
+					const resVT = calcTacticalDamage({ str: e.atk, matk: 0, cri: 0.12, multiplier: 1.0 }, dVT.vit, dVT.mdef, 1, true, 'physical')
+					targetP.hp = Math.max(0, targetP.hp - resVT.val)
+					addLog(`${e.name}の攻撃：${targetP.name}に${resVT.val}ダメージ`, 'log-e-atk')
+
+				} else if (isLucifarisPattern) {
+					// HP33%以下：第三形態 → 毎ターン自己回復
+					if (e.hp <= e.maxHp * 0.33) {
+						const lHeal = Math.floor(e.maxHp * 0.015)
+						e.hp = Math.min(e.maxHp, e.hp + lHeal)
+						addLog(`深淵の創造神ルキファリスが創世の力で再生！ HP+${lHeal}`, 'log-sys')
+					}
+					// HP66%以下で第二形態（1回のみ）
+					if (e.hp <= e.maxHp * 0.66 && !e.luciPhase2) {
+						e.luciPhase2 = true
+						e.atk = Math.floor(e.atk * 1.2)
+						e.def = Math.floor(e.def * 1.2)
+						e.mdef = Math.floor(e.mdef * 1.2)
+						e.agi = Math.floor(e.agi * 1.2)
+						addLog('深淵の創造神ルキファリスが第二形態へ！ 全能力が大幅上昇！', 'log-e-atk')
+					}
+					// HP33%以下で第三形態（1回のみ）
+					if (e.hp <= e.maxHp * 0.33 && !e.luciPhase3) {
+						e.luciPhase3 = true
+						e.atk = Math.floor(e.atk * 1.15)
+						e.def = Math.floor(e.def * 1.15)
+						e.mdef = Math.floor(e.mdef * 1.15)
+						e.agi = Math.floor(e.agi * 1.15)
+						addLog('深淵の創造神ルキファリスが第三形態へ！ 神の領域が開放された！', 'log-e-atk')
+					}
+					// 4ターンごと「創世の光」（全体超強力魔法）
+					if (battle.turnCycle % 4 === 0) {
+						playSE('magic');
+						addLog('深淵の創造神ルキファリスの創世の光！', 'log-e-atk')
+						const lDmg = Math.floor(e.atk * 3.5)
+						const aliveLF = gameState.party.filter(p => p.hp > 0)
+						for (let t of aliveLF) {
+							const ds = getFinalStats(t)
+							const res = calcTacticalDamage({ str: 0, matk: lDmg, cri: 0.25, multiplier: 1.0 }, ds.vit, ds.mdef, t.lv, true, 'magic')
+							t.hp = Math.max(0, t.hp - res.val)
+							addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+						}
+						updateBattleUI()
+						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
+						continue
+					}
+					// 通常攻撃
+					playSE('enemy_attack');
+					const dLF = getFinalStats(targetP)
+					const resLF = calcTacticalDamage({ str: e.atk, matk: 0, cri: 0.15, multiplier: 1.0 }, dLF.vit, dLF.mdef, 1, true, 'physical')
+					targetP.hp = Math.max(0, targetP.hp - resLF.val)
+					addLog(`${e.name}の攻撃：${targetP.name}に${resLF.val}ダメージ`, 'log-e-atk')
+
+				} else if (isArkenesiaPattern) {
+					// HP25%以下：毎ターン終焉の鐘（全体固定1000）
+					if (e.hp <= e.maxHp * 0.25) {
+						const aliveAK0 = gameState.party.filter(p => p.hp > 0)
+						for (let t of aliveAK0) { t.hp = Math.max(0, t.hp - 1000) }
+						addLog('終焉の鐘が鳴り響く！ 全体に1000の固定ダメージ！', 'log-e-atk')
+						updateBattleUI()
+						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
+					}
+					// HP50%以下：毎ターン自己回復 ＋ ATK強化（1回のみ）
+					if (e.hp <= e.maxHp * 0.5) {
+						const akHeal = Math.floor(e.maxHp * 0.025)
+						e.hp = Math.min(e.maxHp, e.hp + akHeal)
+						addLog(`原初神アルケーネシアが原初のエネルギーで再生！ HP+${akHeal}`, 'log-sys')
+						if (!e.arkenesiaAwakened) {
+							e.arkenesiaAwakened = true
+							e.atk = Math.floor(e.atk * 1.5)
+							addLog('原初神アルケーネシアが神の領域を解放！ ATKが激増した！', 'log-e-atk')
+						}
+					}
+					// 5ターンごと「存在根絶」→全体HP×0.8削り
+					if (battle.turnCycle % 5 === 0) {
+						playSE('enemy_attack');
+						addLog('原初神アルケーネシアの存在根絶！', 'log-e-atk')
+						const aliveAK5 = gameState.party.filter(p => p.hp > 0)
+						for (let t of aliveAK5) {
+							const ds = getFinalStats(t)
+							const fixDmg = Math.floor(ds.maxHp * 0.8)
+							t.hp = Math.max(0, t.hp - fixDmg)
+							addLog(`${t.name}に${fixDmg}の絶対ダメージ！`, 'log-e-atk')
+						}
+						updateBattleUI()
+						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
+						continue
+					}
+					// 3ターンごと「原初の怒り」（全体超強力魔法）
+					if (battle.turnCycle % 3 === 0) {
+						playSE('magic');
+						addLog('原初神アルケーネシアの原初の怒り！', 'log-e-atk')
+						const akDmg = Math.floor(e.atk * 4.0)
+						const aliveAK3 = gameState.party.filter(p => p.hp > 0)
+						for (let t of aliveAK3) {
+							const ds = getFinalStats(t)
+							const res = calcTacticalDamage({ str: 0, matk: akDmg, cri: 0.30, multiplier: 1.0 }, ds.vit, ds.mdef, t.lv, true, 'magic')
+							t.hp = Math.max(0, t.hp - res.val)
+							addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+						}
+						updateBattleUI()
+						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
+						continue
+					}
+					// 通常攻撃
+					playSE('enemy_attack');
+					const dAK = getFinalStats(targetP)
+					const resAK = calcTacticalDamage({ str: e.atk, matk: 0, cri: 0.20, multiplier: 1.0 }, dAK.vit, dAK.mdef, 1, true, 'physical')
+					targetP.hp = Math.max(0, targetP.hp - resAK.val)
+					addLog(`${e.name}の攻撃：${targetP.name}に${resAK.val}ダメージ`, 'log-e-atk')
+
+				} else {
+					if (e.name === 'フォレストフェンリル' && battle.turnCycle % 2 === 0) {
+						if (e.fenrirNextSkill === undefined) e.fenrirNextSkill = 0
+						const skillId = e.fenrirNextSkill
+						e.fenrirNextSkill = skillId === 0 ? 1 : 0
+
+						if (skillId === 0) {
+							playSE('enemy_attack');
+							addLog('フォレストフェンリルが吠える！ 能力が上昇！', 'log-sys')
+							if (e.baseAtk === undefined) {
+								e.baseAtk = e.atk
+								e.baseAgi = e.agi
+							}
+							// 修正: 上限キャップを追加
+							e.atk = Math.min(Math.floor(e.baseAtk * 1.5), Math.floor(e.atk * 1.3))
+							e.agi = Math.min(Math.floor(e.baseAgi * 2.0), Math.floor(e.agi * 1.5))
+							continue
+						} else {
+							playSE('enemy_attack');
+							addLog('フォレストフェンリルのハリケーン！', 'log-e-atk')
+							const fenrirAtk = Math.floor(e.atk * 1.2)
+							const fenrirStats = { cri: 0.05, multiplier: 1.0, matk: 0, str: fenrirAtk }
+							const aliveParty = gameState.party.filter(p => p.hp > 0)
+							for (let t of aliveParty) {
+								const defenderStats = getFinalStats(t)
+								const res = calcTacticalDamage(fenrirStats, defenderStats.vit, defenderStats.mdef, t.lv, true, 'physical')
+								t.hp = Math.max(0, t.hp - res.val)
+								addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+							}
+							updateBattleUI()
+							if (gameState.party.every(p => p.hp <= 0)) {
+								handleDeath()
+								return
+							}
+							continue
+						}
+					}
+					playSE('enemy_attack');
+					const defenderStats = getFinalStats(targetP)
+					const defenderDef = defenderStats.vit ?? 0
+					const defenderMDef = defenderStats.mdef ?? 0
+
+					let currentAtk = e.atk
+					battle.enemyDebuffs.forEach(d => {
+						if (d.stat === 'atk') {
+							currentAtk = d.val >= 1 ? currentAtk - d.val : Math.floor(currentAtk * (1 - d.val));
+						}
+					})
+					currentAtk = Math.max(1, currentAtk)
+
+					const res = calcTacticalDamage({ str: currentAtk, multiplier: 1.0, cri: 0.05, matk: 0 }, defenderDef, defenderMDef, 1, true, 'physical')
+					targetP.hp = Math.max(0, targetP.hp - res.val)
+					addLog(`${e.name}の攻撃：${targetP.name}に${res.val}ダメージ`, 'log-e-atk')
+				}
+
+				updateBattleUI()
+				if (gameState.party.every(p => p.hp <= 0)) {
+					handleDeath()
+					return
+				}
+				await new Promise(r => setTimeout(r, 600))
+			}
+			const nextStartIdx = gameState.party.findIndex(p => p.hp > 0)
+			setTurn('player', nextStartIdx >= 0 ? nextStartIdx : 0)
+		}
+
+		function winBattle() {
+			playSE('win');
+			battle.active = false
+			battle.turn = null
+			battle.remainingHits = 0
+			let g = 0,
+				x = 0
+			battle.enemies.forEach(e => {
+				g += e.gold
+				x += e.exp
+				if (e.isBoss) {
+					gameState.bossDefeated.push(gameState.floor)
+					gameState.stairsFound = true
+				}
+			})
+			gameState.tempGold += g
+			gameState.party.forEach(p => {
+				p.exp += x
+				while (p.exp >= p.nextExp) levelUp(p)
+			})
+			addLog(`勝利！ ${g}G / ${x}EXP 獲得。`, 'log-sys')
+			setTimeout(() => {
+				playBGM('dungeon');
+				document.getElementById('battle-view').classList.add('hidden')
+				document.getElementById('dungeon-ui').classList.remove('hidden')
+				if (gameState.stairsFound) {
+					document.getElementById('btn-next-floor').classList.remove('hidden')
+				}
+				updateUI()
+			}, 500)
+		}
+
+		function levelUp(p) {
+			p.lv++
+			p.exp -= p.nextExp
+			p.nextExp = Math.floor(p.nextExp * 1.55)
+			const fs = getFinalStats(p)
+			p.hp = fs.maxHp
+			p.mp = fs.maxMp
+			addLog(`${p.name}が Lv.${p.lv} に上がった！`, 'log-sys')
+		}
+
+		function openTraining(pIdx) {
+			const p = gameState.party[pIdx]
+			const jobKey = Object.keys(JOB_DATA).find(k => JOB_DATA[k].name === p.job)
+			const tree = JOB_DATA[jobKey].skills
+			const content = document.getElementById('modal-content')
+			let treeHtml = ''
+			MILESTONES.forEach(lv => {
+				if (!tree[lv]) return
+				const learnedIdx = p.learnedSkills[lv]
+				treeHtml += `<div class="skill-milestone"><h3>LEVEL ${lv}</h3><div class="skill-options">`
+				tree[lv].forEach((s, sIdx) => {
+					const isSelected = learnedIdx === sIdx
+					const isLocked = learnedIdx !== undefined && learnedIdx !== sIdx
+					const canLearn = learnedIdx === undefined && p.lv >= lv
+					let detail = ''
+					const statMap = {str:'物攻', matk:'特攻', vit:'物耐', mdef:'特耐', agi:'速度', luk:'幸運', atk:'攻撃', def:'防御', hp:'HP', mp:'MP', cri:'会心'}
+					if (s.type === 'passive') {
+						if (s.stat === 'cri') detail = `会心 +${s.val * 100}%`
+						else detail = `${statMap[s.stat] || s.stat} +${s.val}`
+					}
+					else if (s.type === 'atk') detail = `威力:${s.pow} (MP${s.cost})`
+					else if (s.type === 'heal') {
+						if (s.scale === 'matk') detail = `特攻依存回復 (MP${s.cost})`
+						else if (s.scale === 'self_hp') detail = `自身の最大HP${Math.floor(s.val*100)}%回復 (MP${s.cost})`
+						else detail = `対象の最大HP${Math.floor(s.val*100)}%回復 (MP${s.cost})`
+					}
+					else if (s.type === 'buff' || s.type === 'debuff') detail = `${statMap[s.stat] || s.stat} ${Math.floor(s.val*100)}%${s.type==='buff'?'上昇':'低下'} (MP${s.cost})`
+					else detail = `(MP:${s.cost})`
+					treeHtml += `<div class="skill-card ${isSelected ? 'selected' : ''} ${canLearn ? 'available' : ''} ${isLocked ? 'locked' : ''}" onclick="${canLearn ? `learnSkill(${pIdx},${lv},${sIdx})` : ''}">
+						<span class="skill-type-tag">${s.type}</span><b>${s.n}</b><small>${detail}</small>
+					</div>`
+				})
+				treeHtml += `</div></div>`
+			})
+			content.innerHTML = `<h2>能力強化</h2><div style="max-height:60vh;overflow-y:auto;">${treeHtml}</div><button onclick="closeModal()" class="btn-action btn-blue" style="margin-top:10px;">閉じる</button>`
+			openModalWrapper()
+		}
+
+		function exportCharacterCode(pIdx) {
+			const p = gameState.party[pIdx]
+			const shareData = { ...p }
+			const fs = getFinalStats(p)
+			shareData.hp = fs.maxHp
+			shareData.mp = fs.maxMp
+
+			const code = btoa(unescape(encodeURIComponent(JSON.stringify(shareData))))
+			const c = document.getElementById('modal-content')
+			c.innerHTML = `
+				<div style="text-align:center; padding:20px;">
+					<h2>キャラクター共有コード</h2>
+					<p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:10px;">以下のコードをコピーして他の人に共有してください。</p>
+					<textarea id="share-code-text" readonly style="width:100%;height:80px;background:#000;color:#0f0;border:1px solid #444;font-family:monospace;font-size:0.8rem;">${code}</textarea>
+					<button class="btn-action btn-blue" onclick="closeModal()" style="margin-top:10px;">閉じる</button>
+				</div>`
+			openModalWrapper()
+		}
+
+		function openImportModal() {
+			const c = document.getElementById('modal-content')
+			c.innerHTML = `
+				<div style="text-align:center; padding:20px;">
+					<h2>コードで雇用</h2>
+					<p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:10px;">共有コードを入力してください。</p>
+					<textarea id="import-code" style="width:100%;height:80px;background:#000;color:#fff;border:1px solid #444;font-family:monospace;font-size:0.8rem;"></textarea>
+					<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;">
+						<button class="btn-action btn-blue" onclick="confirmImportChar()">インポート</button>
+						<button class="btn-action btn-red" onclick="openGuild()">キャンセル</button>
+					</div>
+				</div>`
+			openModalWrapper()
+		}
+
+		function confirmImportChar() {
+			const code = document.getElementById('import-code').value
+			if (!code) {
+				showMsg('コードを入力してください')
+				playSE('error')
+				return
+			}
+			try {
+				const json = decodeURIComponent(escape(atob(code)))
+				const char = JSON.parse(json)
+
+				if (!char.name || !char.job) {
+					throw new Error('Invalid data')
+				}
+
+				let maxSlots = 1
+				if (gameState.party.length > 0) {
+					const leader = gameState.party[0]
+					if (leader.lv >= 20) maxSlots = 3
+					else if (leader.lv >= 10) maxSlots = 2
+				}
+				if (gameState.party.length >= maxSlots) {
+					showMsg('パーティが満員です')
+					playSE('error')
+					return
+				}
+
+				if (!char.equip) char.equip = { weapon: null, armor: null, acc: null, runes: [] }
+				if (!char.equip.runes) char.equip.runes = []
+				if (char.equip.runes.length > 3) char.equip.runes = char.equip.runes.slice(0, 3)
+
+				const fs = getFinalStats(char)
+				char.hp = fs.maxHp
+				char.mp = fs.maxMp
+
+				gameState.party.push(char)
+				addLog(`${char.name}を雇用しました。`, 'log-sys')
+				updateUI()
+				closeModal()
+				showMsg('雇用完了')
+			} catch (e) {
+				console.error(e)
+				showMsg('無効なコードです')
+				playSE('error')
+			}
+		}
+
+		function dismissCharacterModal(idx) {
+			if (gameState.party.length <= 1) {
+				showMsg('リーダーは解雇できません。')
+				playSE('error')
+				return
+			}
+			const c = document.getElementById('modal-content')
+			const p = gameState.party[idx]
+			c.innerHTML = `
+				<div style="text-align:center; padding:20px;">
+					<h2 style="color:var(--accent-red)">解雇の確認</h2>
+					<p style="margin-bottom:20px; font-size:1rem;">本当に ${p.name} を解雇しますか？</p>
+					<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+						<button class="btn-action btn-red" onclick="confirmDismiss(${idx})">解雇する</button>
+						<button class="btn-action btn-blue" onclick="closeModal()">キャンセル</button>
+					</div>
+				</div>`
+			openModalWrapper()
+		}
+
+		function confirmDismiss(idx) {
+			gameState.party.splice(idx, 1)
+			updateUI()
+			closeModal()
+			showMsg('解雇を完了しました。')
+		}
+
+		function renameCharacterModal(idx) {
+			if (gameState.gold < 1000) {
+				showMsg('資金が足りません。')
+				playSE('error')
+				return
+			}
+			const p = gameState.party[idx]
+			const c = document.getElementById('modal-content')
+			c.innerHTML = `
+				<div style="text-align:center; padding:20px;">
+					<h2>キャラクターの改名 (1000G)</h2>
+					<p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:10px;">新しい名前を入力してください（最大10文字）</p>
+					<input type="text" id="new-char-name" value="${p.name}" maxlength="10" style="padding:15px; width:100%; background:#000; color:#fff; border:1px solid #444; margin-bottom:15px; font-size:1.1rem; text-align:center;">
+					<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+						<button class="btn-action btn-purple" onclick="confirmRename(${idx})">決定</button>
+						<button class="btn-action btn-blue" onclick="closeModal()">戻る</button>
+					</div>
+				</div>`
+			openModalWrapper()
+		}
+
+		function confirmRename(idx) {
+			const newName = document.getElementById('new-char-name').value
+			if (!newName) {
+				showMsg('名前を入力してください。')
+				playSE('error')
+				return
+			}
+			gameState.gold -= 1000
+			gameState.party[idx].name = newName
+			updateUI()
+			closeModal()
+			showMsg('改名しました。')
+		}
+
+		function learnSkill(pIdx, lv, sIdx) {
+			const p = gameState.party[pIdx]
+			p.learnedSkills[lv] = sIdx
+			addLog(`習得：${p.name}が新しいスキルを覚えた。`, 'log-sys')
+			updateUI()
+			openTraining(pIdx)
+		}
+
+		function openCharDetailModal(pIdx) {
+			const p = gameState.party[pIdx]
+			const fs = getFinalStats(p)
+			const job = Object.values(JOB_DATA).find(j => j.name === p.job) || {}
+
+			const c = document.getElementById('modal-content')
+
+			const createItemRow = (label, item) => {
+				const name = item ? (item.rarityLabel ? `[${item.rarityLabel}] ${item.n}` : item.n) : '---'
+				const desc = item ? item.d : ''
+				const color = item ? (item.rarityColor || 'var(--text-main)') : '#666'
+				let subText = '';
+				if(item && item.subEffects && item.subEffects.length > 0) {
+					subText = `<div style="font-size:0.75rem; color:var(--accent-blue); margin-top:2px;">◆サブ: ${item.subEffects.map(e => e.n + '+' + (e.k === 'cri' ? (e.v*100)+'%' : e.v)).join(' / ')}</div>`;
+				}
+				return `
+					<div style="margin-bottom:12px; border-bottom:1px solid #222; padding-bottom:8px;">
+						<div style="font-size:0.85rem; color:var(--accent-blue); margin-bottom:2px;">${label}</div>
+						<div style="font-weight:bold; color:${color};">${name}</div>
+						<div style="font-size:0.8rem; color:#aaa;">${desc}</div>
+						${subText}
+					</div>
+				`
+			}
+
+			c.innerHTML = `
+				<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom: 2px solid var(--accent-blue); padding-bottom: 10px;">
+					<h2 style="margin:0;">${p.name}</h2>
+					<div style="color:var(--accent-blue); text-align:right; font-size:1rem;">Lv.${p.lv} / ${job.name || ''}</div>
+				</div>
+
+				<div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                    <div style="grid-column:span 2; padding-bottom:15px; border-bottom:1px dashed #333; margin-bottom:5px;">
+                        <h3 style="font-size:1rem; color:var(--text-main); margin-bottom:10px;">管理コマンド</h3>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <button onclick="renameCharacterModal(${pIdx})" class="btn-action btn-purple" style="padding:10px; font-size:0.9rem;">改名 (1000G)</button>
+                            <button onclick="dismissCharacterModal(${pIdx})" class="btn-action btn-red" style="padding:10px; font-size:0.9rem;">解雇</button>
+                            <button onclick="exportCharacterCode(${pIdx})" class="btn-action btn-blue" style="padding:10px; font-size:0.9rem;">共有コード</button>
+                        </div>
+                    </div>
+					<div>
+						<h3 style="font-size:1rem; color:var(--accent-green); border-bottom:1px solid #333; margin-bottom:10px; padding-bottom:5px;">ステータス</h3>
+						<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.9rem;">
+							<div><span style="color:var(--hp-color)">HP</span>: ${Math.floor(fs.maxHp)}</div>
+							<div><span style="color:var(--mp-color)">MP</span>: ${Math.floor(fs.maxMp)}</div>
+							<div><span style="color:#e91e63">物理攻撃</span>: ${Math.floor(fs.str)}</div>
+							<div><span style="color:#2196f3">物理耐性</span>: ${Math.floor(fs.vit)}</div>
+							<div><span style="color:#9c27b0">特殊攻撃</span>: ${Math.floor(fs.matk)}</div>
+							<div><span style="color:#00bcd4">特殊耐性</span>: ${Math.floor(fs.mdef)}</div>
+							<div><span style="color:#ffc107">速度</span>: ${Math.floor(fs.agi)}</div>
+							<div><span style="color:#ff9800">幸運</span>: ${Math.floor(fs.luk)}</div>
+							<div style="grid-column:span 2"><span style="color:#ff5252">会心率</span>: ${(fs.cri * 100).toFixed(1)}%</div>
+						</div>
+					</div>
+
+					<div>
+						<h3 style="font-size:1rem; color:var(--accent-purple); border-bottom:1px solid #333; margin-bottom:10px; padding-bottom:5px;">現在の装備</h3>
+						<div style="max-height:40vh; overflow-y:auto; padding-right: 5px;">
+							${createItemRow('⚔️ 武器', p.equip.weapon)}
+							${createItemRow('🛡️ 防具', p.equip.armor)}
+							${createItemRow('💍 汎用', p.equip.acc)}
+							<div style="margin-top:15px; padding-top:10px; border-top:1px dashed #333;">
+								<div style="font-size:0.85rem; color:var(--accent-blue); margin-bottom:4px;">🔷 魂のルーン (${(p.equip.runes || []).length}/3)</div>
+								${(p.equip.runes || []).length === 0 ? '<span style="color:#666; font-size:0.8rem;">未装備</span>' : ''}
+								${(p.equip.runes || [])
+									.map(
+										(r, ri) => `
+									<div style="background:#111; padding:6px; border-radius:4px; margin-bottom:4px; border-left:3px solid ${r.color || (r.element==='fire'?'#e91e63':r.element==='earth'?'#4caf50':'#00bcd4')}; display:flex; justify-content:space-between; align-items:center;">
+										<div>
+											<div style="font-size:0.8rem; color:${r.rarityColor || '#ccc'};">${r.rarityLabel ? '['+r.rarityLabel+'] ' : ''}${r.n}</div>
+											<div style="font-size:0.75rem; color:#888;">${r.d}</div>
+											${r.subEffects && r.subEffects.length > 0 ? `<div style="font-size:0.65rem; color:var(--accent-blue); margin-top:1px;">◆ ${r.subEffects.map(e => e.n + '+' + (e.k === 'cri' ? (e.v*100)+'%' : e.v)).join(' ')}</div>` : ''}
+										</div>
+										<button class="btn-icon" onclick="unequipRune(${pIdx}, ${ri})" style="padding:2px 6px; background:#333; border:1px solid #555; color:#aaa; font-size:0.7rem;">×</button>
+									</div>
+								`,
+									)
+									.join('')}
+								${(function () {
+									if (!p.equip || !p.equip.runes || p.equip.runes.length === 0) return ''
+									let counts = { fire:0, magic:0, earth:0, water:0, life:0, spirit:0, wind:0, star:0, ice:0 };
+									p.equip.runes.forEach(r => {
+										if (counts[r.element] !== undefined) counts[r.element]++
+									})
+									let bonuses = []
+									if (counts.fire >= 3) bonuses.push('<div style="color:#e91e63; font-size:0.85rem; margin-top:4px;">🔥 緋の共鳴: 物攻 +15%</div>')
+									if (counts.magic >= 3) bonuses.push('<div style="color:#9c27b0; font-size:0.85rem; margin-top:4px;">🔮 紫苑の共鳴: 特攻 +15%</div>')
+									if (counts.earth >= 3) bonuses.push('<div style="color:#ff9800; font-size:0.85rem; margin-top:4px;">🌍 琥珀の共鳴: 物耐 +15%</div>')
+									if (counts.water >= 3) bonuses.push('<div style="color:#2196f3; font-size:0.85rem; margin-top:4px;">💧 瑠璃の共鳴: 特耐 +15%</div>')
+									if (counts.life >= 3) bonuses.push('<div style="color:#4caf50; font-size:0.85rem; margin-top:4px;">🌿 翡翠の共鳴: 最大HP +20%</div>')
+									if (counts.spirit >= 3 || counts.ice >= 3) bonuses.push('<div style="color:#00bcd4; font-size:0.85rem; margin-top:4px;">❄️ 蒼の共鳴: 最大MP +20%</div>')
+									if (counts.wind >= 3) bonuses.push('<div style="color:#8bc34a; font-size:0.85rem; margin-top:4px;">🌪️ 迅の共鳴: 速度 +15%</div>')
+									if (counts.star >= 3) bonuses.push('<div style="color:#ffc107; font-size:0.85rem; margin-top:4px;">✨ 煌の共鳴: 幸運+20% / 会心+5%</div>')
+									
+									if (bonuses.length > 0) {
+										return `<div style="margin-top:10px; padding-top:5px; border-top:1px dashed #555;"><div style="font-size:0.75rem; color:#aaa; margin-bottom:4px;">⚡ セットボーナス発動中</div>${bonuses.join('')}</div>`
+									}
+									return ''
+								})()}
+							</div>
+						</div>
+					</div>
+				</div>
+				<button onclick="closeModal()" class="btn-action btn-blue" style="margin-top:20px; width: 100%;">閉じる</button>
+			`
+			openModalWrapper()
+		}
+
+		function openSaveModal() {
+			save_game()
+			const code = btoa(unescape(encodeURIComponent(JSON.stringify(gameState))))
+			const c = document.getElementById('modal-content')
+			c.innerHTML = `<h2>セーブデータ出力</h2><p style="font-size:0.8rem; color:var(--text-dim);">以下のコードを控えておくと、他の端末で続きから遊べます。</p><textarea id="copy-target" readonly style="width:100%;height:100px;background:#000;color:#fff;font-family:monospace;padding:10px;">${code}</textarea><button onclick="closeModal()" class="btn-action btn-blue" style="margin-top:15px; width:100%;">閉じる</button>`
+			openModalWrapper()
+		}
+		function openLoadModal() {
+			const c = document.getElementById('modal-content')
+			c.innerHTML = `<h2>データ読込</h2><p style="font-size:0.8rem; color:var(--text-dim);">保存したコードを貼り付けてください。</p><textarea id="load-code" style="width:100%;height:100px;background:#000;color:#fff;font-family:monospace;padding:10px;"></textarea><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;"><button onclick="confirmLoad()" class="btn-action btn-blue">読込</button><button onclick="closeModal()" class="btn-action btn-red">キャンセル</button></div>`
+			openModalWrapper()
+		}
+		function confirmLoad() {
+			try {
+				const json = decodeURIComponent(escape(atob(document.getElementById('load-code').value)))
+				gameState = JSON.parse(json)
+				gameState.inDungeon = false
+				recoverParty()
+				returnToTown()
+				closeModal()
+				addLog('データのロードに成功しました。', 'log-sys')
+			} catch (e) {
+				showMsg('エラー：無効なコードです')
+				playSE('error')
+			}
+		}
+		function closeModal() {
+			document.getElementById('modal-layer').classList.add('hidden')
+			battle.targeting = null; // ターゲット選択中に閉じられた場合のリセット
+			updateBattleUI();
+		}
+		function openModalWrapper() {
+			document.getElementById('modal-layer').classList.remove('hidden')
+		}
+		function showMsg(msg) {
+			addLog(msg, 'log-sys')
+			const layer = document.getElementById('modal-layer')
+			const content = document.getElementById('modal-content')
+			content.innerHTML = `<div style="text-align:center;padding:20px;"><h2>${msg}</h2><button class="btn-action btn-blue" onclick="closeModal()" style="width:100%; margin-top:20px;">OK</button></div>`
+			layer.classList.remove('hidden')
+		}
+		function openHelpModal() {
+			const c = document.getElementById('modal-content')
+			c.innerHTML = `
+				<h2>ヘルプ</h2>
+				<div style="max-height:70vh;overflow-y:auto;text-align:left; font-size:0.9rem; line-height:1.6; padding-right:5px;">
+					<h3 style="color:var(--accent-blue); border-bottom:1px solid #333; padding-bottom:5px; margin-bottom:10px;">Abyss REDive ガイド</h3>
+					
+					<h4 style="color:var(--text-main); margin-top:10px;">■ ゲームの基本</h4>
+					<p style="color:#aaa;">深淵を探索し、装備を集めてキャラを強化するハクスラRPGです。</p>
+					<ul style="padding-left:20px; color:#ccc;">
+						<li><b>探索</b>: イベントが発生します。階段を見つけると深く潜れます。</li>
+						<li><b>帰還</b>: 街に戻ると所持金が確定し、HP/MPが全回復します。</li>
+						<li><b>全滅</b>: その探索で得たゴールドをすべて失います。</li>
+					</ul>
+
+					<h4 style="color:var(--text-main); margin-top:20px;">■ 装備のレアリティ</h4>
+					<p style="color:#aaa;">アイテム入手時に自動で決定されます。</p>
+					<ul style="padding-left:20px; color:#ccc;">
+						<li><b style="color:#fff;">コモン</b>: 基本性能のみ</li>
+						<li><b style="color:#4caf50;">アンコモン</b>: サブ効果 1つ</li>
+						<li><b style="color:#2196f3;">レア</b>: サブ効果 2つ</li>
+						<li><b style="color:#9c27b0;">エピック</b>: サブ効果 3つ</li>
+						<li><b style="color:#ff9800;">レジェンダリー</b>: サブ効果 4つ</li>
+					</ul>
+					<p style="color:var(--text-dim); font-size:0.8rem;">※階層が深いほど高レアリティが出やすくなります。</p>
+				</div>
+				<button onclick="closeModal()" class="btn-action btn-blue" style="margin-top:15px; width:100%;">閉じる</button>
+			`
+			openModalWrapper()
+		}
+		function openShopMenu() {
+			const c = document.getElementById('modal-content')
+			c.innerHTML = `<h2>ショップ</h2><p>所持金：${gameState.gold}G</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><button class="btn-action btn-blue" style="font-size:1rem; padding:15px;" onclick="openShopList('weapon')">⚔️ 武器屋</button><button class="btn-action btn-blue" style="font-size:1rem; padding:15px;" onclick="openShopList('armor')">🛡️ 防具屋</button><button class="btn-action btn-blue" style="font-size:1rem; padding:15px;" onclick="openShopList('acc')">💍 装飾品</button><button class="btn-action btn-blue" style="font-size:1rem; padding:15px;" onclick="openShopList('item')">🧪 道具屋</button></div><button onclick="closeModal()" class="btn-action btn-red" style="margin-top:20px; width:100%;">戻る</button>`
+			openModalWrapper()
+		}
+		function setShopFilter(cat, type) {
+			if (!gameState.shopFilters) gameState.shopFilters = { weapon: 'all', armor: 'all' }
+			gameState.shopFilters[cat] = type
+			openShopList(cat)
+		}
+		function openShopList(cat, justBought = false) {
+			const c = document.getElementById('modal-content')
+			// 到達フロアから販売可能なTierを計算
+			const maxTier = Math.min(8, Math.floor((gameState.maxFloor - 1) / 10) + 1);
+			// そのTier以下のアイテムだけをショップに並べる
+			let items = SHOP_ITEMS[cat].filter(i => i.tier <= maxTier);
+			
+			const catMap = { weapon: '武器屋', armor: '防具屋', acc: '装飾品', item: '道具屋' }
+
+			let guideHtml = ''
+			if (justBought) {
+				guideHtml = `<div style="background:rgba(76, 175, 80, 0.2); border:1px solid var(--accent-green); color:#fff; padding:10px; border-radius:6px; margin-bottom:15px; font-size:0.9rem;">✅ 購入しました。カバンから装備できます。</div>`
+			}
+
+			let filterHtml = ''
+			if (cat === 'weapon' || cat === 'armor') {
+				if (!gameState.shopFilters) gameState.shopFilters = { weapon: 'all', armor: 'all' }
+				const currentFilter = gameState.shopFilters[cat] || 'all'
+
+				const activeStyle = type => (currentFilter === type ? 'background:var(--accent-blue); color:#fff; border-color:#fff;' : '')
+
+				filterHtml = `
+						<div style="display:flex; gap:5px; margin-bottom:15px; justify-content:center;">
+							<button class="btn-icon" style="${activeStyle('all')}" onclick="setShopFilter('${cat}', 'all')">全て</button>
+							<button class="btn-icon" style="${activeStyle('physical')}" onclick="setShopFilter('${cat}', 'physical')">物理</button>
+							<button class="btn-icon" style="${activeStyle('magic')}" onclick="setShopFilter('${cat}', 'magic')">魔法</button>
+						</div>
+					`
+
+				if (currentFilter !== 'all') {
+					items = items.filter(i => i.dType === currentFilter)
+				}
+			}
+
+			c.innerHTML = `<h2>${catMap[cat] || cat}</h2><p>所持金：${gameState.gold}G</p>${guideHtml}${filterHtml}<div style="display:grid; gap:10px;">${items.map(i => `<div style="background:#222; padding:12px; border-radius:8px; display:flex; justify-content:space-between;align-items:center;"><div><b style="font-size:1rem;">${i.n}</b> <span style="color:var(--gold)">${i.p}G</span><br><small style="color:#aaa;">${i.d}</small></div><button class="btn-icon btn-green" style="padding:10px 15px;" onclick="buyItem('${cat}','${i.id}')">購入</button></div>`).join('')}</div><button onclick="openShopMenu()" class="btn-action btn-red" style="margin-top:20px; width:100%;">戻る</button>`
+			openModalWrapper()
+		}
+		function buyItem(cat, id) {
+			const itemData = SHOP_ITEMS[cat].find(i => i.id === id)
+			if (!itemData) {
+				console.error('Item not found:', id)
+				return
+			}
+			const maxCap = getMaxCapacity()
+			if (gameState.inventory.length >= maxCap) {
+				showMsg('カバンが一杯です。')
+				playSE('error')
+				return
+			}
+			if (gameState.gold >= itemData.p) {
+				gameState.gold -= itemData.p
+				let newItem = applyRarity({ ...itemData, type: cat, locked: false })
+				gameState.inventory.push(newItem)
+				addLog(`${newItem.n}を購入しました。`, 'log-sys')
+				openShopList(cat, true)
+				updateUI()
+			} else {
+				showMsg('お金が足りません。')
+				playSE('error')
+			}
+		}
+		function toggleLock(idx) {
+			const item = gameState.inventory[idx]
+			if (!item) return
+			item.locked = !item.locked
+			openInventory()
+		}
+		function confirmSellLockedItem(idx) {
+			closeModal()
+			sellItem(idx, true)
+		}
+		function sellItem(idx, force = false) {
+			const item = gameState.inventory[idx]
+			if (!item) return
+			if (!force && item.locked) {
+				const c = document.getElementById('modal-content')
+				c.innerHTML = `<div style="text-align:center; padding:20px;">
+					<h2 style="color:var(--accent-red)">アイテムロック</h2>
+					<p style="margin-bottom:20px; font-size:1rem;">ロックされている「${item.n}」を売却しますか？</p>
+					<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+						<button class="btn-action btn-red" onclick="confirmSellLockedItem(${idx})">売却</button>
+						<button class="btn-action btn-blue" onclick="closeModal()">戻る</button>
+					</div>
+				</div>`
+				openModalWrapper()
+				return
+			}
+			const basePrice = item.p || 50
+			const sellPrice = Math.floor(basePrice / 2)
+			gameState.gold += sellPrice
+			gameState.inventory.splice(idx, 1)
+			addLog(`${item.n}を${sellPrice}Gで売却しました。`, 'log-gold')
+			updateUI()
+			openInventory()
+		}
+		function openInventory(filterType = 'all', sortType = 'default') {
+			const c = document.getElementById('modal-content')
+			const maxCap = getMaxCapacity()
+			const inTown = !gameState.inDungeon
+			const bd = getBagCapBreakdown()
+
+			// Tier表示ヘルパー
+			const tierLabel = tier => {
+				if (!tier) return ''
+				const stars = '★'.repeat(Math.min(tier, 8)) + '☆'.repeat(Math.max(0, 8 - tier))
+				const colors = ['','#aaa','#7dc','#4af','#c8f','#fa4','#f80','#f44','#f0f']
+				return `<span style="font-size:0.72rem; color:${colors[tier]||'#fff'}; letter-spacing:1px;">Tier${tier} ${stars}</span>`
+			}
+
+			// ─── フィルタータブ ───
+			const tabs = [
+				{ key: 'all',    label: '全て',   icon: '📦' },
+				{ key: 'weapon', label: '武器',   icon: '⚔️' },
+				{ key: 'armor',  label: '防具',   icon: '🛡️' },
+				{ key: 'acc',    label: '装飾',   icon: '💍' },
+				{ key: 'rune',   label: 'ルーン', icon: '🔮' },
+				{ key: 'item',   label: '道具',   icon: '🧪' },
+			]
+			// 各カテゴリのカウント
+			const counts = { all: gameState.inventory.length }
+			tabs.slice(1).forEach(t => {
+				counts[t.key] = gameState.inventory.filter(i => i.type === t.key).length
+			})
+			const tabHtml = `<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:12px;">
+				${tabs.map(t => {
+					const active = filterType === t.key
+					const cnt = counts[t.key] ?? 0
+					return `<button onclick="openInventory('${t.key}','${sortType}')"
+						style="display:flex; align-items:center; gap:4px; padding:5px 10px; font-size:0.8rem;
+						border-radius:20px; border:1px solid ${active ? 'var(--accent-blue)' : '#444'};
+						background:${active ? 'rgba(66,153,225,0.25)' : '#111'};
+						color:${active ? '#fff' : '#aaa'}; cursor:pointer; transition:all 0.15s;">
+						<span>${t.icon}</span><span>${t.label}</span>
+						<span style="background:${active ? 'var(--accent-blue)' : '#333'}; color:#fff;
+							border-radius:10px; padding:0 5px; font-size:0.7rem; min-width:16px; text-align:center;">${cnt}</span>
+					</button>`
+				}).join('')}
+			</div>`
+
+			// ─── ソートタブ ───
+			const sortOpts = [
+				{ key: 'default', label: '取得順' },
+				{ key: 'tier',    label: 'Tier順' },
+				{ key: 'type',    label: '種類順' },
+				{ key: 'locked',  label: 'ロック優先' },
+			]
+			const sortHtml = `<div style="display:flex; gap:4px; margin-bottom:10px; flex-wrap:wrap;">
+				<span style="font-size:0.75rem; color:#666; align-self:center; margin-right:2px;">並び替え:</span>
+				${sortOpts.map(s => {
+					const active = sortType === s.key
+					return `<button onclick="openInventory('${filterType}','${s.key}')"
+						style="padding:3px 9px; font-size:0.75rem; border-radius:12px;
+						border:1px solid ${active ? 'var(--gold)' : '#333'};
+						background:${active ? 'rgba(255,196,0,0.15)' : '#111'};
+						color:${active ? 'var(--gold)' : '#777'}; cursor:pointer;">${s.label}</button>`
+				}).join('')}
+			</div>`
+
+			// ─── 絞り込み＋ソート ───
+			let filtered = filterType === 'all'
+				? gameState.inventory.map((item, idx) => ({ item, idx }))
+				: gameState.inventory.map((item, idx) => ({ item, idx })).filter(({ item }) => item.type === filterType)
+			if (sortType === 'tier')   filtered.sort((a, b) => (b.item.tier||0) - (a.item.tier||0))
+			if (sortType === 'type')   filtered.sort((a, b) => (a.item.type||'').localeCompare(b.item.type||''))
+			if (sortType === 'locked') filtered.sort((a, b) => (b.item.locked ? 1 : 0) - (a.item.locked ? 1 : 0))
+
+			// ─── 倉庫ボタン ───
+			const storageBtn = inTown
+				? `<button onclick="openGuildWarehouse()" class="btn-action btn-purple" style="margin-bottom:12px; width:100%;">🏦 ギルド倉庫へ (${gameState.guildWarehouse.length}/${gameState.guildWarehouseCap})</button>`
+				: ''
+
+			// ─── 容量バー（内訳をキャラ別に表示）───
+			const pct = Math.min(100, Math.round(gameState.inventory.length / maxCap * 100))
+			const barColor = pct >= 90 ? 'var(--accent-red)' : pct >= 70 ? 'var(--gold)' : 'var(--accent-green)'
+
+			// キャラ別Lvボーナス
+			let lvDetailRows = ''
+			if (gameState.party.length > 0) {
+				lvDetailRows = gameState.party.map(p => {
+					const bonus = Math.floor(p.lv / 5)
+					return `<span style="color:#888; font-size:0.72rem;">　${p.name} Lv${p.lv} → +${bonus}枠</span>`
+				}).join('<br>')
+			}
+			const breakdownParts = []
+			if (bd.lvBonus > 0)  breakdownParts.push(`<span style="color:#7dc;">Lv+${bd.lvBonus}</span>`)
+			if (bd.accBonus > 0) breakdownParts.push(`<span style="color:#fa4;">装備+${bd.accBonus}</span>`)
+			if (bd.expand  > 0)  breakdownParts.push(`<span style="color:#9af;">拡張+${bd.expand}</span>`)
+			const breakdownStr = breakdownParts.length > 0
+				? ` <small style="color:#666;">(基本${bd.base} + ${breakdownParts.join(' + ')})</small>`
+				: ''
+
+			const capBar = `<div style="margin-bottom:10px; padding:10px; background:#0d0d0d; border:1px solid #222; border-radius:8px;">
+				<div style="display:flex; justify-content:space-between; align-items:baseline; font-size:0.85rem; margin-bottom:5px;">
+					<span style="color:#aaa;">📦 カバン容量${breakdownStr}</span>
+					<span style="color:${barColor}; font-weight:bold; font-size:1rem;">${gameState.inventory.length} / ${maxCap}</span>
+				</div>
+				<div style="background:#222; border-radius:4px; height:8px; margin-bottom:6px;">
+					<div style="width:${pct}%; background:${barColor}; height:8px; border-radius:4px; transition:width 0.3s;"></div>
+				</div>
+				${bd.lvBonus > 0 ? `<details style="font-size:0.75rem;"><summary style="color:#555; cursor:pointer;">Lv別ボーナス詳細</summary><div style="padding-top:4px; line-height:1.8;">${lvDetailRows}</div></details>` : ''}
+			</div>`
+
+			// ─── カバン拡張オプション ───
+			const bagExpandCosts = [
+				{ slots: 5,  gold: 10000  },
+				{ slots: 15, gold: 40000  },
+				{ slots: 30, gold: 100000 },
+			]
+			const bagExpandHtml = inTown ? `
+				<div style="margin-bottom:12px; padding:10px; background:#111; border:1px solid #333; border-radius:8px;">
+					<div style="font-size:0.82rem; color:#aaa; margin-bottom:6px;">💰 カバン拡張（ゴールドで購入）</div>
+					<div style="display:flex; gap:6px; flex-wrap:wrap;">
+						${bagExpandCosts.map(ec =>
+							`<button onclick="expandBag(${ec.slots},${ec.gold})" style="flex:1; min-width:70px; padding:7px 4px; font-size:0.78rem; border-radius:5px; border:1px solid #556; background:#1a1a2e; color:#9af; cursor:pointer;">+${ec.slots}枠<br><small style="color:#aaa;">${ec.gold.toLocaleString()}G</small></button>`
+						).join('')}
+					</div>
+				</div>` : ''
+
+			c.innerHTML = `
+				<h2 style="margin-bottom:8px;">カバン</h2>
+				${capBar}
+				${bagExpandHtml}
+				${storageBtn}
+				${tabHtml}
+				${sortHtml}
+				<div id="inv-list" style="display:flex;flex-direction:column;gap:8px; max-height:48vh; overflow-y:auto; padding-right:4px;"></div>
+				<button onclick="closeModal()" class="btn-action btn-red" style="margin-top:14px; width:100%;">閉じる</button>`
+
+			const list = document.getElementById('inv-list')
+			if (filtered.length === 0) {
+				list.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">アイテムがありません</p>'
+			} else {
+				filtered.forEach(({ item, idx }) => {
+					const div = document.createElement('div')
+					div.style.cssText = 'display:flex; flex-direction:column; padding:10px; border:1px solid #333; background:#111; border-radius:8px;'
+					const lockIcon = item.locked ? '🔒' : '🔓'
+					const lockStyle = item.locked ? 'color:var(--gold); border-color:var(--gold);' : ''
+					const itemName = item.rarityLabel ? `[${item.rarityLabel}] ${item.n}` : item.n
+					const nameColor = item.rarityColor || '#eee'
+					let subText = ''
+					if (item.subEffects && item.subEffects.length > 0) {
+						subText = `<div style="font-size:0.75rem; color:var(--accent-blue); margin:3px 0;">◆ ${item.subEffects.map(e => e.n + '+' + (e.k === 'cri' ? (e.v*100)+'%' : e.v)).join(' / ')}</div>`
+					}
+					const tierHtml = item.tier ? `<div style="margin-top:2px;">${tierLabel(item.tier)}</div>` : ''
+					const depositBtn = inTown && item.type !== 'item'
+						? `<button class="btn-icon" style="background:#2a1a4a; border-color:#6644aa; font-size:0.78rem; padding:5px 8px;" onclick="storeToWarehouse(${idx})">預ける</button>`
+						: ''
+					// アイテム種別バッジ
+					const typeIcons = { weapon:'⚔️', armor:'🛡️', acc:'💍', rune:'🔮', item:'🧪' }
+					const typeBadge = item.type ? `<span style="font-size:0.68rem; color:#555; margin-right:4px;">${typeIcons[item.type]||''}</span>` : ''
+					div.innerHTML = `
+						<div style="display:flex; justify-content:space-between; align-items:flex-start;">
+							<div style="flex:1; min-width:0;">
+								<div style="display:flex; align-items:center; gap:3px; flex-wrap:wrap;">
+									${typeBadge}<b style="color:${nameColor}; font-size:0.95rem;">${itemName}</b>
+								</div>
+								${tierHtml}
+								<div style="font-size:0.8rem; color:#aaa; margin-top:2px;">${item.d}</div>
+								${subText}
+							</div>
+							<div style="display:flex; flex-direction:column; gap:5px; margin-left:8px; flex-shrink:0;">
+								<div style="display:flex; gap:5px;">
+									<button class="btn-icon" style="background:transparent; border:1px solid #444; ${lockStyle} font-size:0.85rem; padding:4px 7px;" onclick="toggleLock(${idx})">${lockIcon}</button>
+									${item.type !== 'item' ? `<button class="btn-icon" style="background:#333; border-color:#555; font-size:0.78rem; padding:5px 8px;" onclick="sellItem(${idx})">売却</button>` : ''}
+									<button class="btn-icon btn-blue" style="font-size:0.78rem; padding:5px 10px;" onclick="selectTarget(${idx})">${item.type === 'item' ? '使う' : '装備'}</button>
+								</div>
+								${depositBtn}
+							</div>
+						</div>`
+					list.appendChild(div)
+				})
+			}
+			openModalWrapper()
+		}
+		// ─── ギルド倉庫 ───────────────────────────────────────────────
+		function openGuildWarehouse(filter = 'all') {
+			if (gameState.inDungeon) { showMsg('ダンジョン内では倉庫にアクセスできません。'); return }
+			const c = document.getElementById('modal-content')
+			const cap = gameState.guildWarehouseCap
+			const wh = gameState.guildWarehouse
+
+			const tierColor = t => ['','#aaa','#5cf','#4f4','#f90','#f5f','#f44','#0ff','#fc0'][t] || '#eee'
+			const tierLabel = t => t ? `T${t}` : ''
+
+			// 容量バー
+			const whPct = Math.min(100, Math.round(wh.length / cap * 100))
+			const whBarColor = whPct >= 90 ? 'var(--accent-red)' : whPct >= 70 ? 'var(--gold)' : '#8866ff'
+			const whCapBar = `<div style="margin-bottom:10px;">
+				<div style="display:flex; justify-content:space-between; font-size:0.82rem; color:#aaa; margin-bottom:4px;">
+					<span>倉庫容量</span>
+					<span style="color:${whBarColor}; font-weight:bold;">${wh.length} / ${cap}</span>
+				</div>
+				<div style="background:#222; border-radius:4px; height:7px;">
+					<div style="width:${whPct}%; background:${whBarColor}; height:7px; border-radius:4px; transition:width 0.3s;"></div>
+				</div>
+			</div>`
+
+			const expandCosts = [
+				{ slots: 10, gold: 50000 },
+				{ slots: 25, gold: 150000 },
+				{ slots: 50, gold: 500000 },
+			]
+			const expandHtml = `<div style="margin-bottom:10px; padding:10px; background:#0d0d20; border:1px solid #334; border-radius:8px;">
+				<div style="font-size:0.82rem; color:#aaa; margin-bottom:6px;">💰 倉庫拡張</div>
+				<div style="display:flex; gap:6px; flex-wrap:wrap;">
+					${expandCosts.map(ec =>
+						`<button onclick="expandWarehouse(${ec.slots},${ec.gold})" style="flex:1; min-width:70px; padding:7px 4px; font-size:0.8rem; border-radius:5px; border:1px solid #556; background:#1a1a2e; color:#9af; cursor:pointer;">+${ec.slots}枠<br><small style="color:#aaa;">${ec.gold.toLocaleString()}G</small></button>`
+					).join('')}
+				</div>
+			</div>`
+
+			const filters = [
+				{ key: 'all',    label: '全て',   icon: '📦' },
+				{ key: 'weapon', label: '武器',   icon: '⚔️' },
+				{ key: 'armor',  label: '防具',   icon: '🛡️' },
+				{ key: 'acc',    label: '装飾',   icon: '💍' },
+				{ key: 'rune',   label: 'ルーン', icon: '🔮' },
+			]
+			const whCounts = { all: wh.length }
+			filters.slice(1).forEach(f => { whCounts[f.key] = wh.filter(i => i.type === f.key).length })
+			const tabHtml = `<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px;">
+				${filters.map(f => {
+					const active = filter === f.key
+					const cnt = whCounts[f.key] ?? 0
+					return `<button onclick="openGuildWarehouse('${f.key}')"
+						style="display:flex; align-items:center; gap:4px; padding:5px 10px; font-size:0.8rem;
+						border-radius:20px; border:1px solid ${active ? 'var(--accent-blue)' : '#444'};
+						background:${active ? 'rgba(66,153,225,0.25)' : '#111'};
+						color:${active ? '#fff' : '#aaa'}; cursor:pointer;">
+						<span>${f.icon}</span><span>${f.label}</span>
+						<span style="background:${active ? 'var(--accent-blue)' : '#333'}; color:#fff;
+							border-radius:10px; padding:0 5px; font-size:0.7rem; min-width:16px; text-align:center;">${cnt}</span>
+					</button>`
+				}).join('')}
+			</div>`
+
+			const filtered = wh.map((item, idx) => ({ item, idx }))
+				.filter(({ item }) => filter === 'all' || item.type === filter)
+
+			c.innerHTML = `
+				<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+					<h2 style="margin:0;">🏛️ ギルド倉庫</h2>
+					<span style="font-size:0.8rem; color:#aaa;">所持金: <span style="color:var(--gold);">${gameState.gold.toLocaleString()}G</span></span>
+				</div>
+				${whCapBar}
+				${expandHtml}
+				${tabHtml}
+				<div id="wh-list" style="display:flex; flex-direction:column; gap:8px; max-height:40vh; overflow-y:auto; padding-right:4px;"></div>
+				<div style="display:flex; gap:8px; margin-top:10px;">
+					<button onclick="openInventory()" class="btn-action btn-green" style="flex:1; padding:10px;">👜 カバンへ</button>
+					<button onclick="closeModal()" class="btn-action btn-red" style="flex:1;">閉じる</button>
+				</div>`
+
+			const list = document.getElementById('wh-list')
+			if (filtered.length === 0) {
+				list.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">該当するアイテムはありません</p>'
+			} else {
+				filtered.forEach(({ item, idx }) => {
+					const div = document.createElement('div')
+					div.style.cssText = 'padding:10px; border:1px solid #334; background:#0d0d1a; border-radius:8px;'
+					const itemName = item.rarityLabel ? `[${item.rarityLabel}] ${item.n}` : item.n
+					const nameColor = item.rarityColor || '#eee'
+					const tl = tierLabel(item.tier)
+					const tc = tierColor(item.tier)
+					const tierBadge = tl ? `<span style="font-size:0.72rem; padding:1px 5px; border-radius:3px; border:1px solid ${tc}; color:${tc}; margin-left:6px; vertical-align:middle;">${tl}</span>` : ''
+					let subText = ''
+					if (item.subEffects && item.subEffects.length > 0) {
+						subText = `<div style="font-size:0.75rem; color:var(--accent-blue); margin:3px 0;">◆ ${item.subEffects.map(e => e.n + '+' + (e.k === 'cri' ? (e.v*100)+'%' : e.v)).join(' / ')}</div>`
+					}
+					div.innerHTML = `
+						<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+							<div style="flex:1; min-width:0;">
+								<div style="display:flex; align-items:center; flex-wrap:wrap; gap:4px;">
+									<b style="color:${nameColor}; font-size:0.95rem;">${itemName}</b>${tierBadge}
+								</div>
+								<small style="color:#aaa; display:block; margin-top:2px;">${item.d}</small>
+								${subText}
+							</div>
+							<div style="display:flex; flex-direction:column; gap:5px; flex-shrink:0;">
+								<button class="btn-icon btn-green" style="font-size:0.78rem; padding:5px 10px;" onclick="withdrawFromWarehouse(${idx}, '${filter}')">引き出す</button>
+								<button class="btn-icon" style="background:#1a3020; border-color:#4a8060; color:#7df; font-size:0.78rem; padding:5px 8px;" onclick="equipFromWarehouse(${idx}, '${filter}')">装備する</button>
+							</div>
+						</div>`
+					list.appendChild(div)
+				})
+			}
+			openModalWrapper()
+		}
+
+		function equipFromWarehouse(idx, filter = 'all') {
+			const item = gameState.guildWarehouse[idx]
+			if (!item) return
+			if (gameState.inventory.length >= getMaxCapacity()) {
+				showMsg('カバンが満杯です。先にカバンを整理してください。')
+				playSE('error')
+				return
+			}
+			gameState.guildWarehouse.splice(idx, 1)
+			gameState.inventory.push(item)
+			saveState()
+			selectTarget(gameState.inventory.length - 1)
+		}
+
+		function storeToWarehouse(idx, filter = 'all') {
+			const item = gameState.inventory[idx]
+			if (!item) return
+			if (item.type === 'item') { showMsg('消耗品は倉庫に預けられません。'); return }
+			if (gameState.guildWarehouse.length >= gameState.guildWarehouseCap) {
+				showMsg('ギルド倉庫が満杯です。')
+				playSE('error')
+				return
+			}
+			gameState.inventory.splice(idx, 1)
+			gameState.guildWarehouse.push(item)
+			saveState()
+			openInventory(filter)
+		}
+
+		function withdrawFromWarehouse(idx, filter = 'all') {
+			const item = gameState.guildWarehouse[idx]
+			if (!item) return
+			if (gameState.inventory.length >= getMaxCapacity()) {
+				showMsg('カバンが満杯です。先にカバンを整理してください。')
+				playSE('error')
+				return
+			}
+			gameState.guildWarehouse.splice(idx, 1)
+			gameState.inventory.push(item)
+			saveState()
+			openGuildWarehouse(filter)
+		}
+
+		function expandBag(slots, cost) {
+			if (gameState.inDungeon) { showMsg('ダンジョン内ではカバンを拡張できません。'); return }
+			if (gameState.gold < cost) {
+				showMsg(`ゴールドが不足しています。（必要: ${cost.toLocaleString()}G）`)
+				playSE('error')
+				return
+			}
+			gameState.gold -= cost
+			gameState.bagExpansion = (gameState.bagExpansion ?? 0) + slots
+			saveState()
+			updateUI()
+			openInventory()
+			addLog(`カバンを${slots}枠拡張しました！ 残金: ${gameState.gold.toLocaleString()}G`, 'log-sys')
+		}
+
+		function expandWarehouse(slots, cost) {
+			if (gameState.gold < cost) {
+				showMsg(`ゴールドが不足しています。（必要: ${cost.toLocaleString()}G）`)
+				playSE('error')
+				return
+			}
+			gameState.gold -= cost
+			gameState.guildWarehouseCap += slots
+			saveState()
+			updateUI()
+			openGuildWarehouse()
+			addLog(`ギルド倉庫を${slots}枠拡張しました。（残金: ${gameState.gold.toLocaleString()}G）`, 'log-sys')
+		}
+		// ────────────────────────────────────────────────────────────────
+
+		function selectTarget(idx) {
+			const item = gameState.inventory[idx]
+			const c = document.getElementById('modal-content')
+			c.innerHTML = `<h2>使用対象の選択</h2><div id="target-list" style="display:grid; gap:12px;"></div><button onclick="openInventory()" class="btn-action btn-red" style="margin-top:20px; width:100%;">戻る</button>`
+			const tl = document.getElementById('target-list')
+			gameState.party.forEach((p, pIdx) => {
+				const btn = document.createElement('button')
+				btn.className = 'btn-action btn-blue'
+				btn.innerText = `${p.name}`
+				btn.onclick = () => {
+					if (item.type === 'item') useItem(idx, pIdx)
+					else equipItem(idx, pIdx)
+				}
+				tl.appendChild(btn)
+			})
+		}
+		function useItem(idx, pIdx) {
+			playSE('item');
+			const item = gameState.inventory[idx]
+			const p = gameState.party[pIdx]
+			const fs = getFinalStats(p)
+			if (item.e.hp) p.hp = Math.min(fs.maxHp, p.hp + item.e.hp)
+			if (item.e.hpPct) {
+				const healAmount = Math.floor(fs.maxHp * item.e.hpPct)
+				p.hp = Math.min(fs.maxHp, p.hp + healAmount)
+			}
+			if (item.e.mp) p.mp = Math.min(fs.maxMp, p.mp + item.e.mp)
+			if (item.e.mpPct) {
+				const recoverMp = Math.floor(fs.maxMp * item.e.mpPct)
+				p.mp = Math.min(fs.maxMp, p.mp + recoverMp)
+			}
+			addLog(`${p.name}が${item.n}を使用した。`, 'log-sys')
+			gameState.inventory.splice(idx, 1)
+			updateUI()
+			closeModal()
+			if (battle.active) {
+				setTurn('enemy')
+				setTimeout(enemyTurn, 500)
+			}
+		}
+		function unequipRune(pIdx, rIdx) {
+			const p = gameState.party[pIdx]
+			if (!p || !p.equip || !p.equip.runes || !p.equip.runes[rIdx]) return
+			const maxCap = getMaxCapacity()
+			if (gameState.inventory.length >= maxCap) {
+				showMsg('カバンが一杯で外せません。')
+				playSE('error')
+				return
+			}
+			const rune = p.equip.runes.splice(rIdx, 1)[0]
+			gameState.inventory.push(rune)
+			addLog(`${p.name}のルーン：${rune.n}を外しました。`, 'log-sys')
+			updateUI()
+			openCharDetailModal(pIdx)
+		}
+		function openRuneSwapModal(pIdx, invIdx) {
+			const p = gameState.party[pIdx]
+			const newRune = gameState.inventory[invIdx]
+			const c = document.getElementById('modal-content')
+			let html = `<h2>ルーンの交換</h2><p style="font-size:0.9rem; margin-bottom:10px;">交換するルーンを選んでください。</p>`
+			html += `<div style="display:grid; gap:10px; margin-bottom:20px;">`
+			p.equip.runes.forEach((r, slot) => {
+				const borderColor = r.color || (r.element==='fire'?'#e91e63':r.element==='earth'?'#4caf50':'#00bcd4');
+				html += `
+					<div style="background:#111; padding:12px; border:2px solid ${borderColor}; display:flex; justify-content:space-between; align-items:center; border-radius:10px;">
+						<div style="flex:1">
+							<div style="color:${r.rarityColor || '#fff'}; font-weight:bold;">${r.n}</div>
+							<div style="font-size:0.8rem; color:#888;">${r.d}</div>
+						</div>
+						<button class="btn-action btn-red" style="width:auto; padding:10px 20px; font-size:0.9rem; margin-bottom:0;" onclick="confirmRuneSwap(${pIdx}, ${invIdx}, ${slot})">交換</button>
+					</div>`
+			})
+			html += `</div><button class="btn-action btn-blue" style="width:100%; margin-bottom:0;" onclick="closeModal()">キャンセル</button>`
+			c.innerHTML = html
+			openModalWrapper()
+		}
+		function confirmRuneSwap(pIdx, invIdx, slot) {
+			const p = gameState.party[pIdx]
+			if (!p.equip || !Array.isArray(p.equip.runes) || p.equip.runes.length <= slot) {
+				showMsg('エラー：交換に失敗しました。')
+				playSE('error')
+				return
+			}
+			const newRune = gameState.inventory.splice(invIdx, 1)[0]
+			const oldRune = p.equip.runes.splice(slot, 1)[0]
+			if (oldRune) gameState.inventory.push(oldRune)
+			p.equip.runes.push(newRune)
+			addLog(`${p.name}のルーンを交換：${oldRune.n} → ${newRune.n}`, 'log-sys')
+			updateUI()
+			closeModal()
+			openCharDetailModal(pIdx)
+		}
+		function equipItem(idx, pIdx) {
+			const item = gameState.inventory[idx]
+			const p = gameState.party[pIdx]
+			if (item.type === 'rune') {
+				if (!p.equip.runes) p.equip.runes = []
+				if (p.equip.runes.length >= 3) {
+					openRuneSwapModal(pIdx, idx)
+					return
+				}
+				p.equip.runes.push(item)
+				gameState.inventory.splice(idx, 1)
+				addLog(`${p.name}が${item.n}を装着した。`, 'log-sys')
+				updateUI()
+				openInventory()
+				return
+			}
+			const old = p.equip[item.type]
+			p.equip[item.type] = item
+			gameState.inventory.splice(idx, 1)
+			if (old) gameState.inventory.push(old)
+			addLog(`${p.name}が${item.n}を装備した。`, 'log-sys')
+			updateUI()
+			openInventory()
+		}
+		function openGuild() {
+			const c = document.getElementById('modal-content')
+			let maxSlots = 1
+			if (gameState.party.length > 0) {
+				const leader = gameState.party[0]
+				if (leader.lv >= 20) maxSlots = 3
+				else if (leader.lv >= 10) maxSlots = 2
+			}
+			let isMax = gameState.party.length >= maxSlots
+			let btnHtml = ''
+			if (!isMax) {
+				btnHtml = `<div style="display:grid; gap:10px; margin-bottom:15px;">
+                    <button class="btn-action btn-green" style="padding:15px;" onclick="openImportModal()">コードから雇用する</button>
+                </div><hr style="border:0; border-top:1px solid #333; margin-bottom:15px;">
+                <input type="text" id="new-name" placeholder="仲間の名前" maxlength="10" style="padding:15px; width:100%; margin-bottom:15px; background:#000; border:1px solid #444; color:#fff; font-size:1.1rem; text-align:center;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button class="btn-icon" style="padding:12px; height:auto;" onclick="confirmHire('Warrior')"><b style="font-size:1rem;">ウォリアー</b><br><small style="color:var(--text-dim);">高HP/物理特化</small></button>
+                        <button class="btn-icon" style="padding:12px; height:auto;" onclick="confirmHire('Paladin')"><b style="font-size:1rem;">パラディン</b><br><small style="color:var(--text-dim);">高耐久/支援</small></button>
+                        <button class="btn-icon" style="padding:12px; height:auto;" onclick="confirmHire('Wizard')"><b style="font-size:1rem;">ウィザード</b><br><small style="color:var(--text-dim);">高MP/魔法特化</small></button>
+                        <button class="btn-icon" style="padding:12px; height:auto;" onclick="confirmHire('Ranger')"><b style="font-size:1rem;">レンジャー</b><br><small style="color:var(--text-dim);">高速/会心</small></button>
+                        <button class="btn-icon" style="padding:12px; height:auto;" onclick="confirmHire('Priest')"><b style="font-size:1rem;">プリースト</b><br><small style="color:var(--text-dim);">回復/支援</small></button>
+                        <button class="btn-icon" style="padding:12px; height:auto;" onclick="confirmHire('Alchemist')"><b style="font-size:1rem;">アルケミスト</b><br><small style="color:var(--text-dim);">妨害/デバフ</small></button>
+                    </div>`
+			} else {
+				let msg = 'パーティが満員です。'
+				if (gameState.party.length === 1 && gameState.party[0].lv < 10) {
+					msg = '二人目を雇うにはリーダーのレベルが10以上必要です。'
+				} else if (gameState.party.length === 2 && gameState.party[0].lv < 20) {
+					msg = '三人目を雇うにはリーダーのレベルが20以上必要です。'
+				}
+				btnHtml = `<p style="text-align:center; padding:20px;">${msg}</p>`
+			}
+			c.innerHTML = `<h2>冒険者ギルド</h2>${btnHtml}<hr style="border:0; border-top:1px solid #333; margin:15px 0;"><button onclick="openGuildWarehouse()" class="btn-action btn-purple" style="width:100%; padding:12px;">🏛️ ギルド倉庫</button><button onclick="closeModal()" class="btn-action btn-red" style="margin-top:10px; width:100%;">戻る</button>`
+			openModalWrapper()
+		}
+		function confirmHire(key) {
+			const name = document.getElementById('new-name').value || '冒険者'
+			const jobData = JOB_DATA[key]
+			gameState.party.push({ name: name, job: jobData.name, lv: 1, exp: 0, nextExp: 100, learnedSkills: {}, equip: { weapon: null, armor: null, acc: null, runes: [] } })
+			const p = gameState.party[gameState.party.length - 1]
+			const fs = getFinalStats(p)
+			p.hp = fs.maxHp
+			p.mp = fs.maxMp
+			updateUI()
+			closeModal()
+			addLog(`${name}が入隊しました。`, 'log-sys')
+		}
+		function openFirstCharModal() {
+			const c = document.getElementById('modal-content')
+			c.innerHTML = `<h2>キャラクター作成</h2><input type="text" id="first-name" placeholder="名前を入力" maxlength="10" style="padding:15px; width:100%; margin-bottom:15px; background:#000; border:1px solid #444; color:#fff; font-size:1.2rem; text-align:center;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <button class="btn-icon" style="padding:15px;" onclick="confirmFirstHire('Warrior')"><b>ウォリアー</b><br><small>物理攻撃重視</small></button>
+                    <button class="btn-icon" style="padding:15px;" onclick="confirmFirstHire('Paladin')"><b>パラディン</b><br><small>防御・回復重視</small></button>
+                    <button class="btn-icon" style="padding:15px;" onclick="confirmFirstHire('Wizard')"><b>ウィザード</b><br><small>魔法攻撃重視</small></button>
+                    <button class="btn-icon" style="padding:15px;" onclick="confirmFirstHire('Ranger')"><b>レンジャー</b><br><small>速度・会心重視</small></button>
+                    <button class="btn-icon" style="padding:15px;" onclick="confirmFirstHire('Priest')"><b>プリースト</b><br><small>回復特化</small></button>
+                    <button class="btn-icon" style="padding:15px;" onclick="confirmFirstHire('Alchemist')"><b>アルケミスト</b><br><small>弱体化特化</small></button>
+                </div>`
+			openModalWrapper()
+		}
+		function confirmFirstHire(key) {
+			const name = document.getElementById('first-name').value || '冒険者'
+			const jobData = JOB_DATA[key]
+			gameState.party.push({ name: name, job: jobData.name, lv: 1, exp: 0, nextExp: 100, learnedSkills: {}, equip: { weapon: null, armor: null, acc: null, runes: [] } })
+			const p = gameState.party[0]
+			const fs = getFinalStats(p)
+			p.hp = fs.maxHp
+			p.mp = fs.maxMp
+			updateUI()
+			closeModal()
+			addLog(`新たな冒険者、${name}（${jobData.name}）が誕生した。`, 'log-sys')
+		}
+		function enterDungeon() {
+			if (gameState.party.length === 0) {
+				openGuild()
+				return
+			}
+			// 解放済み開始フロアを計算（倒したボスの次の階層）
+			const unlockedFloors = [1]
+			Object.keys(BOSS_DATA).forEach(f => {
+				const floor = parseInt(f)
+				if (gameState.bossDefeated.includes(floor)) {
+					unlockedFloors.push(floor + 1)
+				}
+			})
+			// 選択肢が1Fのみなら即スタート
+			if (unlockedFloors.length === 1) {
+				startDungeonFromFloor(1)
+				return
+			}
+			// 複数の開始フロアがある場合はモーダルで選択させる
+			openFloorSelectModal(unlockedFloors)
+		}
+
+		function openFloorSelectModal(floors) {
+			const c = document.getElementById('modal-content')
+			const btnHtml = floors.map(f => {
+				const bossName = f === 1 ? '（序章）' : `${Object.keys(BOSS_DATA).find(k => parseInt(k) + 1 === f)}F ボス撃破後`
+				return `<button class="btn-action btn-green" onclick="startDungeonFromFloor(${f}); closeModal();" style="text-align:left; padding:14px 18px;">
+					<span style="font-size:1.1rem; font-weight:bold;">▶ ${f}F から開始</span>
+					<small style="display:block; color:rgba(255,255,255,0.7); font-size:0.8rem; margin-top:2px;">${bossName}</small>
+				</button>`
+			}).join('')
+			c.innerHTML = `
+				<h2 style="margin-bottom:6px;">探索開始フロア選択</h2>
+				<p style="color:var(--text-dim); font-size:0.85rem; margin-bottom:18px;">ボスを倒した層から探索を再開できます。</p>
+				<div style="display:flex; flex-direction:column; gap:10px;">
+					${btnHtml}
+				</div>
+				<button onclick="closeModal()" class="btn-action btn-red" style="margin-top:16px; width:100%;">キャンセル</button>
+			`
+			openModalWrapper()
+		}
+
+		function startDungeonFromFloor(floor) {
+			playBGM('dungeon');
+			gameState.floor = floor
+			gameState.inDungeon = true
+			gameState.tempGold = 0
+			gameState.exploreCount = 0
+			gameState.stairsFound = false
+			battle.buffs = []
+			battle.enemyDebuffs = []
+			document.getElementById('town-ui').classList.add('hidden')
+			document.getElementById('dungeon-ui').classList.remove('hidden')
+			document.getElementById('btn-next-floor').classList.add('hidden')
+			document.getElementById('floor-num-disp').innerText = gameState.floor
+			updateUI()
+		}
+		function nextFloor() {
+			playBGM('dungeon');
+			gameState.floor++
+			if (gameState.floor > gameState.maxFloor) {
+				gameState.maxFloor = gameState.floor
+			}
+			gameState.exploreCount = 0
+			gameState.stairsFound = false
+			battle.buffs = []
+			battle.enemyDebuffs = []
+			document.getElementById('btn-next-floor').classList.add('hidden')
+			document.getElementById('floor-num-disp').innerText = gameState.floor
+			updateUI()
+		}
+		function retreat() {
+			const c = document.getElementById('modal-content')
+			c.innerHTML = `<div style="text-align:center;padding:20px;"><h2>街に帰還しますか？</h2><p style="color:#aaa;">獲得したゴールドを持ち帰ることができます。</p><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px;"><button class="btn-action btn-blue" onclick="confirmRetreat()">戻る</button><button class="btn-action btn-red" onclick="closeModal()">キャンセル</button></div></div>`
+			document.getElementById('modal-layer').classList.remove('hidden')
+		}
+		function confirmRetreat() {
+			closeModal()
+			playBGM('town');
+			const gained = gameState.tempGold
+			gameState.gold += gained
+			gameState.tempGold = 0
+			gameState.inDungeon = false
+			recoverParty()
+			returnToTown()
+			addLog('ダンジョンから帰還しました。', 'log-sys')
+			const content = document.getElementById('modal-content')
+			content.innerHTML = `<div style="text-align:center;padding:20px;"><h2>帰還報告</h2><p style="font-size:1.2rem;color:var(--gold)">獲得金額: ${gained}G</p><button class="btn-action btn-blue" style="width:100%;" onclick="closeModal()">閉じる</button></div>`
+			document.getElementById('modal-layer').classList.remove('hidden')
+		}
+		function handleDeath() {
+			playBGM('town');
+			const lostGold = gameState.tempGold
+			gameState.tempGold = 0
+			gameState.inDungeon = false
+			recoverParty()
+			addLog(`全滅... 獲得した${lostGold}Gを失いました。`, 'log-red')
+			returnToTown()
+			const content = document.getElementById('modal-content')
+			content.innerHTML = `<div style="text-align:center;padding:20px;"><h2>全滅しました</h2><p style="color:var(--accent-red)">獲得したゴールドは魔物に奪われました...</p><button class="btn-action btn-blue" style="width:100%; margin-top:20px;" onclick="closeModal()">街へ戻る</button></div>`
+			document.getElementById('modal-layer').classList.remove('hidden')
+		}
+		function recoverParty() {
+			gameState.party.forEach(p => {
+				const fs = getFinalStats(p)
+				p.hp = fs.maxHp
+				p.mp = fs.maxMp
+			})
+			updateUI()
+		}
+		function returnToTown() {
+			playBGM('town');
+			document.getElementById('town-ui').classList.remove('hidden')
+			document.getElementById('dungeon-ui').classList.add('hidden')
+			document.getElementById('battle-view').classList.add('hidden')
+			updateUI()
+		}
+		function toggleBattleSkillMenu() {
+			const menu = document.getElementById('battle-skill-menu')
+			if (menu.classList.contains('hidden')) {
+				menu.classList.remove('hidden')
+				const p = gameState.party[battle.activeUnitIndex]
+				if (p.hp <= 0) {
+					menu.classList.add('hidden')
+					return
+				}
+				const job = Object.values(JOB_DATA).find(j => j.name === p.job)
+				menu.innerHTML = ''
+				;[5, 10, 15, 20, 30].forEach(lv => {
+					const sIdx = p.learnedSkills[lv]
+					if (sIdx === undefined) return
+					const s = job.skills[lv][sIdx]
+					if (s.type === 'passive') return
+
+					const cooldownTurns = p.skillCooldowns && p.skillCooldowns[lv] ? p.skillCooldowns[lv] : 0
+					const isOnCooldown = cooldownTurns > 0
+
+					const btn = document.createElement('button')
+					btn.className = 'btn-icon'
+					btn.style.padding = "15px 10px";
+					btn.style.height = "auto";
+					let btnHtml = `<div style="display:flex;justify-content:space-between; align-items:center;"><b style="font-size:1rem;">${s.n}</b><span style="color:var(--accent-blue)">MP${s.cost}</span></div>`
+					if (isOnCooldown) btnHtml += `<div style="color:var(--accent-red); font-size:0.75rem; text-align:right;">[待機:${cooldownTurns}ターン]</div>`
+					btn.innerHTML = btnHtml
+
+					if (p.mp < s.cost || isOnCooldown) {
+						btn.disabled = true
+						btn.style.opacity = 0.5
+					}
+					btn.onclick = () => useBattleSkill(s, lv)
+					menu.appendChild(btn)
+				})
+			} else {
+				menu.classList.add('hidden')
+			}
+		}
+		function updateBattleUI() {
+			const container = document.getElementById('enemy-container')
+			const isTargeting = battle.targeting === 'attack' || battle.targeting === 'skill'
+			container.innerHTML = battle.enemies
+				.map((e, i) => {
+					const isDead = e.hp <= 0
+					const clickable = isTargeting && !isDead ? `onclick="selectEnemyTarget(${i})"` : ''
+					const cursorClass = isTargeting && !isDead ? 'cursor-pointer targeting-active' : ''
+					return `<div class="battle-unit-box ${isDead ? 'hidden' : ''} ${e.isBoss ? 'is-boss' : ''} ${cursorClass}" style="${isDead ? 'opacity:0' : ''}" ${clickable}><b>${e.name}</b><div class="bar-bg"><div class="bar-fill" style="background:var(--hp-color); width:${Math.max(0, (e.hp / e.maxHp) * 100)}%"></div></div><small>HP:${e.hp}/${e.maxHp}</small></div>`
+				})
+				.join('')
+			if (battle.active && battle.enemies.length > 0 && battle.enemies.every(e => e.hp <= 0)) {
+				container.innerHTML = '<div style="font-size:1.5rem; color:var(--gold); font-weight:bold;">勝利！</div>'
+			}
+			const partyContainer = document.getElementById('party-battle-container')
+			if (gameState.party.length > 0) {
+				partyContainer.innerHTML = gameState.party
+					.map((p, i) => {
+						const fs = getFinalStats(p)
+						const isCurrent = battle.turn === 'player' && i === battle.activeUnitIndex
+						const isHealTargeting = battle.targeting === 'heal'
+						const clickable = isHealTargeting ? `onclick="selectPartyTarget(${i})"` : ''
+						const cursorClass = isHealTargeting ? 'cursor-pointer targeting-active' : ''
+						
+						return `<div class="battle-unit-box ${isCurrent ? 'active-turn' : ''} ${cursorClass}" style="${p.hp <= 0 ? 'opacity:0.5;filter:grayscale(1);' : ''}" ${clickable}>
+							<div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:2px;">
+								<span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.name}</span><span>${p.hp}</span>
+							</div>
+							<div class="bar-bg" style="height:6px;"><div class="bar-fill" style="background:var(--hp-color); width:${Math.max(0, (p.hp / fs.maxHp) * 100)}%"></div></div>
+							<div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-top:2px;">
+								<span>MP</span><span>${p.mp}</span>
+							</div>
+							<div class="bar-bg" style="height:4px;"><div class="bar-fill" style="background:var(--mp-color); width:${Math.max(0, (p.mp / fs.maxMp) * 100)}%"></div></div>
+						</div>`
+					})
+					.join('')
+			}
+		}
+		function updateUI() {
+			document.getElementById('h-gold').innerText = gameState.gold + (gameState.inDungeon ? gameState.tempGold : 0)
+			document.getElementById('h-max-floor').innerText = gameState.maxFloor + 'F'
+			document.getElementById('h-cap').innerText = gameState.inventory.length
+			document.getElementById('h-max-cap').innerText = getMaxCapacity()
+			// ヘッダーのLvボーナス表示
+			const bd = getBagCapBreakdown()
+			const lvBonusEl = document.getElementById('h-lv-bonus')
+			if (lvBonusEl) {
+				if (bd.lvBonus > 0) {
+					lvBonusEl.style.display = 'inline'
+					lvBonusEl.title = `Lv+${bd.lvBonus}${bd.accBonus>0?' 装備+'+bd.accBonus:''}${bd.expand>0?' 拡張+'+bd.expand:''}`
+				} else {
+					lvBonusEl.style.display = 'none'
+				}
+			}
+			const list = document.getElementById('party-list')
+			list.innerHTML = gameState.party
+				.map((p, i) => {
+					const fs = getFinalStats(p)
+					const expP = Math.floor((p.exp / p.nextExp) * 100)
+					const wN = p.equip.weapon ? (p.equip.weapon.rarityLabel ? `[${p.equip.weapon.rarityLabel}] ${p.equip.weapon.n}` : p.equip.weapon.n) : '素手'
+					const aN = p.equip.armor ? (p.equip.armor.rarityLabel ? `[${p.equip.armor.rarityLabel}] ${p.equip.armor.n}` : p.equip.armor.n) : 'なし'
+					const acN = p.equip.acc ? (p.equip.acc.rarityLabel ? `[${p.equip.acc.rarityLabel}] ${p.equip.acc.n}` : p.equip.acc.n) : 'なし'
+					const wC = p.equip.weapon ? (p.equip.weapon.rarityColor || '#eee') : '#eee'
+					const aC = p.equip.armor ? (p.equip.armor.rarityColor || '#eee') : '#eee'
+					const acC = p.equip.acc ? (p.equip.acc.rarityColor || '#eee') : '#eee'
+					return `<div class="char-card"><div style="display:flex;justify-content:space-between;align-items:center"><b>${p.name}</b> <div style="display:flex;gap:5px"><button class="btn-icon" onclick="openCharDetailModal(${i})" style="font-size:0.75rem; padding:4px 8px;">詳細</button><button class="btn-icon" style="padding:4px 8px; font-size:0.75rem;" onclick="openTraining(${i})">育成</button></div></div><div style="font-size:0.8rem;color:#aaa;margin-bottom:4px;">Lv.${p.lv} ${p.job}</div>
+                            <div class="bar-bg"><div class="bar-fill" style="background:var(--hp-color); width:${(p.hp / fs.maxHp) * 100}%"></div></div>
+                            <div class="bar-bg" style="height:4px;"><div class="bar-fill" style="background:var(--mp-color); width:${(p.mp / fs.maxMp) * 100}%"></div></div>
+                            <div class="bar-bg" style="height:3px;"><div class="bar-fill" style="background:var(--exp-color); width:${expP}%"></div></div>
+                                <div style="font-size:0.75rem; color:#eee; margin-top:6px; line-height:1.2;">物攻:${Math.floor(fs.str)} 特攻:${Math.floor(fs.matk)} 物耐:${Math.floor(fs.vit)} 特耐:${Math.floor(fs.mdef)}<br>EXP:${expP}%</div>
+                            <div style="font-size:0.7rem; color:#666; display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;"><span style="color:${wC}">⚔️:${wN}</span><span style="color:${aC}">🛡️:${aN}</span><span style="color:${acC}">💍:${acN}</span><span>🔷:${(p.equip.runes || []).length}</span></div></div>`
+				})
+				.join('')
+		}
+		function addLog(m, c = '') {
+			const l = document.getElementById('log-area')
+			const d = document.createElement('div')
+			d.className = `log-entry ${c}`
+			d.innerHTML = `> ${m}`
+			l.appendChild(d)
+			l.scrollTop = l.scrollHeight
+		}
+		window.onload = () => {
+			if (load_game()) {
+				addLog('セーブデータをロードしました。', 'log-sys')
+			} else {
+				addLog('深淵へ続く物語が幕を開ける。')
+			}
+			updateUI()
+			if (gameState.party.length === 0) {
+				openFirstCharModal()
+			}
+			playBGM('town');
+		}
+		window.onresize = function () {
+			console.log('Window resized')
+		}
+		</script>
+	</body>
+</html>
