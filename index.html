@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-		<title>Abyss Redive ver1.41</title>
+		<title>Abyss Redive ver2.21</title>
 		<style>
 		:root {
 			--bg-dark: #0d0d0d;
@@ -161,10 +161,17 @@ header .btn-icon {
 			color: white;
 			text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 			width: 100%;
-			margin-bottom: 10px;
+			margin-bottom: 0;
 			min-height: 54px;
+			flex-shrink: 0;
 		}		
 		.btn-green { background: var(--accent-green); }
+		#dungeon-ui {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			width: 100%;
+		}
 		.btn-blue { background: var(--accent-blue); }
 		.btn-purple { background: var(--accent-purple); }
 		.btn-red { background: var(--accent-red); }
@@ -383,13 +390,11 @@ header .btn-icon {
 					<button class="btn-icon" onclick="openInventory()" id="header-bag-btn" style="display:flex; align-items:center; gap:6px;" title="カバン">
 						<span style="color:var(--accent-red)">👜</span> <span id="h-cap">0</span>/<span id="h-max-cap">15</span><span id="h-lv-bonus" style="font-size:0.7rem; color:#7dc; display:none;"> (+Lv)</span>
 					</button>
+					
 				</div>
+				
 				<div class="header-right">
-					<button id="btn-mute" class="btn-icon" onclick="toggleMute()">🔊</button>
-					<button class="btn-icon" onclick="openHelpModal()">❓</button>
-					<button class="btn-icon" onclick="openSaveModal()">💾</button>
-					<button class="btn-icon" onclick="openLoadModal()">📂</button>
-					<button class="btn-icon" onclick="window.open('https://discord.gg/z9RnYzQjBn', '_blank')" title="Discord">💬</button>
+					<button class="btn-icon" onclick="openSettingsModal()" title="設定">⚙</button>
 				</div>
 			</header>
 
@@ -397,7 +402,7 @@ header .btn-icon {
 				<div id="viewport">
 					<div id="town-ui">
 						<div style="font-size: 1.8rem; letter-spacing: 6px; text-align: center; color: var(--accent-blue); margin-bottom:20px;">【 拠点都市 】</div>
-						<div style="display:flex; flex-direction:column; gap:10px; width:100%; max-width:320px; margin: 0 auto;">
+						<div style="display:flex; flex-direction:column; gap:10px; width:100%; max-width:320px; margin: 0 auto; flex-shrink:0;">
 							<button class="btn-action btn-green" onclick="enterDungeon()">ダンジョン探索</button>
 							<button class="btn-action btn-blue" onclick="openShopMenu()">ショップ</button>
 							<button class="btn-action btn-purple" onclick="openGuild()">ギルド</button>
@@ -408,12 +413,11 @@ header .btn-icon {
 						<div style="font-size: 1.5rem; color: var(--accent-red); font-weight: bold; letter-spacing: 4px;">
 							FLOOR <span id="floor-num-disp">1</span>
 						</div>
-						<div id="event-display" style="margin: 20px 0; min-height: 60px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 1.1rem; padding: 0 10px;">不気味な静寂...</div>
-						<div style="display:flex; flex-direction:column; gap:8px; width:100%; max-width:400px; margin: 0 auto;">
-							<div style="display:flex; gap:8px;">
-								<button class="btn-action btn-green" style="flex:1;" onclick="explore()">探索を続ける</button>
-							</div>
-							<button class="btn-action btn-red" onclick="retreat()">街に戻る</button>
+						<div id="event-display" style="margin: 16px 0; height: 56px; min-height: 56px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 1.05rem; padding: 0 10px; overflow: hidden; flex-shrink: 0; width:100%; max-width:320px;">不気味な静寂...</div>
+						<div style="display:flex; flex-direction:column; gap:10px; width:100%; max-width:320px; margin: 0 auto;">
+							<button id="btn-explore" class="btn-action btn-green" onclick="explore()">探索を続ける</button>
+			
+							<button id="btn-retreat" class="btn-action btn-red" onclick="retreat()">街に戻る</button>
 							<button id="btn-next-floor" class="btn-action btn-blue hidden" onclick="nextFloor()">階段を下りる</button>
 						</div>
 					</div>
@@ -735,7 +739,7 @@ const JOB_DATA = {
 					7:  [ { n: '会心の心得',   type: 'passive', stat: 'cri', val: 0.05 },
 					      { n: '身軽な歩法',   type: 'passive', stat: 'agi', val: 10 } ],
 					10: [ { n: 'ドラゴン斬り', type: 'atk',    dType: 'physical', target: 'single', cost: 20, pow: 4.5 },
-					      { n: '威嚇の咆哮',   type: 'debuff', stat: 'def', target: 'all', cost: 15, val: 0.15 } ],
+					      { n: '出血斬り',     type: 'bleed',  eTarget: 'single', cost: 15, turns: 3 } ],
 					// ─── Lv11〜20 ───
 					12: [ { n: '剛腕',         type: 'passive', stat: 'str', val: 20 },
 					      { n: '不屈の精神',   type: 'passive', stat: 'hp',  val: 150 } ],
@@ -744,12 +748,12 @@ const JOB_DATA = {
 					17: [ { n: '狂乱',         type: 'passive', stat: 'str', val: 30 },
 					      { n: '鉄壁の構え',   type: 'passive', stat: 'vit', val: 30 } ],
 					20: [ { n: '地砕き',       type: 'atk',    dType: 'physical', target: 'all',    cost: 40, pow: 3.5 },
-					      { n: '戦神の加護',   type: 'buff',   stat: 'str', target: 'single', cost: 25, val: 0.3 } ],
+					      { n: '雷鳴の一撃',   type: 'stun',   eTarget: 'single', cost: 30, turns: 2 } ],
 					// ─── Lv21〜30 ───
 					25: [ { n: '覇王のオーラ', type: 'passive', stat: 'str', val: 50 },
 					      { n: '不死鳥の鼓動', type: 'passive', stat: 'hp',  val: 300 } ],
 					30: [ { n: 'ラグナロク',   type: 'atk',    dType: 'physical', target: 'all',    cost: 60, pow: 7.0 },
-					      { n: '無敵の盾',     type: 'buff',   stat: 'vit', target: 'single', cost: 50, val: 0.5 } ],
+					      { n: '凶斬り・出血', type: 'bleed',  eTarget: 'all',    cost: 50, turns: 4 } ],
 					// ─── Lv31〜40 ───
 					33: [ { n: '武神の極意',   type: 'passive', stat: 'str', val: 80 },
 					      { n: '闘気纏い',     type: 'passive', stat: 'cri', val: 0.08 } ],
@@ -779,7 +783,7 @@ const JOB_DATA = {
 					2:  [ { n: '加護',         type: 'passive', stat: 'vit', val: 12 },
 					      { n: '信仰',         type: 'passive', stat: 'mp',  val: 30 } ],
 					5:  [ { n: '聖なる盾',     type: 'buff',    stat: 'vit', target: 'single', cost: 10, val: 0.20 },
-					      { n: '祈りの手',     type: 'heal',    scale: 'self_hp', target: 'single', cost: 12, val: 0.25 } ],
+					      { n: '守護の手',     type: 'shield',  target: 'single', cost: 12, val: 0.15 } ],  // 単体に最大HP×15%のシールド
 					7:  [ { n: '鉄壁の信仰',   type: 'passive', stat: 'vit', val: 18 },
 					      { n: '聖光の守護',   type: 'passive', stat: 'mdef',val: 15 } ],
 					10: [ { n: '裁きの光',     type: 'atk',    dType: 'magic', target: 'all',    cost: 25, pow: 2.2 },
@@ -788,7 +792,7 @@ const JOB_DATA = {
 					12: [ { n: '堅固な体躯',   type: 'passive', stat: 'hp',  val: 200 },
 					      { n: '献身の祈り',   type: 'passive', stat: 'mdef',val: 20 } ],
 					15: [ { n: '聖域の壁',     type: 'buff',    stat: 'mdef',target: 'single', cost: 20, val: 0.30 },
-					      { n: '浄化の波動',   type: 'heal',    scale: 'self_hp', target: 'all', cost: 30, val: 0.20 } ],
+					      { n: '身代わり',     type: 'guard',   target: 'single', cost: 25 } ],  // 1ターン味方全員へのダメージを肩代わり
 					17: [ { n: '神盾の心得',   type: 'passive', stat: 'vit', val: 35 },
 					      { n: '神聖なる魂',   type: 'passive', stat: 'mp',  val: 80 } ],
 					20: [ { n: '神罰',         type: 'atk',    dType: 'magic', target: 'all',    cost: 45, pow: 4.5 },
@@ -797,7 +801,7 @@ const JOB_DATA = {
 					25: [ { n: '神威',         type: 'passive', stat: 'vit', val: 40 },
 					      { n: '不滅の心',     type: 'passive', stat: 'hp',  val: 400 } ],
 					30: [ { n: '究極守護',     type: 'buff',    stat: 'vit', target: 'all',    cost: 80, val: 0.40 },
-					      { n: '聖域展開',     type: 'debuff',  stat: 'atk', target: 'all',    cost: 60, val: 0.30 } ],
+					      { n: '聖盾展開',     type: 'shield',  target: 'all',    cost: 60, val: 0.30 } ],  // 全体に最大HP×30%のシールド
 					// ─── Lv31〜40 ───
 					33: [ { n: '神盾の極意',   type: 'passive', stat: 'vit', val: 70 },
 					      { n: '聖なる生命力', type: 'passive', stat: 'hp',  val: 700 } ],
@@ -827,7 +831,7 @@ const JOB_DATA = {
 					2:  [ { n: '魔力増幅',     type: 'passive', stat: 'matk',val: 10 },
 					      { n: '瞑想の心得',   type: 'passive', stat: 'mp',  val: 60 } ],
 					5:  [ { n: '火球',         type: 'atk',    dType: 'magic', target: 'single', cost: 15, pow: 3.8 },
-					      { n: '氷結',         type: 'debuff', stat: 'agi', target: 'single', cost: 10, val: 0.15 } ],
+					      { n: '氷結',         type: 'freeze', eTarget: 'single', cost: 14, turns: 2 } ],
 					7:  [ { n: '魔道の才覚',   type: 'passive', stat: 'matk',val: 15 },
 					      { n: '精霊の加護',   type: 'passive', stat: 'mdef',val: 12 } ],
 					10: [ { n: '雷鳴',         type: 'atk',    dType: 'magic', target: 'all',    cost: 35, pow: 2.5 },
@@ -845,7 +849,7 @@ const JOB_DATA = {
 					25: [ { n: '賢者の叡智',   type: 'passive', stat: 'matk',val: 50 },
 					      { n: '魔道の極み',   type: 'passive', stat: 'mp',  val: 200 } ],
 					30: [ { n: 'アビスノヴァ', type: 'atk',    dType: 'magic', target: 'all',    cost: 100, pow: 8.5 },
-					      { n: '時の静止',     type: 'debuff', stat: 'agi', target: 'all',    cost:  80, val: 0.50 } ],
+					      { n: '絶対零度',     type: 'freeze', eTarget: 'all',    cost:  80, turns: 3 } ],
 					// ─── Lv31〜40 ───
 					33: [ { n: '宇宙の理解',   type: 'passive', stat: 'matk',val: 80 },
 					      { n: '無限の魔力',   type: 'passive', stat: 'mp',  val: 400 } ],
@@ -874,7 +878,7 @@ const JOB_DATA = {
 					// ─── Lv1〜10 ───
 					2:  [ { n: '足運び',       type: 'passive', stat: 'agi', val: 12 },
 					      { n: '目利き',       type: 'passive', stat: 'luk', val: 15 } ],
-					5:  [ { n: '毒矢',         type: 'atk',    dType: 'physical', target: 'single', cost: 12, pow: 3.2 },
+					5:  [ { n: '毒矢',         type: 'poison', eTarget: 'single', cost: 12, turns: 3 },
 					      { n: '残像',         type: 'buff',   stat: 'agi', target: 'single', cost: 10, val: 0.25 } ],
 					7:  [ { n: '鷹の目',       type: 'passive', stat: 'cri', val: 0.06 },
 					      { n: '風読みの術',   type: 'passive', stat: 'agi', val: 15 } ],
@@ -888,12 +892,12 @@ const JOB_DATA = {
 					17: [ { n: '神速の足技',   type: 'passive', stat: 'agi', val: 40 },
 					      { n: '星の恵み',     type: 'passive', stat: 'luk', val: 40 } ],
 					20: [ { n: '狙撃',         type: 'atk',    dType: 'physical', target: 'single', cost: 40, pow: 8.0 },
-					      { n: '幸運の導き',   type: 'buff',   stat: 'luk', target: 'single', cost: 20, val: 0.50 } ],
+					      { n: '出血矢',       type: 'bleed',  eTarget: 'single', cost: 20, turns: 4 } ],
 					// ─── Lv21〜30 ───
 					25: [ { n: '神速',         type: 'passive', stat: 'agi', val: 40 },
 					      { n: '星の加護',     type: 'passive', stat: 'luk', val: 50 } ],
 					30: [ { n: '滅殺の矢',     type: 'atk',    dType: 'physical', target: 'all',    cost: 80, pow: 6.0 },
-					      { n: '極限回避',     type: 'passive', stat: 'agi', val: 80 } ],
+					      { n: '猛毒の矢雨',   type: 'poison', eTarget: 'all',    cost: 70, turns: 4 } ],
 					// ─── Lv31〜40 ───
 					33: [ { n: '疾風神速の極', type: 'passive', stat: 'agi', val: 100 },
 					      { n: '天運の申し子', type: 'passive', stat: 'luk', val: 80 } ],
@@ -925,23 +929,23 @@ const JOB_DATA = {
 					5:  [ { n: 'ヒール',       type: 'heal',    scale: 'matk', target: 'single', cost: 12, val: 1.5 },
 					      { n: '攻撃祝福',     type: 'buff',   stat: 'str', target: 'single', cost: 15, val: 0.20 } ],
 					7:  [ { n: '守護の心得',   type: 'passive', stat: 'vit', val: 15 },
-					      { n: '機敏の祈り',   type: 'passive', stat: 'agi', val: 8 } ],
-					10: [ { n: '聖なる壁',     type: 'buff',   stat: 'vit', target: 'single', cost: 15, val: 0.25 },
+					      { n: '再生の祈り',   type: 'regen',  target: 'single', cost: 18, val: 0.05, turns: 3 } ],
+					10: [ { n: '聖なる守り',   type: 'shield', target: 'single', cost: 15, val: 0.20 },  // 単体に最大HP×20%のシールド
 					      { n: '聖なる光',     type: 'atk',    dType: 'magic', target: 'single', cost: 20, pow: 3.0 } ],
 					// ─── Lv11〜20 ───
 					12: [ { n: 'マナ回廊',     type: 'passive', stat: 'mp',  val: 100 },
 					      { n: '聖女の導き',   type: 'passive', stat: 'mdef',val: 20 } ],
 					15: [ { n: '蘇生',         type: 'heal',    scale: 'matk', target: 'single', cost: 40, val: 2.0 },
-					      { n: 'エリアヒール', type: 'heal',    scale: 'matk', target: 'all',    cost: 35, val: 1.0 } ],
+					      { n: '神罰の光',     type: 'stun',   eTarget: 'single', cost: 35, turns: 2 } ],
 					17: [ { n: '不屈の肉体',   type: 'passive', stat: 'hp',  val: 100 },
 					      { n: '鋼の意志',     type: 'passive', stat: 'vit', val: 20 } ],
 					20: [ { n: '神威の祈り',   type: 'buff',   stat: 'str', target: 'all',    cost: 30, val: 0.20 },
-					      { n: '魔防祝福',     type: 'buff',   stat: 'mdef',target: 'all',    cost: 30, val: 0.20 } ],
+					      { n: '祈りの加護',   type: 'shield', target: 'all',    cost: 35, val: 0.25 } ],  // 全体に最大HP×25%のシールド
 					// ─── Lv21〜30 ───
 					25: [ { n: '魔導の極意',   type: 'passive', stat: 'mp',  val: 200 },
 					      { n: '輝きの源',     type: 'passive', stat: 'matk',val: 40 } ],
 					30: [ { n: '奇跡の復活',   type: 'heal',    scale: 'target_hp', target: 'all', cost: 80, val: 0.50 },
-					      { n: '浄化の光',     type: 'debuff', stat: 'def', target: 'all',    cost: 60, val: 0.25 } ],
+					      { n: '聖域の再生',   type: 'regen',  target: 'all',    cost: 65, val: 0.06, turns: 4 } ],
 					// ─── Lv31〜40 ───
 					33: [ { n: '聖泉の加護',   type: 'passive', stat: 'mp',  val: 350 },
 					      { n: '神授の癒し',   type: 'passive', stat: 'matk',val: 70 } ],
@@ -970,20 +974,20 @@ const JOB_DATA = {
 					// ─── Lv1〜10 ───
 					2:  [ { n: '錬金術知識',   type: 'passive', stat: 'matk',val: 15 },
 					      { n: '素材採集',     type: 'passive', stat: 'luk', val: 10 } ],
-					5:  [ { n: '毒液',         type: 'atk',    dType: 'magic', target: 'single', cost:  8, pow: 1.8 },
+					5:  [ { n: '毒液',         type: 'poison', eTarget: 'single', cost: 10, turns: 3 },
 					      { n: '装甲劣化',     type: 'debuff', stat: 'def', target: 'single', cost: 12, val: 0.20 } ],
 					7:  [ { n: '素早い調合',   type: 'passive', stat: 'agi', val: 10 },
 					      { n: '毒耐性',       type: 'passive', stat: 'vit', val: 10 } ],
 					10: [ { n: '酸の雨',       type: 'atk',    dType: 'magic', target: 'all',    cost: 18, pow: 1.8 },
-					      { n: '戦渇の呪詛',   type: 'debuff', stat: 'atk', target: 'all',    cost: 15, val: 0.15 } ],
+					      { n: '冷却ガス',     type: 'freeze', eTarget: 'single', cost: 18, turns: 2 } ],
 					// ─── Lv11〜20 ───
 					12: [ { n: '薬学の極意',   type: 'passive', stat: 'matk',val: 30 },
 					      { n: '魔導の心得',   type: 'passive', stat: 'mp',  val: 100 } ],
 					15: [ { n: '猛毒の研究',   type: 'passive', stat: 'matk',val: 50 },
-					      { n: '慎重な動作',   type: 'passive', stat: 'cri', val: 0.05 } ],
+					      { n: 'MP触媒',       type: 'mpcost', target: 'single', cost: 15, val: 0.50 } ],
 					17: [ { n: '毒素拡散',     type: 'passive', stat: 'matk',val: 40 },
 					      { n: '魔力循環',     type: 'passive', stat: 'mp',  val: 200 } ],
-					20: [ { n: '腐敗の霧',     type: 'atk',    dType: 'magic', target: 'all',    cost: 40, pow: 4.5 },
+					20: [ { n: '腐敗の霧',     type: 'poison', eTarget: 'all',    cost: 35, turns: 4 },
 					      { n: '防御奔流',     type: 'debuff', stat: 'def', target: 'all',    cost: 30, val: 0.25 } ],
 					// ─── Lv21〜30 ───
 					25: [ { n: '賢者の錬金術', type: 'passive', stat: 'matk',val: 80 },
@@ -1012,7 +1016,89 @@ const JOB_DATA = {
 			},
 		}
 
-		const MONSTERS = [
+		// ═══════════════════════════════════════════════════
+		//   エリートモンスターシステム
+		// ═══════════════════════════════════════════════════
+		const ELITE_TIERS = [
+			{ tier: 'Elite',  rate: 0.10, color: '#60a5fa', labelColor: '#1e3a5f' },
+			{ tier: 'Rare',   rate: 0.04, color: '#c084fc', labelColor: '#3b1f5e' },
+			{ tier: 'Legend', rate: 0.01, color: '#fb923c', labelColor: '#5e2a0a' },
+		]
+		// 二つ名個数の確率（累積）
+		const TITLE_COUNT_TABLE = [
+			{ count: 3, cumRate: 0.01 },
+			{ count: 2, cumRate: 0.08 },
+			{ count: 1, cumRate: 0.28 },
+		]
+		const ELITE_TRAITS = {
+			Elite: [
+				{ title: '剛腕の',   apply: e => { e.atk  = Math.floor(e.atk  * 1.40) },                              desc: '物理攻撃+40%' },
+				{ title: '魔力の',   apply: e => { e.matk = Math.floor((e.matk||e.atk*0.5) * 1.40) },                  desc: '特殊攻撃+40%' },
+				{ title: '金剛の',   apply: e => { e.def  = Math.floor(e.def  * 1.40); e.mdef = Math.floor(e.mdef * 1.40) }, desc: '防御+40%' },
+				{ title: '迅速な',   apply: e => { e.agi  = Math.floor(e.agi  * 1.50) },                              desc: '速度+50%' },
+				{ title: '巨躯の',   apply: e => { const bonus = Math.floor(e.maxHp * 0.60); e.hp += bonus; e.maxHp += bonus }, desc: 'HP+60%' },
+			],
+			Rare: [
+				{ title: '不壊の',    apply: e => { const bonus = Math.floor(e.maxHp * 0.40); e.hp += bonus; e.maxHp += bonus; e._regenPct = 0.05 }, desc: 'HP+40%・毎ターン回復5%', onTurnStart: e => { e.hp = Math.min(e.maxHp, e.hp + Math.floor(e.maxHp * 0.05)) } },
+				{ title: '復讐する', apply: e => { e._reflectChance = 0.20; e._reflectPct = 0.30 },               desc: '被ダメ時20%で30%反射' },
+				{ title: '呪われし', apply: e => { e._poisonOnHit = true },                                         desc: '攻撃時毒付与' },
+			],
+			Legend: [
+				{ title: '輝く',      apply: e => { e.exp = e.exp * 5; e.gold = e.gold * 5 },                        desc: 'EXP×5・Gold×5' },
+				{ title: '秘宝を抱く', apply: e => { e._legendDrop = true },                                        desc: 'レジェンド装備確定ドロップ' },
+			],
+		}
+
+		function rollEliteTier() {
+			const r = Math.random()
+			let cum = 0
+			for (const t of ELITE_TIERS) {
+				cum += t.rate
+				if (r < cum) return t
+			}
+			return null
+		}
+
+		function applyEliteTraits(e) {
+			const tierObj = rollEliteTier()
+			if (!tierObj) return e
+
+			// 二つ名個数を決定
+			let count = 0
+			const cr = Math.random()
+			for (const row of TITLE_COUNT_TABLE) {
+				if (cr < row.cumRate) { count = row.count; break }
+			}
+			if (count === 0) count = 1
+
+			// 特性プールからランダムに count 個選ぶ（重複なし）
+			const pool = [...(ELITE_TRAITS[tierObj.tier] || [])]
+			const chosen = []
+			while (chosen.length < count && pool.length > 0) {
+				const idx = Math.floor(Math.random() * pool.length)
+				chosen.push(pool.splice(idx, 1)[0])
+			}
+			if (chosen.length === 0) return e
+
+			// 特性を適用
+			chosen.forEach(tr => tr.apply(e))
+
+			// 名前に二つ名を付加
+			const titleStr = chosen.map(tr => tr.title).join('')
+			e.name = titleStr + e.name
+			e.eliteTier   = tierObj.tier
+			e.eliteColor  = tierObj.color
+			e.eliteLabelBg = tierObj.labelColor
+			e.eliteTraits  = chosen
+			e._isElite     = true
+
+			// HP等の再整合
+			if (e.hp > e.maxHp) e.maxHp = e.hp
+
+			return e
+		}
+
+				const MONSTERS = [
 			// ===== 1F〜5F : 浅層 =====
 			{ id: 'm1',  name: 'スライム',      hp:  40, atk:  15, def:  5, mdef:  5, agi:  6, gold:  15, exp:  40, minFloor:  1, maxFloor:  5, variance: 0.05 },
 			{ id: 'm2',  name: 'ホグ',          hp:  70, atk:  25, def: 12, mdef: 10, agi:  4, gold:  35, exp:  60, minFloor:  1, maxFloor:  5, variance: 0.10 },
@@ -1224,7 +1310,8 @@ const SHOP_ITEMS = {
 			],
 		}
 		let gameState = { gold: 500, floor: 1, inDungeon: false, party: [], inventory: [], tempGold: 0, exploreCount: 0, stairsFound: false, bossDefeated: [], maxFloor: 1, guildWarehouse: [], guildWarehouseCap: 50, bagExpansion: 0 }
-		let battle = { active: false, isProcessing: false, enemies: [], turn: 'player', activeUnitIndex: 0, buffs: [], enemyDebuffs: [], targeting: null, pendingSkill: null, remainingHits: 0 }
+		let battle = { active: false, isProcessing: false, enemies: [], turn: 'player', activeUnitIndex: 0, buffs: [], enemyDebuffs: [], targeting: null, pendingSkill: null, remainingHits: 0, shields: [], guardIdx: -1, enemyDots: [], partyRegens: [], enemyStatus: [], mpCostDown: [] }
+		let autoFarm = { active: false, floor: 1, kills: 0, gold: 0, exp: 0, timerId: null, hpThreshold: 0.25, useSkills: true, speed: 'normal' }
 
 		function applyRarity(item) {
 			if (item.type === 'item') return item;
@@ -1646,6 +1733,16 @@ const SHOP_ITEMS = {
 			battle.enemies = []
 			battle.enemyDebuffs = []
 			battle.buffs = []
+			battle.shields = []
+			battle.guardIdx = -1
+			battle.enemyDots = []
+			battle.partyRegens = []
+			battle.enemyStatus = []
+			battle.mpCostDown = []
+			battle.enemyDots = []
+			battle.partyRegens = []
+			battle.enemyStatus = []
+			battle.mpCostDown = []
 			battle.activeUnitIndex = 0
 			battle.turnCycle = 0
 			battle.remainingHits = 0
@@ -1658,6 +1755,7 @@ const SHOP_ITEMS = {
 				boss.maxHp = boss.hp
 				battle.enemies.push(boss)
 				addLog('ボス出現！', 'log-red')
+				if (autoFarm.active) { stopAutoFarm('ボスフロアに到達'); return }
 			} else {
 				let count = Math.min(3, Math.floor(Math.random() * Math.min(3, gameState.floor)) + 1)
 				let available = MONSTERS.filter(m => m.minFloor <= gameState.floor && gameState.floor <= m.maxFloor)
@@ -1666,7 +1764,18 @@ const SHOP_ITEMS = {
 					const b = available[Math.floor(Math.random() * available.length)]
 					const variance = b.variance || 0.1
 					const roll = 1 + (Math.random() * 2 - 1) * variance
-					battle.enemies.push({ ...b, id: i, hp: Math.floor(b.hp * roll), maxHp: Math.floor(b.hp * roll), atk: Math.floor(b.atk * roll), def: Math.floor(b.def * roll), mdef: Math.floor(b.mdef * roll), exp: Math.floor(b.exp * roll), gold: Math.floor(b.gold * roll) })
+					const enemy = { ...b, id: i,
+						hp:   Math.floor(b.hp   * roll), maxHp: Math.floor(b.hp * roll),
+						atk:  Math.floor(b.atk  * roll), def: Math.floor(b.def * roll),
+						mdef: Math.floor(b.mdef * roll), exp: Math.floor(b.exp * roll),
+						gold: Math.floor(b.gold * roll)
+					}
+					applyEliteTraits(enemy)
+					battle.enemies.push(enemy)
+					if (enemy._isElite) {
+						const trDesc = enemy.eliteTraits.map(t=>t.desc).join(' / ')
+						addLog(`✨ ${enemy.eliteTier}個体出現！ [${enemy.name}] — ${trDesc}`, enemy.eliteTier==='Legend' ? 'log-gold' : enemy.eliteTier==='Rare' ? 'log-sys' : 'log-p-atk')
+					}
 				}
 			}
 			document.getElementById('dungeon-ui').classList.add('hidden')
@@ -1693,6 +1802,11 @@ const SHOP_ITEMS = {
 					}
 				}
 				document.getElementById('battle-msg').innerText = `${p.name}の行動`
+				// オート周回中：自動でアクションを実行
+				if (autoFarm.active && battle.active) {
+					const _autoDelay = autoFarm.speed === 'fast' ? 150 : autoFarm.speed === 'slow' ? 900 : 400
+					setTimeout(_autoFarmDoPlayerAction, _autoDelay)
+				}
 			} else {
 				document.getElementById('battle-msg').innerText = '敵の行動...'
 			}
@@ -1709,6 +1823,9 @@ const SHOP_ITEMS = {
 					nextIdx++
 				}
 				setTurn('enemy')
+				// シールドのターン経過減衰
+				battle.shields = (battle.shields||[]).filter(s => { s.turns--; return s.turns > 0 })
+				battle.guardIdx = -1
 				setTimeout(enemyTurn, 500)
 			}
 		}
@@ -1753,10 +1870,27 @@ const SHOP_ITEMS = {
 				dType = p.equip.weapon.dType
 			}
 			playSE('attack');
+			const _damageMult = getEnemyDamageMult(target.id, dType)
 			const res = calcTacticalDamage(getFinalStats(p), target.def, target.mdef, p.lv, false, dType)
-			addLog(`${p.name}の攻撃：${res.val}ダメージ ${res.crit ? '★' : ''}`, res.crit ? 'log-crit' : 'log-p-atk')
+			res.val = Math.floor(res.val * _damageMult)
+			addLog(`${p.name}の攻撃：${res.val}ダメージ ${res.crit ? '★会心' : ''} <span style="font-size:0.75em; color:${dType==='magic'?'#a78bfa':'#fb923c'}; border:1px solid ${dType==='magic'?'#7c5cbf':'#c2622a'}; border-radius:3px; padding:0 3px;">${dType==='magic'?'特殊':'物理'}</span>`, res.crit ? 'log-crit' : 'log-p-atk')
 			setTimeout(() => {
 				target.hp = Math.max(0, target.hp - res.val)
+				// 復讐する：反射
+				if (target._reflectChance && target.hp > 0 && Math.random() < target._reflectChance) {
+					const reflectDmg = Math.floor(res.val * target._reflectPct)
+					const reflectTarget = gameState.party[battle.activeUnitIndex]
+					if (reflectTarget && reflectTarget.hp > 0) {
+						applyDamageToPartyMember(reflectTarget, reflectDmg, 'log-e-atk')
+						addLog(`💢 ${target.name}がダメージを反射！ ${reflectTarget.name}に${reflectDmg}！`, 'log-e-atk')
+					}
+				}
+				// 呪われし：攻撃時毒付与
+				if (target._poisonOnHit && target.hp > 0) {
+					const ex = (battle.enemyDots||[]).find(d=>d.eId===target.id&&d.type==='poison')
+					if (!ex) battle.enemyDots.push({ eId: target.id, type: 'poison', turns: 3 })
+					addLog(`☠ 反呪！ ${target.name}に毒を付与！`, 'log-e-atk')
+				}
 				updateBattleUI()
 				
 				battle.remainingHits--;
@@ -1764,7 +1898,12 @@ const SHOP_ITEMS = {
 				
 				if (battle.remainingHits > 0 && aliveEnemies.length > 0) {
 					battle.isProcessing = false;
-					playerAttack();
+					if (autoFarm.active) {
+						const _nextTgt = aliveEnemies.reduce((a, b) => a.hp < b.hp ? a : b)
+						executeAttack(_nextTgt)
+					} else {
+						playerAttack();
+					}
 				} else {
 					battle.remainingHits = 0;
 					if (battle.enemies.every(e => e.hp <= 0)) winBattle()
@@ -1778,8 +1917,14 @@ const SHOP_ITEMS = {
 
 		function useBattleSkill(s, lv) {
 			const p = gameState.party[battle.activeUnitIndex]
-			if (p.hp <= 0 || p.mp < s.cost) return
-			if (s.type === 'atk' && s.target === 'single') {
+			const _pIdxCheck = gameState.party.indexOf(p)
+			const _discCheck = (battle.mpCostDown||[]).find(m=>m.pIdx===_pIdxCheck)
+			const _checkCost = _discCheck ? Math.max(0, Math.floor(s.cost*(1-_discCheck.val))) : s.cost
+			if (p.hp <= 0 || p.mp < _checkCost) return
+			// 敵単体対象スキル（atk/状態異常系）: 複数敵がいるときターゲット選択
+			const _needsEnemyTarget = (s.type === 'atk' && s.target === 'single') ||
+				(['poison','bleed','stun','freeze'].includes(s.type) && s.eTarget === 'single')
+			if (_needsEnemyTarget) {
 				const aliveEnemies = battle.enemies.filter(e => e.hp > 0)
 				if (aliveEnemies.length === 0) return
 				if (aliveEnemies.length > 1) {
@@ -1807,7 +1952,11 @@ const SHOP_ITEMS = {
 		function executeSkill(s, explicitTarget = null, lv = null) {
 			const p = gameState.party[battle.activeUnitIndex]
 			if (p !== gameState.party[battle.activeUnitIndex]) return
-			p.mp -= s.cost
+			const _pIdx = gameState.party.indexOf(p)
+			const _mpDisc = (battle.mpCostDown||[]).find(m=>m.pIdx===_pIdx)
+			const _effCost = _mpDisc ? Math.max(0, Math.floor(s.cost*(1-_mpDisc.val))) : s.cost
+			if (_mpDisc) { battle.mpCostDown = battle.mpCostDown.filter(m=>m.pIdx!==_pIdx); addLog(`MPコスト軽減！ ${_effCost}MP消費（元${s.cost}MP）`, 'log-sys') }
+			p.mp -= _effCost
 			battle.isProcessing = true
 			battle.targeting = null
 			battle.pendingSkill = null
@@ -1873,9 +2022,16 @@ const SHOP_ITEMS = {
 					const skillDType = s.dType || 'physical'
 					const atkStat = skillDType === 'magic' ? fs.matk : fs.str
 					targets.forEach(t => {
+						const _sm = getEnemyDamageMult(t.id, skillDType)
 						const res = calcTacticalDamage({ ...fs, str: atkStat * s.pow, matk: atkStat * s.pow }, t.def, t.mdef, p.lv, false, skillDType)
+						res.val = Math.floor(res.val * _sm)
 						t.hp = Math.max(0, t.hp - res.val)
-						addLog(`${t.name}に ${res.val}ダメージ`, 'log-p-atk')
+						// 復讐する：反射
+						if (t._reflectChance && t.hp > 0 && Math.random() < t._reflectChance) {
+							const rd = Math.floor(res.val * t._reflectPct)
+							if (p.hp > 0) { applyDamageToPartyMember(p, rd, 'log-e-atk'); addLog(`💢 ${t.name}がダメージを反射！ ${p.name}に${rd}！`, 'log-e-atk') }
+						}
+						addLog(`${t.name}に ${res.val}ダメージ <span style="font-size:0.75em; color:${skillDType==='magic'?'#a78bfa':'#fb923c'}; border:1px solid ${skillDType==='magic'?'#7c5cbf':'#c2622a'}; border-radius:3px; padding:0 3px;">${skillDType==='magic'?'特殊':'物理'}</span>`, 'log-p-atk')
 					})
 					} else if (s.type === 'heal') {
 					const targets = s.target === 'all' ? gameState.party : [explicitTarget || p];
@@ -1902,6 +2058,87 @@ const SHOP_ITEMS = {
 						battle.buffs.push({ pIdx: idx, stat: s.stat, val: s.val })
 					})
 					addLog('能力を強化！', 'log-sys')
+				} else if (s.type === 'shield') {
+					const fs = getFinalStats(p)
+					const shieldAmt = Math.floor(fs.maxHp * s.val)
+					const targetPeople = s.target === 'all' ? gameState.party.filter(m => m.hp > 0).map((_, i) => gameState.party.indexOf(gameState.party.filter(m=>m.hp>0)[i])) : [gameState.party.indexOf(p)]
+					targetPeople.forEach(idx => {
+						// 既存シールドはスタックせず上書き（より大きい方を採用）
+						const existing = battle.shields.find(s => s.pIdx === idx)
+						if (existing) { existing.val = Math.max(existing.val, shieldAmt); existing.turns = 3 }
+						else battle.shields.push({ pIdx: idx, val: shieldAmt, turns: 3 })
+					})
+					const tName = s.target === 'all' ? '味方全体' : p.name
+					addLog(`${p.name}のシールド展開！ ${tName}に ${shieldAmt} のシールドを付与！`, 'log-sys')
+				} else if (s.type === 'guard') {
+					const pIdx = gameState.party.indexOf(p)
+					battle.guardIdx = pIdx
+					addLog(`${p.name}が身代わりの構え！ 1ターン、味方全員へのダメージを肩代わりする！`, 'log-sys')
+
+				// ── 再生バフ ──
+				} else if (s.type === 'regen') {
+					const targets = s.target === 'all' ? gameState.party.filter(m=>m.hp>0).map((_,i)=>gameState.party.indexOf(gameState.party.filter(m=>m.hp>0)[i])) : [gameState.party.indexOf(p)]
+					targets.forEach(idx => {
+						const ex = (battle.partyRegens||[]).find(r => r.pIdx===idx)
+						if (ex) { ex.turns = Math.max(ex.turns, s.turns); ex.val = Math.max(ex.val, s.val) }
+						else battle.partyRegens.push({ pIdx: idx, val: s.val, turns: s.turns })
+					})
+					const tname = s.target==='all'?'味方全体':p.name
+					addLog(`${p.name}の再生付与！ ${tname}に${s.turns}ターン間のリジェネを付与！`, 'log-sys')
+
+				// ── MPコスト軽減バフ ──
+				} else if (s.type === 'mpcost') {
+					const targets = s.target === 'all' ? gameState.party.map((_,i)=>i) : [gameState.party.indexOf(explicitTarget||p)]
+					targets.forEach(idx => {
+						battle.mpCostDown = (battle.mpCostDown||[]).filter(m=>m.pIdx!==idx)
+						battle.mpCostDown.push({ pIdx: idx, val: s.val })
+					})
+					const tname = s.target==='all'?'味方全体':(explicitTarget||p).name
+					addLog(`${p.name}のMP軽減付与！ ${tname}の次のスキルMPコスト${Math.floor(s.val*100)}%減！`, 'log-sys')
+
+				// ── 毒 ──
+				} else if (s.type === 'poison') {
+					const aliveE = battle.enemies.filter(e=>e.hp>0)
+					const ets = s.eTarget==='all' ? aliveE : (explicitTarget ? [explicitTarget] : [aliveE[0]])
+					ets.forEach(e => {
+						const ex = (battle.enemyDots||[]).find(d=>d.eId===e.id&&d.type==='poison')
+						if (ex) ex.turns = Math.max(ex.turns, s.turns)
+						else battle.enemyDots.push({ eId: e.id, type: 'poison', turns: s.turns })
+					})
+					addLog(`${p.name}が毒を付与！ ${s.turns}ターン間、毎ターンHP最大HP×3%＆MP最大MP×3%を蝕む！`, 'log-e-atk')
+
+				// ── 出血 ──
+				} else if (s.type === 'bleed') {
+					const aliveE = battle.enemies.filter(e=>e.hp>0)
+					const ets = s.eTarget==='all' ? aliveE : (explicitTarget ? [explicitTarget] : [aliveE[0]])
+					ets.forEach(e => {
+						const ex = (battle.enemyDots||[]).find(d=>d.eId===e.id&&d.type==='bleed')
+						if (ex) ex.turns = Math.max(ex.turns, s.turns)
+						else battle.enemyDots.push({ eId: e.id, type: 'bleed', turns: s.turns })
+					})
+					addLog(`${p.name}が出血を付与！ ${s.turns}ターン間、毎ターン最大HP×5%を出血させる！`, 'log-e-atk')
+
+				// ── 気絶 (stun) ──
+				} else if (s.type === 'stun') {
+					const aliveE = battle.enemies.filter(e=>e.hp>0)
+					const ets = s.eTarget==='all' ? aliveE : (explicitTarget ? [explicitTarget] : [aliveE[0]])
+					ets.forEach(e => {
+						const ex = (battle.enemyStatus||[]).find(d=>d.eId===e.id&&d.type==='stun')
+						if (ex) ex.turns = Math.max(ex.turns, s.turns)
+						else battle.enemyStatus.push({ eId: e.id, type: 'stun', turns: s.turns })
+					})
+					addLog(`${p.name}が気絶を付与！ ${s.turns}ターン行動不能＆物理ダメージ+30%！`, 'log-e-atk')
+
+				// ── フリーズ (freeze) ──
+				} else if (s.type === 'freeze') {
+					const aliveE = battle.enemies.filter(e=>e.hp>0)
+					const ets = s.eTarget==='all' ? aliveE : (explicitTarget ? [explicitTarget] : [aliveE[0]])
+					ets.forEach(e => {
+						const ex = (battle.enemyStatus||[]).find(d=>d.eId===e.id&&d.type==='freeze')
+						if (ex) ex.turns = Math.max(ex.turns, s.turns)
+						else battle.enemyStatus.push({ eId: e.id, type: 'freeze', turns: s.turns })
+					})
+					addLog(`${p.name}がフリーズを付与！ ${s.turns}ターン行動不能＆特殊ダメージ+30%！`, 'log-e-atk')
 				}
 				updateBattleUI()
 				if (battle.enemies.every(e => e.hp <= 0)) winBattle()
@@ -1942,6 +2179,121 @@ const SHOP_ITEMS = {
 			executeSkill(battle.pendingSkill, target, battle.pendingSkillLv);
 		}
 
+						// ═══ DoT / 状態異常システム ═══
+
+		// 敵のDoT・状態異常をプレイヤーターン開始時に処理
+		function tickEnemyEffects() {
+			if (!battle.active) return
+			let anyEffect = false
+			for (const e of battle.enemies.filter(en => en.hp > 0)) {
+				// DoT（毒・出血）
+				const dots = (battle.enemyDots||[]).filter(d => d.eId === e.id)
+				for (const d of dots) {
+					if (d.type === 'poison') {
+						const hpDmg = Math.floor(e.maxHp * 0.03)
+						const mpDmg = Math.floor((e.maxMp||50) * 0.03)
+						e.hp = Math.max(1, e.hp - hpDmg)
+						e.mp = Math.max(0, (e.mp||0) - mpDmg)
+						addLog(`☠ 毒が <b>${e.name}</b> に ${hpDmg} ダメージ！（MP-${mpDmg}）`, 'log-e-atk')
+					} else if (d.type === 'bleed') {
+						const dmg = Math.floor(e.maxHp * 0.05)
+						e.hp = Math.max(1, e.hp - dmg)
+						addLog(`🩸 出血が <b>${e.name}</b> に ${dmg} ダメージ！`, 'log-e-atk')
+					}
+					d.turns--
+					anyEffect = true
+				}
+			}
+			battle.enemyDots = (battle.enemyDots||[]).filter(d => d.turns > 0)
+			// エリート特性 onTurnStart（不壊：毎ターン回復等）
+			for (const e of battle.enemies.filter(en => en.hp > 0 && en._isElite)) {
+				for (const tr of (e.eliteTraits||[])) {
+					if (tr.onTurnStart) {
+						const before = e.hp
+						tr.onTurnStart(e)
+						if (e.hp !== before) addLog(`✨ ${e.name}が ${e.hp - before} HP回復！`, 'log-sys')
+					}
+				}
+			}
+			// 状態異常のターン減衰
+			const before = (battle.enemyStatus||[]).length
+			battle.enemyStatus = (battle.enemyStatus||[]).map(s => ({...s, turns: s.turns-1})).filter(s => s.turns > 0)
+			if (before > (battle.enemyStatus||[]).length) addLog('状態異常が解除された！', 'log-sys')
+			if (anyEffect) updateBattleUI()
+		}
+
+		// 味方のリジェネをプレイヤーターン開始時に処理
+		function tickPartyRegens() {
+			if (!battle.active) return
+			let healed = false
+			for (let i = 0; i < gameState.party.length; i++) {
+				const p = gameState.party[i]
+				if (p.hp <= 0) continue
+				const regens = (battle.partyRegens||[]).filter(r => r.pIdx === i)
+				for (const r of regens) {
+					const fs = getFinalStats(p)
+					const amt = Math.floor(fs.maxHp * r.val)
+					p.hp = Math.min(fs.maxHp, p.hp + amt)
+					addLog(`💚 再生が ${p.name} のHPを ${amt} 回復！`, 'log-sys')
+					r.turns--
+					healed = true
+				}
+			}
+			battle.partyRegens = (battle.partyRegens||[]).filter(r => r.turns > 0)
+			if (healed) updateBattleUI()
+		}
+
+		// 敵が気絶またはフリーズ中か
+		function isEnemyStunned(eId) {
+			return (battle.enemyStatus||[]).some(s => s.eId === eId && (s.type === 'stun' || s.type === 'freeze'))
+		}
+
+		// ダメージ倍率（気絶=物理+30%, フリーズ=特殊+30%）
+		function getEnemyDamageMult(eId, dtype) {
+			let m = 1.0
+			;(battle.enemyStatus||[]).filter(s => s.eId === eId).forEach(s => {
+				if (s.type === 'stun'   && dtype === 'physical') m += 0.30
+				if (s.type === 'freeze' && dtype === 'magic')    m += 0.30
+			})
+			return m
+		}
+
+		// シールド・ガードを考慮してパーティメンバーにダメージを与える共通関数
+		function applyDamageToPartyMember(targetP, dmgVal, logTag) {
+			const tIdx = gameState.party.indexOf(targetP)
+			let remaining = dmgVal
+			// ガード：別のキャラがすべて肩代わり
+			if (battle.guardIdx >= 0 && battle.guardIdx !== tIdx) {
+				const guardian = gameState.party[battle.guardIdx]
+				if (guardian && guardian.hp > 0) {
+					// ガードキャラのシールドを先に消費
+					const gShield = battle.shields.find(s => s.pIdx === battle.guardIdx)
+					if (gShield) {
+						const absorbed = Math.min(gShield.val, remaining)
+						gShield.val -= absorbed
+						remaining -= absorbed
+						if (gShield.val <= 0) battle.shields = battle.shields.filter(s => s !== gShield)
+						if (absorbed > 0) addLog(`${guardian.name}のシールドが ${absorbed} を吸収！`, 'log-sys')
+					}
+					if (remaining > 0) {
+						guardian.hp = Math.max(0, guardian.hp - remaining)
+						addLog(`${guardian.name}が身代わり！ ${remaining}ダメージを肩代わり`, 'log-sys')
+					}
+					return
+				}
+			}
+			// シールド消費
+			const shield = battle.shields.find(s => s.pIdx === tIdx)
+			if (shield) {
+				const absorbed = Math.min(shield.val, remaining)
+				shield.val -= absorbed
+				remaining -= absorbed
+				if (shield.val <= 0) battle.shields = battle.shields.filter(s => s !== shield)
+				if (absorbed > 0) addLog(`${targetP.name}のシールドが ${absorbed} を吸収！`, 'log-sys')
+			}
+			// 残りダメージをHP適用
+			if (remaining > 0) targetP.hp = Math.max(0, targetP.hp - remaining)
+		}
 		async function enemyTurn() {
 			if (!battle.active) return
 			battle.turnCycle = (battle.turnCycle || 0) + 1
@@ -1952,6 +2304,11 @@ const SHOP_ITEMS = {
 			}
 			for (let e of battle.enemies) {
 				if (e.hp <= 0) continue
+				// 気絶/フリーズ中は行動不能
+				if (isEnemyStunned(e.id)) {
+					addLog(`⚡ ${e.name} は行動不能！`, 'log-sys')
+					continue
+				}
 
 				const targetIndex = Math.floor(Math.random() * aliveParty.length)
 				const targetP = aliveParty[targetIndex]
@@ -2010,8 +2367,8 @@ const SHOP_ITEMS = {
 					const dmgVal = e.atk * 1.8  // 修正: 3.0→1.8
 					const defenderStats = getFinalStats(targetP)
 					const res = calcTacticalDamage({ str: 0, matk: dmgVal, cri: 0.15, multiplier: 1.0 }, defenderStats.vit, defenderStats.mdef, 1, true, 'magic')
-					targetP.hp = Math.max(0, targetP.hp - res.val)
-					addLog(`ジャイアントスライムの酸液放出！ ${targetP.name}に${res.val}ダメージ`, 'log-e-atk')
+					applyDamageToPartyMember(targetP, res.val, 'log-e-atk')
+					addLog(`ジャイアントスライムの酸液放出！ ${targetP.name}に${res.val}ダメージ <span style=\"font-size:0.75em; color:#a78bfa; border:1px solid #7c5cbf; border-radius:3px; padding:0 3px;\">特殊</span>`, 'log-e-atk')
 					e.def = oldDef
 					e.mdef = oldMDef
 
@@ -2033,8 +2390,8 @@ const SHOP_ITEMS = {
 						for (let t of alivePG) {
 							const ds = getFinalStats(t)
 							const res = calcTacticalDamage({ str: goldrasAtk, matk: 0, cri: 0.1, multiplier: 1.0 }, ds.vit, ds.mdef, t.lv, true, 'physical')
-							t.hp = Math.max(0, t.hp - res.val)
-							addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+							applyDamageToPartyMember(t, res.val, 'log-e-atk')
+							addLog(`${t.name}に ${res.val}ダメージ <span style=\"font-size:0.75em; color:#fb923c; border:1px solid #c2622a; border-radius:3px; padding:0 3px;\">物理</span>`, 'log-e-atk')
 						}
 						updateBattleUI()
 						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
@@ -2044,8 +2401,8 @@ const SHOP_ITEMS = {
 					playSE('enemy_attack');
 					const dGS = getFinalStats(targetP)
 					const resGS = calcTacticalDamage({ str: e.atk, matk: 0, cri: 0.08, multiplier: 1.0 }, dGS.vit, dGS.mdef, 1, true, 'physical')
-					targetP.hp = Math.max(0, targetP.hp - resGS.val)
-					addLog(`${e.name}の攻撃：${targetP.name}に${resGS.val}ダメージ`, 'log-e-atk')
+					applyDamageToPartyMember(targetP, resGS.val, 'log-e-atk')
+					addLog(`${e.name}の攻撃：${targetP.name}に${resGS.val}ダメージ` + ` <span style=\"font-size:0.75em; color:#fb923c; border:1px solid #c2622a; border-radius:3px; padding:0 3px;\">物理</span>`, 'log-e-atk')
 
 				} else if (isValnaxPattern) {
 					// HP50%以下で形態変化（1回のみ）
@@ -2066,8 +2423,8 @@ const SHOP_ITEMS = {
 						for (let t of alivePV) {
 							const ds = getFinalStats(t)
 							const res = calcTacticalDamage({ str: 0, matk: valnaxDmg, cri: 0.15, multiplier: 1.0 }, ds.vit, ds.mdef, t.lv, true, 'magic')
-							t.hp = Math.max(0, t.hp - res.val)
-							addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+							applyDamageToPartyMember(t, res.val, 'log-e-atk')
+							addLog(`${t.name}に ${res.val}ダメージ <span style=\"font-size:0.75em; color:#a78bfa; border:1px solid #7c5cbf; border-radius:3px; padding:0 3px;\">特殊</span>`, 'log-e-atk')
 						}
 						updateBattleUI()
 						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
@@ -2077,8 +2434,8 @@ const SHOP_ITEMS = {
 					playSE('enemy_attack');
 					const dVN = getFinalStats(targetP)
 					const resVN = calcTacticalDamage({ str: e.atk, matk: 0, cri: 0.1, multiplier: 1.0 }, dVN.vit, dVN.mdef, 1, true, 'physical')
-					targetP.hp = Math.max(0, targetP.hp - resVN.val)
-					addLog(`${e.name}の攻撃：${targetP.name}に${resVN.val}ダメージ`, 'log-e-atk')
+					applyDamageToPartyMember(targetP, resVN.val, 'log-e-atk')
+					addLog(`${e.name}の攻撃：${targetP.name}に${resVN.val}ダメージ` + ` <span style=\"font-size:0.75em; color:#fb923c; border:1px solid #c2622a; border-radius:3px; padding:0 3px;\">物理</span>`, 'log-e-atk')
 
 				} else if (isZerafarPattern) {
 					// HP33%以下で「絶望の叫び」（全体固定ダメージ）
@@ -2087,7 +2444,7 @@ const SHOP_ITEMS = {
 						addLog('深淵魔王ゼラファルの絶望の叫び！ 虚無が全てを侵食する！', 'log-e-atk')
 						const alivePZ2 = gameState.party.filter(p => p.hp > 0)
 						for (let t of alivePZ2) {
-							t.hp = Math.max(0, t.hp - 300)
+							applyDamageToPartyMember(t, 300, 'log-e-atk')
 							addLog(`${t.name}に300の固定ダメージ！`, 'log-e-atk')
 						}
 						updateBattleUI()
@@ -2103,8 +2460,8 @@ const SHOP_ITEMS = {
 						for (let t of alivePZ) {
 							const ds = getFinalStats(t)
 							const res = calcTacticalDamage({ str: 0, matk: zerafarDmg, cri: 0.2, multiplier: 1.0 }, ds.vit, ds.mdef, t.lv, true, 'magic')
-							t.hp = Math.max(0, t.hp - res.val)
-							addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+							applyDamageToPartyMember(t, res.val, 'log-e-atk')
+							addLog(`${t.name}に ${res.val}ダメージ <span style=\"font-size:0.75em; color:#a78bfa; border:1px solid #7c5cbf; border-radius:3px; padding:0 3px;\">特殊</span>`, 'log-e-atk')
 						}
 						battle.enemyDebuffs.push({ stat: 'mdef', val: 0.15 })
 						addLog('パーティ全体の特耐が15%低下した！', 'log-e-atk')
@@ -2116,8 +2473,8 @@ const SHOP_ITEMS = {
 					playSE('enemy_attack');
 					const dZF = getFinalStats(targetP)
 					const resZF = calcTacticalDamage({ str: e.atk, matk: 0, cri: 0.12, multiplier: 1.0 }, dZF.vit, dZF.mdef, 1, true, 'physical')
-					targetP.hp = Math.max(0, targetP.hp - resZF.val)
-					addLog(`${e.name}の攻撃：${targetP.name}に${resZF.val}ダメージ`, 'log-e-atk')
+					applyDamageToPartyMember(targetP, resZF.val, 'log-e-atk')
+					addLog(`${e.name}の攻撃：${targetP.name}に${resZF.val}ダメージ` + ` <span style=\"font-size:0.75em; color:#fb923c; border:1px solid #c2622a; border-radius:3px; padding:0 3px;\">物理</span>`, 'log-e-atk')
 
 				} else if (isAbyssalionPattern) {
 					// HP50%以下：毎ターン自己回復
@@ -2134,7 +2491,7 @@ const SHOP_ITEMS = {
 						if (victimAR) {
 							const ds = getFinalStats(victimAR)
 							const instaKillDmg = Math.floor(ds.maxHp * 0.9)
-							victimAR.hp = Math.max(0, victimAR.hp - instaKillDmg)
+							applyDamageToPartyMember(victimAR, instaKillDmg, 'log-e-atk')
 							addLog(`虚無神アビサリオンの存在消去！ ${victimAR.name}に${instaKillDmg}ダメージ！`, 'log-e-atk')
 							updateBattleUI()
 							if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
@@ -2150,8 +2507,8 @@ const SHOP_ITEMS = {
 						for (let t of alivePAB) {
 							const ds = getFinalStats(t)
 							const res = calcTacticalDamage({ str: 0, matk: abyssDmg, cri: 0.25, multiplier: 1.0 }, ds.vit, ds.mdef, t.lv, true, 'magic')
-							t.hp = Math.max(0, t.hp - res.val)
-							addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+							applyDamageToPartyMember(t, res.val, 'log-e-atk')
+							addLog(`${t.name}に ${res.val}ダメージ <span style=\"font-size:0.75em; color:#a78bfa; border:1px solid #7c5cbf; border-radius:3px; padding:0 3px;\">特殊</span>`, 'log-e-atk')
 						}
 						updateBattleUI()
 						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
@@ -2161,8 +2518,8 @@ const SHOP_ITEMS = {
 					playSE('enemy_attack');
 					const dAB = getFinalStats(targetP)
 					const resAB = calcTacticalDamage({ str: e.atk, matk: 0, cri: 0.15, multiplier: 1.0 }, dAB.vit, dAB.mdef, 1, true, 'physical')
-					targetP.hp = Math.max(0, targetP.hp - resAB.val)
-					addLog(`${e.name}の攻撃：${targetP.name}に${resAB.val}ダメージ`, 'log-e-atk')
+					applyDamageToPartyMember(targetP, resAB.val, 'log-e-atk')
+					addLog(`${e.name}の攻撃：${targetP.name}に${resAB.val}ダメージ` + ` <span style=\"font-size:0.75em; color:#fb923c; border:1px solid #c2622a; border-radius:3px; padding:0 3px;\">物理</span>`, 'log-e-atk')
 
 				} else if (isGargadesPattern) {
 					// HP50%以下で「皇帝の激昂」（1回のみ）
@@ -2181,8 +2538,8 @@ const SHOP_ITEMS = {
 						for (let t of aliveG) {
 							const ds = getFinalStats(t)
 							const res = calcTacticalDamage({ str: gDmg, matk: 0, cri: 0.12, multiplier: 1.0 }, ds.vit, ds.mdef, t.lv, true, 'physical')
-							t.hp = Math.max(0, t.hp - res.val)
-							addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+							applyDamageToPartyMember(t, res.val, 'log-e-atk')
+							addLog(`${t.name}に ${res.val}ダメージ <span style=\"font-size:0.75em; color:#fb923c; border:1px solid #c2622a; border-radius:3px; padding:0 3px;\">物理</span>`, 'log-e-atk')
 						}
 						updateBattleUI()
 						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
@@ -2192,15 +2549,15 @@ const SHOP_ITEMS = {
 					playSE('enemy_attack');
 					const dGG = getFinalStats(targetP)
 					const resGG = calcTacticalDamage({ str: e.atk, matk: 0, cri: 0.10, multiplier: 1.0 }, dGG.vit, dGG.mdef, 1, true, 'physical')
-					targetP.hp = Math.max(0, targetP.hp - resGG.val)
-					addLog(`${e.name}の攻撃：${targetP.name}に${resGG.val}ダメージ`, 'log-e-atk')
+					applyDamageToPartyMember(targetP, resGG.val, 'log-e-atk')
+					addLog(`${e.name}の攻撃：${targetP.name}に${resGG.val}ダメージ` + ` <span style=\"font-size:0.75em; color:#fb923c; border:1px solid #c2622a; border-radius:3px; padding:0 3px;\">物理</span>`, 'log-e-atk')
 
 				} else if (isVolatiaPattern) {
 					// HP33%以下で毎ターン全体固定500ダメージ追加
 					if (e.hp <= e.maxHp * 0.33) {
 						const aliveVT0 = gameState.party.filter(p => p.hp > 0)
 						for (let t of aliveVT0) {
-							t.hp = Math.max(0, t.hp - 500)
+							applyDamageToPartyMember(t, 500, 'log-e-atk')
 						}
 						addLog('星々の終末が降り注ぐ！ 全体に500の固定ダメージ！', 'log-e-atk')
 						updateBattleUI()
@@ -2215,8 +2572,8 @@ const SHOP_ITEMS = {
 						for (let t of aliveVT) {
 							const ds = getFinalStats(t)
 							const res = calcTacticalDamage({ str: vDmg, matk: 0, cri: 0.15, multiplier: 1.0 }, ds.vit, ds.mdef, t.lv, true, 'physical')
-							t.hp = Math.max(0, t.hp - res.val)
-							addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+							applyDamageToPartyMember(t, res.val, 'log-e-atk')
+							addLog(`${t.name}に ${res.val}ダメージ <span style=\"font-size:0.75em; color:#fb923c; border:1px solid #c2622a; border-radius:3px; padding:0 3px;\">物理</span>`, 'log-e-atk')
 						}
 						battle.enemyDebuffs.push({ stat: 'vit', val: 0.15 })
 						addLog('パーティ全体の物理防御が15%低下した！', 'log-e-atk')
@@ -2233,8 +2590,8 @@ const SHOP_ITEMS = {
 						for (let t of aliveVTM) {
 							const ds = getFinalStats(t)
 							const res = calcTacticalDamage({ str: 0, matk: vMDmg, cri: 0.20, multiplier: 1.0 }, ds.vit, ds.mdef, t.lv, true, 'magic')
-							t.hp = Math.max(0, t.hp - res.val)
-							addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+							applyDamageToPartyMember(t, res.val, 'log-e-atk')
+							addLog(`${t.name}に ${res.val}ダメージ <span style=\"font-size:0.75em; color:#a78bfa; border:1px solid #7c5cbf; border-radius:3px; padding:0 3px;\">特殊</span>`, 'log-e-atk')
 						}
 						updateBattleUI()
 						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
@@ -2244,8 +2601,8 @@ const SHOP_ITEMS = {
 					playSE('enemy_attack');
 					const dVT = getFinalStats(targetP)
 					const resVT = calcTacticalDamage({ str: e.atk, matk: 0, cri: 0.12, multiplier: 1.0 }, dVT.vit, dVT.mdef, 1, true, 'physical')
-					targetP.hp = Math.max(0, targetP.hp - resVT.val)
-					addLog(`${e.name}の攻撃：${targetP.name}に${resVT.val}ダメージ`, 'log-e-atk')
+					applyDamageToPartyMember(targetP, resVT.val, 'log-e-atk')
+					addLog(`${e.name}の攻撃：${targetP.name}に${resVT.val}ダメージ` + ` <span style=\"font-size:0.75em; color:#fb923c; border:1px solid #c2622a; border-radius:3px; padding:0 3px;\">物理</span>`, 'log-e-atk')
 
 				} else if (isLucifarisPattern) {
 					// HP33%以下：第三形態 → 毎ターン自己回復
@@ -2281,8 +2638,8 @@ const SHOP_ITEMS = {
 						for (let t of aliveLF) {
 							const ds = getFinalStats(t)
 							const res = calcTacticalDamage({ str: 0, matk: lDmg, cri: 0.25, multiplier: 1.0 }, ds.vit, ds.mdef, t.lv, true, 'magic')
-							t.hp = Math.max(0, t.hp - res.val)
-							addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+							applyDamageToPartyMember(t, res.val, 'log-e-atk')
+							addLog(`${t.name}に ${res.val}ダメージ <span style=\"font-size:0.75em; color:#a78bfa; border:1px solid #7c5cbf; border-radius:3px; padding:0 3px;\">特殊</span>`, 'log-e-atk')
 						}
 						updateBattleUI()
 						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
@@ -2292,14 +2649,14 @@ const SHOP_ITEMS = {
 					playSE('enemy_attack');
 					const dLF = getFinalStats(targetP)
 					const resLF = calcTacticalDamage({ str: e.atk, matk: 0, cri: 0.15, multiplier: 1.0 }, dLF.vit, dLF.mdef, 1, true, 'physical')
-					targetP.hp = Math.max(0, targetP.hp - resLF.val)
-					addLog(`${e.name}の攻撃：${targetP.name}に${resLF.val}ダメージ`, 'log-e-atk')
+					applyDamageToPartyMember(targetP, resLF.val, 'log-e-atk')
+					addLog(`${e.name}の攻撃：${targetP.name}に${resLF.val}ダメージ` + ` <span style=\"font-size:0.75em; color:#fb923c; border:1px solid #c2622a; border-radius:3px; padding:0 3px;\">物理</span>`, 'log-e-atk')
 
 				} else if (isArkenesiaPattern) {
 					// HP25%以下：毎ターン終焉の鐘（全体固定1000）
 					if (e.hp <= e.maxHp * 0.25) {
 						const aliveAK0 = gameState.party.filter(p => p.hp > 0)
-						for (let t of aliveAK0) { t.hp = Math.max(0, t.hp - 1000) }
+						for (let t of aliveAK0) { applyDamageToPartyMember(t, 1000, 'log-e-atk') }
 						addLog('終焉の鐘が鳴り響く！ 全体に1000の固定ダメージ！', 'log-e-atk')
 						updateBattleUI()
 						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
@@ -2323,7 +2680,7 @@ const SHOP_ITEMS = {
 						for (let t of aliveAK5) {
 							const ds = getFinalStats(t)
 							const fixDmg = Math.floor(ds.maxHp * 0.8)
-							t.hp = Math.max(0, t.hp - fixDmg)
+							applyDamageToPartyMember(t, fixDmg, 'log-e-atk')
 							addLog(`${t.name}に${fixDmg}の絶対ダメージ！`, 'log-e-atk')
 						}
 						updateBattleUI()
@@ -2339,8 +2696,8 @@ const SHOP_ITEMS = {
 						for (let t of aliveAK3) {
 							const ds = getFinalStats(t)
 							const res = calcTacticalDamage({ str: 0, matk: akDmg, cri: 0.30, multiplier: 1.0 }, ds.vit, ds.mdef, t.lv, true, 'magic')
-							t.hp = Math.max(0, t.hp - res.val)
-							addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+							applyDamageToPartyMember(t, res.val, 'log-e-atk')
+							addLog(`${t.name}に ${res.val}ダメージ <span style=\"font-size:0.75em; color:#a78bfa; border:1px solid #7c5cbf; border-radius:3px; padding:0 3px;\">特殊</span>`, 'log-e-atk')
 						}
 						updateBattleUI()
 						if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
@@ -2350,8 +2707,8 @@ const SHOP_ITEMS = {
 					playSE('enemy_attack');
 					const dAK = getFinalStats(targetP)
 					const resAK = calcTacticalDamage({ str: e.atk, matk: 0, cri: 0.20, multiplier: 1.0 }, dAK.vit, dAK.mdef, 1, true, 'physical')
-					targetP.hp = Math.max(0, targetP.hp - resAK.val)
-					addLog(`${e.name}の攻撃：${targetP.name}に${resAK.val}ダメージ`, 'log-e-atk')
+					applyDamageToPartyMember(targetP, resAK.val, 'log-e-atk')
+					addLog(`${e.name}の攻撃：${targetP.name}に${resAK.val}ダメージ` + ` <span style=\"font-size:0.75em; color:#fb923c; border:1px solid #c2622a; border-radius:3px; padding:0 3px;\">物理</span>`, 'log-e-atk')
 
 				} else {
 					if (e.name === 'フォレストフェンリル' && battle.turnCycle % 2 === 0) {
@@ -2379,8 +2736,8 @@ const SHOP_ITEMS = {
 							for (let t of aliveParty) {
 								const defenderStats = getFinalStats(t)
 								const res = calcTacticalDamage(fenrirStats, defenderStats.vit, defenderStats.mdef, t.lv, true, 'physical')
-								t.hp = Math.max(0, t.hp - res.val)
-								addLog(`${t.name}に ${res.val}ダメージ`, 'log-e-atk')
+								applyDamageToPartyMember(t, res.val, 'log-e-atk')
+								addLog(`${t.name}に ${res.val}ダメージ <span style=\"font-size:0.75em; color:#fb923c; border:1px solid #c2622a; border-radius:3px; padding:0 3px;\">物理</span>`, 'log-e-atk')
 							}
 							updateBattleUI()
 							if (gameState.party.every(p => p.hp <= 0)) {
@@ -2404,8 +2761,15 @@ const SHOP_ITEMS = {
 					currentAtk = Math.max(1, currentAtk)
 
 					const res = calcTacticalDamage({ str: currentAtk, multiplier: 1.0, cri: 0.05, matk: 0 }, defenderDef, defenderMDef, 1, true, 'physical')
-					targetP.hp = Math.max(0, targetP.hp - res.val)
-					addLog(`${e.name}の攻撃：${targetP.name}に${res.val}ダメージ`, 'log-e-atk')
+					applyDamageToPartyMember(targetP, res.val, 'log-e-atk')
+					// 呪われし：敵攻撃時に毒付与
+					if (e._poisonOnHit && targetP.hp > 0) {
+						const pIdx = gameState.party.indexOf(targetP)
+						const ex = (battle.partyDots||[]).find(d=>d.pIdx===pIdx&&d.type==='poison')
+						if (!ex) (battle.partyDots = battle.partyDots||[]).push({ pIdx, type: 'poison', turns: 3, src: 'enemy' })
+						addLog(`☠ ${e.name}の呪いで ${targetP.name} に毒！`, 'log-e-atk')
+					}
+					addLog(`${e.name}の攻撃：${targetP.name}に${res.val}ダメージ` + ` <span style=\"font-size:0.75em; color:#fb923c; border:1px solid #c2622a; border-radius:3px; padding:0 3px;\">物理</span>`, 'log-e-atk')
 				}
 
 				updateBattleUI()
@@ -2417,9 +2781,273 @@ const SHOP_ITEMS = {
 			}
 			const nextStartIdx = gameState.party.findIndex(p => p.hp > 0)
 			setTurn('player', nextStartIdx >= 0 ? nextStartIdx : 0)
+			// 敵DoT/状態異常 & 味方リジェネのティック（プレイヤーターン開始時）
+			tickEnemyEffects()
+			tickPartyRegens()
+			if (!battle.active) return
 		}
 
-		function winBattle() {
+		
+		// ═══════════════════════════════════════════════════
+		//   オート周回システム
+		//   - 通常攻撃のみで現在フロアを繰り返し周回
+		//   - HP が最大値の 25% を切ったら自動停止
+		//   - ボスフロアでは開始不可
+		// ═══════════════════════════════════════════════════
+
+		function toggleAutoFarm() {
+			if (autoFarm.active) {
+				stopAutoFarm('手動停止')
+			} else {
+				beginAutoFarm()
+			}
+		}
+
+		function toggleAfMenu() {
+			const dd = document.getElementById('af-dropdown')
+			if (!dd) return
+			const isOpen = dd.style.display !== 'none'
+			dd.style.display = isOpen ? 'none' : 'block'
+		}
+		// ドロップダウン外クリックで閉じる
+		document.addEventListener('click', function(e) {
+			const wrap = document.getElementById('af-header-wrap')
+			const dd = document.getElementById('af-dropdown')
+			if (wrap && dd && !wrap.contains(e.target)) dd.style.display = 'none'
+		}, true)
+
+				function _afHeaderShow(show) {
+			const w = document.getElementById('af-header-wrap')
+			if (w) w.style.display = show ? 'flex' : 'none'
+		}
+
+				function setAutoFarmSpeed(speed) {
+			if (autoFarm.active) return
+			autoFarm.speed = speed
+			const map = { slow: 'af-btn-slow', normal: 'af-btn-normal', fast: 'af-btn-fast' }
+			Object.entries(map).forEach(([s, id]) => {
+				const el = document.getElementById(id)
+				if (el) el.style.opacity = s === speed ? '1.0' : '0.5'
+			})
+		}
+
+		function setAutoFarmSkills() {
+			if (autoFarm.active) return
+			autoFarm.useSkills = !autoFarm.useSkills
+			const btn = document.getElementById('af-btn-skills')
+			if (btn) btn.textContent = autoFarm.useSkills ? '✅ON' : '❌OFF'
+		}
+
+		function setAutoFarmHP(threshold) {
+			if (autoFarm.active) return
+			autoFarm.hpThreshold = threshold
+			const map = { 0.10: 'af-hp-10', 0.25: 'af-hp-25', 0.50: 'af-hp-50' }
+			Object.entries(map).forEach(([v, id]) => {
+				const el = document.getElementById(id)
+				if (el) el.style.opacity = parseFloat(v) === threshold ? '1.0' : '0.5'
+			})
+		}
+
+				function beginAutoFarm() {
+			if (battle.active) { showMsg('戦闘中は開始できません'); return }
+			if (gameState.party.length === 0) { showMsg('パーティが空です'); return }
+			if (!gameState.inDungeon) { showMsg('ダンジョン内でのみ使用できます'); return }
+			if (BOSS_DATA[gameState.floor] && !gameState.bossDefeated.includes(gameState.floor)) {
+				showMsg('ボス戦フロアでは周回できません'); return
+			}
+			if (gameState.party.every(p => p.hp <= 0)) { showMsg('全員戦闘不能です'); return }
+
+			autoFarm.active = true
+			autoFarm.floor  = gameState.floor
+			autoFarm.kills  = 0
+			autoFarm.gold   = 0
+			autoFarm.exp    = 0
+
+			_autoFarmSetButtonState(true)
+			_autoFarmLockUI(true)
+			addLog(`⚙ オート周回を開始しました [${autoFarm.floor}F]`, 'log-sys')
+			_autoFarmUpdateDisplay()
+			// すぐに戦闘開始
+			_autoFarmNextBattle()
+		}
+
+		function stopAutoFarm(reason) {
+			if (!autoFarm.active) return
+			autoFarm.active = false
+			if (autoFarm.timerId) { clearTimeout(autoFarm.timerId); autoFarm.timerId = null }
+			_autoFarmSetButtonState(false)
+			_autoFarmLockUI(false)
+			addLog(`⚙ 周回停止 [${reason}]  ${autoFarm.kills}戦 / ${autoFarm.gold}G / ${autoFarm.exp}EXP`, 'log-sys')
+			_autoFarmUpdateDisplay()
+			// 戦闘中だった場合はダンジョン画面に戻す
+			if (battle.active) {
+				battle.active = false
+				battle.turn = null
+				setTimeout(() => {
+					playBGM('dungeon')
+					document.getElementById('battle-view').classList.add('hidden')
+					document.getElementById('dungeon-ui').classList.remove('hidden')
+					updateUI()
+				}, 200)
+			}
+		}
+
+		// ── ヘルパー：ボタン表示を切替 ──
+		function _autoFarmSetButtonState(running) {
+			const btn = document.getElementById('btn-auto-farm')
+			if (!btn) return
+			const dd = document.getElementById('af-dropdown')
+			const statsRow = document.getElementById('af-stats-row')
+			if (running) {
+				btn.textContent = '⏹ 停止'
+				btn.style.background = 'linear-gradient(135deg,#dc2626,#7f1d1d)'
+				btn.style.borderColor = '#991b1b'
+				if (dd) dd.style.display = 'none'
+				if (statsRow) statsRow.style.display = 'block'
+			} else {
+				btn.textContent = '⚙ オート'
+				btn.style.background = 'linear-gradient(135deg,#7c3aed,#4338ca)'
+				btn.style.borderColor = '#5b21b6'
+				if (statsRow) statsRow.style.display = 'none'
+			}
+		}
+
+		// ── ヘルパー：探索/帰還ボタンの enabled/disabled ──
+		function _autoFarmLockUI(lock) {
+			const ids = ['btn-explore', 'btn-retreat', 'btn-next-floor']
+			ids.forEach(id => {
+				const el = document.getElementById(id)
+				if (el) el.disabled = lock
+			})
+			// 戦闘ボタンも手動操作ロック
+			const atkBtn = document.getElementById('atk-btn')
+			const sklBtn = document.getElementById('skl-btn')
+			if (atkBtn) atkBtn.style.opacity = lock ? '0.4' : '1'
+			if (sklBtn) sklBtn.style.opacity = lock ? '0.4' : '1'
+		}
+
+		// ── ヘルパー：event-display に周回状況を表示 ──
+		function _autoFarmUpdateDisplay() {
+			// ヘッダー統計を更新
+			const sk = document.getElementById('af-stat-kills')
+			const sg = document.getElementById('af-stat-gold')
+			const se = document.getElementById('af-stat-exp')
+			if (sk) sk.textContent = autoFarm.kills + '戦'
+			if (sg) sg.textContent = autoFarm.gold + 'G'
+			if (se) se.textContent = autoFarm.exp + 'EXP'
+			// event-display は周回中のみ表示
+			const disp = document.getElementById('event-display')
+			if (!disp) return
+			if (autoFarm.active) {
+				const speedLabel = autoFarm.speed === 'fast' ? '⚡速' : autoFarm.speed === 'slow' ? '🐢遅' : '▶標準'
+				disp.innerHTML = `<div style="line-height:1.5;font-size:0.82rem;">
+					<span style="color:#a78bfa;font-weight:bold;">⚙ 周回中 [${autoFarm.floor}F]</span>
+					<span style="color:#555;font-size:0.68rem;margin-left:6px;">${speedLabel}</span><br>
+					<span style="color:#4ade80;">${autoFarm.kills}戦</span>
+					<span style="color:#444;"> | </span>
+					<span style="color:var(--gold);">${autoFarm.gold}G</span>
+					<span style="color:#444;"> | </span>
+					<span style="color:#60a5fa;">${autoFarm.exp}EXP</span>
+				</div>`
+			} else {
+				disp.textContent = '不気味な静寂...'
+			}
+		}
+
+		// ── _autoFarmNextBattle: 実際の戦闘画面を使って次の戦闘を開始 ──
+		function _autoFarmNextBattle() {
+			if (!autoFarm.active || !gameState.inDungeon) return
+			// ボスフロアに来た場合は停止
+			if (BOSS_DATA[gameState.floor] && !gameState.bossDefeated.includes(gameState.floor)) {
+				stopAutoFarm('ボスフロアに到達')
+				return
+			}
+			// 生存チェック
+			const alive = gameState.party.filter(p => p.hp > 0)
+			if (alive.length === 0) { stopAutoFarm('全員戦闘不能'); return }
+			const minRatio = Math.min(...alive.map(p => p.hp / getFinalStats(p).maxHp))
+			if (minRatio <= autoFarm.hpThreshold) {
+				stopAutoFarm(`HP危険域 (${Math.round(minRatio*100)}%以下)`)
+				return
+			}
+			// 通常探索イベント（罠・宝箱など）をスキップして直接戦闘
+			startBattle(false)
+		}
+
+		// ── 自動行動: プレイヤーターンを自動で実行 ──
+		function _autoFarmDoPlayerAction() {
+			if (!autoFarm.active || !battle.active || battle.isProcessing) return
+			if (battle.turn !== 'player') return
+			const p = gameState.party[battle.activeUnitIndex]
+			if (!p || p.hp <= 0) { nextTurn(); return }
+
+			// スキルを使うかどうか判断
+			if (autoFarm.useSkills) {
+				const jobKey = Object.keys(JOB_DATA).find(k => JOB_DATA[k].name === p.job)
+				const jobSkills = jobKey ? JOB_DATA[jobKey].skills : null
+				if (jobSkills) {
+					const MILESTONES_LOCAL = [2,5,7,10,12,15,17,20,25,30,33,35,38,40,43,45,48,50]
+					for (const lv of MILESTONES_LOCAL) {
+						const sIdx = p.learnedSkills[lv]
+						if (sIdx === undefined) continue
+						const s = jobSkills[lv]?.[sIdx]
+						if (!s || s.type === 'passive') continue
+						const cd = (p.skillCooldowns && p.skillCooldowns[lv]) || 0
+						if (cd > 0) continue
+						// MPコスト確認
+						const pIdxAf = gameState.party.indexOf(p)
+						const disc = (battle.mpCostDown||[]).find(m=>m.pIdx===pIdxAf)
+						const eff = disc ? Math.max(0,Math.floor(s.cost*(1-disc.val))) : s.cost
+						if (p.mp < eff) continue
+						// オート優先度スキップ（passive,guard,mpcost は手動判断が難しいためスキップ）
+						if (s.type === 'guard') continue
+						// HP回復は自身 or 全体
+						if (s.type === 'heal') {
+							const needHeal = gameState.party.some(m => m.hp > 0 && m.hp / getFinalStats(m).maxHp < 0.6)
+							if (!needHeal) continue
+						}
+						// 再生は MP が余っているときだけ
+						if (s.type === 'regen') {
+							const hasRegen = (battle.partyRegens||[]).some(r => r.pIdx===gameState.party.indexOf(p) && r.turns > 1)
+							if (hasRegen) continue
+						}
+						// shield / buff は一定周期で使う（毎ターン無駄に使わない）
+						if (s.type === 'shield' || s.type === 'buff') {
+							const hasShield = (battle.shields||[]).find(sh=>sh.pIdx===gameState.party.indexOf(p))
+							if (s.type === 'shield' && hasShield && hasShield.turns > 1) continue
+						}
+						// スキル実行
+						const aliveE = battle.enemies.filter(e=>e.hp>0)
+						const needsTarget = (s.type === 'atk' || s.type === 'poison' || s.type === 'bleed' || s.type === 'stun' || s.type === 'freeze') && s.target !== 'all' && s.eTarget !== 'all' && aliveE.length > 1
+						const needsPartyTarget = s.type === 'heal' && s.target === 'single'
+						battle.targeting = null
+						battle.pendingSkill = null
+						if (needsTarget) {
+							// 一番HPが低い敵を狙う
+							const tgt = aliveE.reduce((a,b) => a.hp < b.hp ? a : b)
+							executeSkill(s, tgt, lv)
+						} else if (needsPartyTarget) {
+							// 最もHP%が低い生存メンバー
+							const tgt = gameState.party.filter(m=>m.hp>0).reduce((a,b) => (a.hp/getFinalStats(a).maxHp) < (b.hp/getFinalStats(b).maxHp) ? a : b)
+							executeSkill(s, tgt, lv)
+						} else {
+							executeSkill(s, null, lv)
+						}
+						return
+					}
+				}
+			}
+			// スキルなし → 通常攻撃
+			const aliveEnemies = battle.enemies.filter(e => e.hp > 0)
+			if (!aliveEnemies.length) return
+			battle.remainingHits = (p.equip?.weapon?.hits) || 1
+			const target = aliveEnemies.reduce((a,b) => a.hp < b.hp ? a : b)
+			executeAttack(target)
+		}
+
+		// ── handleDeath をオート周回でフックする ──
+
+function winBattle() {
 			playSE('win');
 			battle.active = false
 			battle.turn = null
@@ -2427,8 +3055,11 @@ const SHOP_ITEMS = {
 			let g = 0,
 				x = 0
 			battle.enemies.forEach(e => {
-				g += e.gold
-				x += e.exp
+				const _eliteMult = e._isElite
+					? (e.eliteTier === 'Legend' ? 3.0 : e.eliteTier === 'Rare' ? 2.0 : 1.5)
+					: 1.0
+				g += Math.floor(e.gold * _eliteMult)
+				x += Math.floor(e.exp  * _eliteMult)
 				if (e.isBoss) {
 					gameState.bossDefeated.push(gameState.floor)
 					gameState.stairsFound = true
@@ -2440,6 +3071,21 @@ const SHOP_ITEMS = {
 				while (p.exp >= p.nextExp) levelUp(p)
 			})
 			addLog(`勝利！ ${g}G / ${x}EXP 獲得。`, 'log-sys')
+			// 秘宝を抱く：レジェンド装備確定ドロップ
+			battle.enemies.forEach(e => {
+				if (e._legendDrop && gameState.inventory.length < getMaxCapacity()) {
+					const types = ['weapon','armor','acc']
+					const t = types[Math.floor(Math.random()*types.length)]
+					const pool = SHOP_ITEMS[t].filter(i => i.tier >= 7)
+					if (pool.length > 0) {
+						const item = applyRarity({ ...pool[Math.floor(Math.random()*pool.length)], type: t, locked: false })
+						gameState.inventory.push(item)
+						addLog(`✨✨ ${e.name}から伝説の秘宝 [${item.n}] を入手！`, 'log-gold')
+					}
+				}
+			})
+			// オート周回の累計に加算
+			if (autoFarm.active) { autoFarm.gold += g; autoFarm.exp += x }
 			setTimeout(() => {
 				playBGM('dungeon');
 				document.getElementById('battle-view').classList.add('hidden')
@@ -2448,6 +3094,17 @@ const SHOP_ITEMS = {
 					document.getElementById('btn-next-floor').classList.remove('hidden')
 				}
 				updateUI()
+				// オート周回中なら次の戦闘を自動開始
+				if (autoFarm.active) {
+					autoFarm.kills++
+					_autoFarmUpdateDisplay()
+					const _alive = gameState.party.filter(p => p.hp > 0)
+					if (_alive.length === 0) { stopAutoFarm('全員戦闘不能'); return }
+					const _minR = Math.min(..._alive.map(p => p.hp / getFinalStats(p).maxHp))
+					if (_minR <= autoFarm.hpThreshold) { stopAutoFarm(`HP危険域 (${Math.round(_minR*100)}%以下)`); return }
+					const _delay = autoFarm.speed === 'fast' ? 300 : autoFarm.speed === 'slow' ? 1500 : 700
+					autoFarm.timerId = setTimeout(_autoFarmNextBattle, _delay)
+				}
 			}, 500)
 		}
 
@@ -2488,9 +3145,18 @@ const SHOP_ITEMS = {
 						else detail = `対象の最大HP${Math.floor(s.val*100)}%回復 (MP${s.cost})`
 					}
 					else if (s.type === 'buff' || s.type === 'debuff') detail = `${statMap[s.stat] || s.stat} ${Math.floor(s.val*100)}%${s.type==='buff'?'上昇':'低下'} (MP${s.cost})`
+					else if (s.type === 'shield') detail = `最大HP×${Math.floor(s.val*100)}%のシールド付与 ${s.target==='all'?'(全体)':'(単体)'} (MP${s.cost})`
+					else if (s.type === 'guard') detail = `1ターン、味方全員へのダメージを肩代わり (MP${s.cost})`
+					else if (s.type === 'regen') detail = `${s.turns}T再生付与 最大HP×${Math.floor(s.val*100)}%/T ${s.target==='all'?'(全体)':'(単体)'} (MP${s.cost})`
+					else if (s.type === 'mpcost') detail = `次スキルMPコスト${Math.floor(s.val*100)}%軽減 (MP${s.cost})`
+					else if (s.type === 'poison') detail = `毒付与 ${s.turns}T [HP-3%/MP-3%/T] ${s.eTarget==='all'?'(全体)':'(単体)'} (MP${s.cost})`
+					else if (s.type === 'bleed') detail = `出血付与 ${s.turns}T [HP-5%/T] ${s.eTarget==='all'?'(全体)':'(単体)'} (MP${s.cost})`
+					else if (s.type === 'stun') detail = `気絶付与 ${s.turns}T [行動不能・物理+30%] ${s.eTarget==='all'?'(全体)':'(単体)'} (MP${s.cost})`
+					else if (s.type === 'freeze') detail = `フリーズ付与 ${s.turns}T [行動不能・特殊+30%] ${s.eTarget==='all'?'(全体)':'(単体)'} (MP${s.cost})`
 					else detail = `(MP:${s.cost})`
 					treeHtml += `<div class="skill-card ${isSelected ? 'selected' : ''} ${canLearn ? 'available' : ''} ${isLocked ? 'locked' : ''}" onclick="${canLearn ? `learnSkill(${pIdx},${lv},${sIdx})` : ''}">
 						<span class="skill-type-tag">${s.type}</span><b>${s.n}</b><small>${detail}</small>
+						${(()=>{ const st=(battle.enemyStatus||[]).filter(s=>s.eId===e.id); const dt=(battle.enemyDots||[]).filter(d=>d.eId===e.id); const tags=[...st.map(s=>s.type==='stun'?`<span style="background:#f97316;color:#000;font-size:0.65rem;padding:0 3px;border-radius:2px;">⚡気絶${s.turns}T</span>`:`<span style="background:#60a5fa;color:#000;font-size:0.65rem;padding:0 3px;border-radius:2px;">❄凍結${s.turns}T</span>`),...dt.map(d=>d.type==='poison'?`<span style="background:#a3e635;color:#000;font-size:0.65rem;padding:0 3px;border-radius:2px;">☠毒${d.turns}T</span>`:`<span style="background:#f87171;color:#000;font-size:0.65rem;padding:0 3px;border-radius:2px;">🩸出血${d.turns}T</span>`)]; return tags.length?`<div style="display:flex;gap:2px;flex-wrap:wrap;margin-top:3px;">${tags.join('')}</div>`:'' })()}
 					</div>`
 				})
 				treeHtml += `</div></div>`
@@ -2762,7 +3428,18 @@ const SHOP_ITEMS = {
 			save_game()
 			const code = btoa(unescape(encodeURIComponent(JSON.stringify(gameState))))
 			const c = document.getElementById('modal-content')
-			c.innerHTML = `<h2>セーブデータ出力</h2><p style="font-size:0.8rem; color:var(--text-dim);">以下のコードを控えておくと、他の端末で続きから遊べます。</p><textarea id="copy-target" readonly style="width:100%;height:100px;background:#000;color:#fff;font-family:monospace;padding:10px;">${code}</textarea><button onclick="closeModal()" class="btn-action btn-blue" style="margin-top:15px; width:100%;">閉じる</button>`
+			c.innerHTML = `
+				<h2>💾 セーブデータ出力</h2>
+				<div style="background:rgba(76,175,80,0.12); border:1px solid var(--accent-green); border-radius:8px; padding:10px 12px; margin-bottom:12px; font-size:0.82rem; line-height:1.6; color:#ccc;">
+					<b style="color:var(--accent-green);">✅ 自動セーブ済み</b><br>
+					ブラウザに自動保存されていますが、<b style="color:#fff;">キャッシュクリアや端末変更でデータが消える場合があります。</b><br>
+					<span style="color:var(--gold);">⚠️ 下のコードをメモ帳などに控えておくことを強くおすすめします。</span>
+				</div>
+				<p style="font-size:0.8rem; color:#777; margin:0 0 6px;">セーブコード（コピーして保管してください）</p>
+				<textarea id="copy-target" readonly style="width:100%;height:90px;background:#0a0a0a;color:#aaa;font-family:monospace;padding:10px; border:1px solid #333; border-radius:6px; font-size:0.75rem; resize:none; box-sizing:border-box;">${code}</textarea>
+				<button onclick="navigator.clipboard.writeText(document.getElementById('copy-target').value).then(()=>{this.textContent='✅ コピーしました！'; setTimeout(()=>this.textContent='📋 コードをコピー',1500)})" class="btn-action btn-blue" style="margin-top:8px; width:100%; padding:10px;">📋 コードをコピー</button>
+				<button onclick="closeModal()" class="btn-action" style="margin-top:6px; width:100%; padding:8px; background:#111; border-color:#333; color:#666;">閉じる</button>
+			`
 			openModalWrapper()
 		}
 		function openLoadModal() {
@@ -2799,7 +3476,126 @@ const SHOP_ITEMS = {
 			content.innerHTML = `<div style="text-align:center;padding:20px;"><h2>${msg}</h2><button class="btn-action btn-blue" onclick="closeModal()" style="width:100%; margin-top:20px;">OK</button></div>`
 			layer.classList.remove('hidden')
 		}
-		function openHelpModal() {
+		function openSettingsModal() {
+			const c = document.getElementById('modal-content')
+			const muteLabel = () => window._isMuted ? '🔇 OFF' : '🔊 ON'
+			c.innerHTML = `
+				<h2 style="margin-bottom:16px;">⚙ 設定</h2>
+				<div style="display:flex; flex-direction:column; gap:10px; max-width:320px; margin:0 auto;">
+
+					<div style="background:#111; border:1px solid #333; border-radius:8px; padding:12px;">
+						<div style="font-size:0.75rem; color:#888; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">サウンド</div>
+						<button class="btn-icon" style="width:100%;" onclick="toggleMute(); document.getElementById('setting-mute-btn').textContent = (window._isMuted ? '🔇 ミュート中' : '🔊 サウンドON'); " id="setting-mute-btn">${window._isMuted ? '🔇 ミュート中' : '🔊 サウンドON'}</button>
+					</div>
+
+					<div style="background:#111; border:1px solid #333; border-radius:8px; padding:12px;">
+						<div style="font-size:0.75rem; color:#888; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">データ</div>
+						<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+							<button class="btn-icon" style="padding:10px;" onclick="closeModal(); openSaveModal();">💾 セーブ</button>
+							<button class="btn-icon" style="padding:10px;" onclick="closeModal(); openLoadModal();">📂 ロード</button>
+						</div>
+					</div>
+
+					<div style="background:#111; border:1px solid #333; border-radius:8px; padding:12px;">
+						<div style="font-size:0.75rem; color:#888; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">情報</div>
+						<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+							<button class="btn-icon" style="padding:10px;" onclick="closeModal(); openHelpModal();">❓ ヘルプ</button>
+							<button class="btn-icon" style="padding:10px;" onclick="closeModal(); openInfoModal();">ℹ️ ゲーム情報</button>
+						</div>
+					</div>
+
+					<button onclick="closeModal()" class="btn-action btn-blue" style="margin-top:4px;">閉じる</button>
+				</div>`
+			openModalWrapper()
+		}
+
+				function openInfoModal() {
+			const c = document.getElementById('modal-content')
+			c.innerHTML = `
+				<!-- ヘッダーロゴ -->
+				<div style="text-align:center; padding: 18px 0 14px;">
+					<div style="font-size:2.4rem; margin-bottom:6px; filter:drop-shadow(0 0 12px #4af);">🌑</div>
+					<h1 style="font-size:1.5rem; letter-spacing:4px; color:var(--accent-blue); margin:0 0 2px;">ABYSS REDIVE</h1>
+					<p style="font-size:0.72rem; color:#444; letter-spacing:3px; margin:0;">深淵への再潜入</p>
+				</div>
+
+				<!-- バージョン・制作者 -->
+				<div style="background:#0d0d0d; border:1px solid #222; border-radius:10px; padding:14px 16px; margin-bottom:12px;">
+					<div style="display:grid; grid-template-columns:auto 1fr; gap:6px 14px; font-size:0.84rem;">
+						<span style="color:#555;">制作者</span>
+						<span style="color:#eee; font-weight:bold;">ねぎらーめん</span>
+						<span style="color:#555;">バージョン</span>
+						<span style="color:#aaa;">v1.511</span>
+						<span style="color:#555;">ジャンル</span>
+						<span style="color:#aaa;">テキストRPG / ハック＆スラッシュ</span>
+						<span style="color:#555;">推奨環境</span>
+						<span style="color:#aaa;">Chrome / Firefox / Safari（最新版）</span>
+					</div>
+				</div>
+
+				<!-- ゲーム概要 -->
+				<div style="background:#0d0d0d; border:1px solid #222; border-radius:10px; padding:14px 16px; margin-bottom:12px;">
+					<p style="font-size:0.78rem; color:#555; margin:0 0 7px; letter-spacing:1px;">ABOUT</p>
+					<p style="font-size:0.85rem; color:#bbb; margin:0; line-height:1.8;">
+						Abyss Rediveは全50階層のダンジョンを探索するブラウザRPGです。キャラクターを育成し、装備を厳選しながら最深部に眠る<span style="color:var(--accent-red);">原初神アルケーネシア</span>の討伐を目指しましょう。セーブデータはブラウザに自動保存されます。
+					</p>
+				</div>
+
+				<!-- コミュニティリンク -->
+				<div style="background:#0d0d0d; border:1px solid #222; border-radius:10px; padding:14px 16px; margin-bottom:12px;">
+					<p style="font-size:0.78rem; color:#555; margin:0 0 10px; letter-spacing:1px;">COMMUNITY & LINKS</p>
+					<div style="display:flex; flex-direction:column; gap:8px;">
+						<a href="https://discord.gg/z9RnYzQjBn" target="_blank"
+							style="display:flex; align-items:center; gap:10px; background:#1a1a2e; border:1px solid #5865F2;
+							border-radius:8px; padding:10px 14px; text-decoration:none; color:#eee; transition:opacity 0.2s;"
+							onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
+							<span style="font-size:1.3rem;">💬</span>
+							<div>
+								<div style="font-weight:bold; font-size:0.9rem; color:#7289DA;">Discord コミュニティ</div>
+								<div style="font-size:0.75rem; color:#777;">攻略情報・バグ報告・雑談はこちら</div>
+							</div>
+							<span style="margin-left:auto; color:#555; font-size:0.8rem;">→</span>
+						</a>
+					</div>
+				</div>
+
+				<!-- 更新ログ -->
+				<div style="background:#0d0d0d; border:1px solid #222; border-radius:10px; padding:14px 16px; margin-bottom:14px;">
+					<p style="font-size:0.78rem; color:#555; margin:0 0 10px; letter-spacing:1px;">CHANGELOG</p>
+					<div style="display:flex; flex-direction:column; gap:6px; font-size:0.8rem; max-height:130px; overflow-y:auto; padding-right:2px;">
+						<div style="display:flex; gap:8px;">
+							<span style="color:#555; white-space:nowrap; flex-shrink:0;">v1.511</span>
+							<span style="color:#ccc;">チュートリアル追加 / ヘルプ拡充 / ショップTier表示 / インフォ画面追加</span>
+						</div>
+						<div style="display:flex; gap:8px;">
+							<span style="color:#555; white-space:nowrap; flex-shrink:0;">v1.510</span>
+							<span style="color:#aaa;">カバン機能改善（フィルター・ソート・Lv連動容量）</span>
+						</div>
+						<div style="display:flex; gap:8px;">
+							<span style="color:#555; white-space:nowrap; flex-shrink:0;">v1.509</span>
+							<span style="color:#aaa;">全6職スキルをLv50まで拡張（全18マイルストーン）</span>
+						</div>
+						<div style="display:flex; gap:8px;">
+							<span style="color:#555; white-space:nowrap; flex-shrink:0;">v1.508</span>
+							<span style="color:#aaa;">11F〜50Fのモンスター・ボス追加 / フロア選択システム実装</span>
+						</div>
+						<div style="display:flex; gap:8px;">
+							<span style="color:#555; white-space:nowrap; flex-shrink:0;">v1.500</span>
+							<span style="color:#777;">初期リリース</span>
+						</div>
+					</div>
+				</div>
+
+				<!-- フッター -->
+				<p style="text-align:center; font-size:0.72rem; color:#333; margin:0 0 12px;">
+					© ねぎらーめん — このゲームはフリーで公開されています
+				</p>
+
+				<button onclick="closeModal()" class="btn-action btn-blue" style="width:100%; padding:11px;">閉じる</button>
+			`
+			openModalWrapper()
+		}
+				function openHelpModal() {
 			const c = document.getElementById('modal-content')
 			const helpSections = [
 				{
@@ -3999,13 +4795,21 @@ const SHOP_ITEMS = {
 		}
 
 		function startDungeonFromFloor(floor) {
+			if (autoFarm.active) stopAutoFarm('フロア移動')
 			playBGM('dungeon');
 			gameState.floor = floor
 			gameState.inDungeon = true
+			_afHeaderShow(true)
 			gameState.tempGold = 0
 			gameState.exploreCount = 0
 			gameState.stairsFound = false
 			battle.buffs = []
+			battle.shields = []
+			battle.guardIdx = -1
+			battle.enemyDots = []
+			battle.partyRegens = []
+			battle.enemyStatus = []
+			battle.mpCostDown = []
 			battle.enemyDebuffs = []
 			document.getElementById('town-ui').classList.add('hidden')
 			document.getElementById('dungeon-ui').classList.remove('hidden')
@@ -4014,6 +4818,7 @@ const SHOP_ITEMS = {
 			updateUI()
 		}
 		function nextFloor() {
+			if (autoFarm.active) stopAutoFarm('フロア移動')
 			playBGM('dungeon');
 			gameState.floor++
 			if (gameState.floor > gameState.maxFloor) {
@@ -4022,12 +4827,19 @@ const SHOP_ITEMS = {
 			gameState.exploreCount = 0
 			gameState.stairsFound = false
 			battle.buffs = []
+			battle.shields = []
+			battle.guardIdx = -1
+			battle.enemyDots = []
+			battle.partyRegens = []
+			battle.enemyStatus = []
+			battle.mpCostDown = []
 			battle.enemyDebuffs = []
 			document.getElementById('btn-next-floor').classList.add('hidden')
 			document.getElementById('floor-num-disp').innerText = gameState.floor
 			updateUI()
 		}
 		function retreat() {
+			if (autoFarm.active) stopAutoFarm('手動帰還')
 			const c = document.getElementById('modal-content')
 			c.innerHTML = `<div style="text-align:center;padding:20px;"><h2>街に帰還しますか？</h2><p style="color:#aaa;">獲得したゴールドを持ち帰ることができます。</p><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px;"><button class="btn-action btn-blue" onclick="confirmRetreat()">戻る</button><button class="btn-action btn-red" onclick="closeModal()">キャンセル</button></div></div>`
 			document.getElementById('modal-layer').classList.remove('hidden')
@@ -4047,6 +4859,7 @@ const SHOP_ITEMS = {
 			document.getElementById('modal-layer').classList.remove('hidden')
 		}
 		function handleDeath() {
+			if (autoFarm.active) { autoFarm.gold = 0; autoFarm.exp = 0; stopAutoFarm('全員戦闘不能') }
 			playBGM('town');
 			const lostGold = gameState.tempGold
 			gameState.tempGold = 0
@@ -4071,6 +4884,8 @@ const SHOP_ITEMS = {
 			document.getElementById('town-ui').classList.remove('hidden')
 			document.getElementById('dungeon-ui').classList.add('hidden')
 			document.getElementById('battle-view').classList.add('hidden')
+			_afHeaderShow(false)
+			if (autoFarm.active) stopAutoFarm('街に帰還')
 			updateUI()
 		}
 		function toggleBattleSkillMenu() {
@@ -4095,13 +4910,58 @@ const SHOP_ITEMS = {
 
 					const btn = document.createElement('button')
 					btn.className = 'btn-icon'
-					btn.style.padding = "15px 10px";
+					btn.style.padding = "10px 10px";
 					btn.style.height = "auto";
-					let btnHtml = `<div style="display:flex;justify-content:space-between; align-items:center;"><b style="font-size:1rem;">${s.n}</b><span style="color:var(--accent-blue)">MP${s.cost}</span></div>`
-					if (isOnCooldown) btnHtml += `<div style="color:var(--accent-red); font-size:0.75rem; text-align:right;">[待機:${cooldownTurns}ターン]</div>`
+					btn.style.textAlign = "left";
+					// スキル効果説明文を生成
+					let skillDesc = ''
+					const statLabelMap = { str:'物攻', matk:'特攻', vit:'物耐', mdef:'特耐', hp:'HP', mp:'MP', agi:'速度', luk:'幸運', cri:'会心', atk:'敵攻撃', def:'敵防御' }
+					if (s.type === 'atk') {
+						const aoe = s.target === 'all' ? '全体' : '単体'
+						const dtype = s.dType === 'magic' ? '魔法' : '物理'
+						skillDesc = `${aoe}に${dtype}×${s.pow}倍ダメージ`
+					} else if (s.type === 'heal') {
+						const aoe = s.target === 'all' ? '全体' : '単体'
+						skillDesc = `${aoe}のHPを回復`
+					} else if (s.type === 'buff') {
+						const aoe = s.target === 'all' ? '全体' : '単体'
+						const sl = statLabelMap[s.stat] || s.stat
+						skillDesc = `${aoe}の${sl}を${Math.floor(s.val*100)}%強化`
+					} else if (s.type === 'debuff') {
+						const sl = statLabelMap[s.stat] || s.stat
+						skillDesc = `敵全体の${sl}を${Math.floor(s.val*100)}%低下`
+					} else if (s.type === 'shield') {
+						const aoe = s.target === 'all' ? '全体' : '単体'
+						skillDesc = `${aoe}に発動者最大HP×${Math.floor(s.val*100)}%のシールド付与`
+					} else if (s.type === 'guard') {
+						skillDesc = `1ターン、味方全員へのダメージを自分が肩代わり`
+					} else if (s.type === 'regen') {
+						const aoe = s.target==='all'?'全体':'単体'
+						skillDesc = `${aoe}に${s.turns}ターン間、毎ターン最大HP×${Math.floor(s.val*100)}%回復`
+					} else if (s.type === 'mpcost') {
+						skillDesc = `単体の次のスキルMPコスト${Math.floor(s.val*100)}%軽減`
+					} else if (s.type === 'poison') {
+						const aoe = s.eTarget==='all'?'全体':'単体'
+						skillDesc = `敵${aoe}に毒付与（${s.turns}T：HP-3%/MP-3% 毎ターン）`
+					} else if (s.type === 'bleed') {
+						const aoe = s.eTarget==='all'?'全体':'単体'
+						skillDesc = `敵${aoe}に出血付与（${s.turns}T：HP-5% 毎ターン）`
+					} else if (s.type === 'stun') {
+						const aoe = s.eTarget==='all'?'全体':'単体'
+						skillDesc = `敵${aoe}を気絶（${s.turns}T行動不能・物理ダメ+30%）`
+					} else if (s.type === 'freeze') {
+						const aoe = s.eTarget==='all'?'全体':'単体'
+						skillDesc = `敵${aoe}をフリーズ（${s.turns}T行動不能・特殊ダメ+30%）`
+					}
+					let btnHtml = `<div style="display:flex;justify-content:space-between; align-items:center; gap:8px;"><b style="font-size:0.92rem;">${s.n}</b><span style="color:var(--accent-blue); font-size:0.8rem; white-space:nowrap;">MP${s.cost}</span></div>`
+					if (skillDesc) btnHtml += `<div style="font-size:0.74rem; color:#888; margin-top:3px;">${skillDesc}</div>`
+					if (isOnCooldown) btnHtml += `<div style="color:var(--accent-red); font-size:0.72rem; margin-top:2px;">⏳ 待機:${cooldownTurns}ターン</div>`
 					btn.innerHTML = btnHtml
 
-					if (p.mp < s.cost || isOnCooldown) {
+					const _pBIdx = gameState.party.indexOf(p)
+					const _bDisc = (battle.mpCostDown||[]).find(m=>m.pIdx===_pBIdx)
+					const _bCost = _bDisc ? Math.max(0, Math.floor(s.cost*(1-_bDisc.val))) : s.cost
+					if (p.mp < _bCost || isOnCooldown) {
 						btn.disabled = true
 						btn.style.opacity = 0.5
 					}
@@ -4120,7 +4980,17 @@ const SHOP_ITEMS = {
 					const isDead = e.hp <= 0
 					const clickable = isTargeting && !isDead ? `onclick="selectEnemyTarget(${i})"` : ''
 					const cursorClass = isTargeting && !isDead ? 'cursor-pointer targeting-active' : ''
-					return `<div class="battle-unit-box ${isDead ? 'hidden' : ''} ${e.isBoss ? 'is-boss' : ''} ${cursorClass}" style="${isDead ? 'opacity:0' : ''}" ${clickable}><b>${e.name}</b><div class="bar-bg"><div class="bar-fill" style="background:var(--hp-color); width:${Math.max(0, (e.hp / e.maxHp) * 100)}%"></div></div><small>HP:${e.hp}/${e.maxHp}</small></div>`
+					const eliteBorder = e._isElite ? `border:1.5px solid ${e.eliteColor}; box-shadow:0 0 6px ${e.eliteColor}44;` : ''
+					const eliteDot    = e._isElite ? `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${e.eliteColor};flex-shrink:0;margin-left:3px;" title="${e.eliteTier}"></span>` : ''
+					const nameColor   = e._isElite ? e.eliteColor : '#e0e0e0'
+					return `<div class="battle-unit-box ${isDead ? 'hidden' : ''} ${e.isBoss ? 'is-boss' : ''} ${cursorClass}" style="${isDead ? 'opacity:0' : ''}${eliteBorder}" ${clickable}>
+						<div style="display:flex;align-items:center;justify-content:center;gap:2px;width:100%;margin-bottom:2px;">
+							<b style="font-size:0.8rem;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${nameColor};max-width:calc(100% - 14px);">${e.name}</b>${eliteDot}
+						</div>
+						<div class="bar-bg" style="margin:3px 0;"><div class="bar-fill" style="background:${e._isElite ? e.eliteColor : 'var(--hp-color)'}; width:${Math.max(0, (e.hp / e.maxHp) * 100)}%"></div></div>
+						<small style="font-size:0.7rem;">HP: <span style="color:${e.hp/e.maxHp>0.5?'#ccc':e.hp/e.maxHp>0.25?'var(--gold)':'#f87171'}">${e.hp}</span><span style="color:#444;">/${e.maxHp}</span></small>
+					</div>`
+
 				})
 				.join('')
 			if (battle.active && battle.enemies.length > 0 && battle.enemies.every(e => e.hp <= 0)) {
@@ -4136,13 +5006,24 @@ const SHOP_ITEMS = {
 						const clickable = isHealTargeting ? `onclick="selectPartyTarget(${i})"` : ''
 						const cursorClass = isHealTargeting ? 'cursor-pointer targeting-active' : ''
 						
+						const pIdx = gameState.party.indexOf(p)
+						const shieldData = (battle.shields||[]).find(s => s.pIdx === pIdx)
+						const isGuarding = battle.guardIdx === pIdx
 						return `<div class="battle-unit-box ${isCurrent ? 'active-turn' : ''} ${cursorClass}" style="${p.hp <= 0 ? 'opacity:0.5;filter:grayscale(1);' : ''}" ${clickable}>
-							<div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:2px;">
-								<span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.name}</span><span>${p.hp}</span>
+							<div style="display:flex; align-items:center; gap:4px; margin-bottom:2px;">
+								<span style="font-weight:bold; font-size:0.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">${p.name}</span>
+								${isGuarding ? '<span style="font-size:0.68rem; background:rgba(251,146,60,0.2); border:1px solid #fb923c; border-radius:3px; padding:0 4px; color:#fb923c;">🛡身代わり</span>' : ''}
 							</div>
-							<div class="bar-bg" style="height:6px;"><div class="bar-fill" style="background:var(--hp-color); width:${Math.max(0, (p.hp / fs.maxHp) * 100)}%"></div></div>
-							<div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-top:2px;">
-								<span>MP</span><span>${p.mp}</span>
+							<div style="display:flex; justify-content:space-between; font-size:0.72rem; margin-bottom:2px;">
+								<span style="color:#f87171;">HP</span>
+								<span style="color:${p.hp / fs.maxHp > 0.5 ? '#ccc' : p.hp / fs.maxHp > 0.25 ? 'var(--gold)' : '#f87171'};">${p.hp}<span style="color:#444;">/${fs.maxHp}</span></span>
+							</div>
+							<div class="bar-bg" style="height:5px;"><div class="bar-fill" style="background:var(--hp-color); width:${Math.max(0, (p.hp / fs.maxHp) * 100)}%"></div></div>
+							${shieldData ? `<div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-top:2px; color:#60d394;"><span>🔷 SHD</span><span>${shieldData.val} <span style="color:#555;">(${shieldData.turns}T)</span></span></div>` : ''}
+							${(()=>{ const rg=(battle.partyRegens||[]).find(r=>r.pIdx===pIdx); const mc=(battle.mpCostDown||[]).find(m=>m.pIdx===pIdx); let t=''; if(rg)t+=`<span style="background:#4ade80;color:#000;font-size:0.65rem;padding:0 3px;border-radius:2px;">💚再生${rg.turns}T</span>`; if(mc)t+=`<span style="background:#818cf8;color:#000;font-size:0.65rem;padding:0 3px;border-radius:2px;">💧MP軽減</span>`; return t?`<div style="display:flex;gap:2px;flex-wrap:wrap;margin-top:2px;">${t}</div>`:''; })()}
+							<div style="display:flex; justify-content:space-between; font-size:0.72rem; margin-top:3px; margin-bottom:2px;">
+								<span style="color:#60a5fa;">MP</span>
+								<span style="color:#aaa;">${p.mp}<span style="color:#444;">/${fs.maxMp}</span></span>
 							</div>
 							<div class="bar-bg" style="height:4px;"><div class="bar-fill" style="background:var(--mp-color); width:${Math.max(0, (p.mp / fs.maxMp) * 100)}%"></div></div>
 						</div>`
