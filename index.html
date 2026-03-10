@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-		<title>Abyss Redive ver2.21</title>
+		<title>Abyss Redive ver1.41</title>
 		<style>
 		:root {
 			--bg-dark: #0d0d0d;
@@ -166,6 +166,11 @@ header .btn-icon {
 			flex-shrink: 0;
 		}		
 		.btn-green { background: var(--accent-green); }
+		@keyframes tut-pulse-anim {
+			0%,100% { box-shadow: 0 0 0 3px #6366f1, 0 0 16px #6366f1aa; }
+			50%     { box-shadow: 0 0 0 5px #818cf8, 0 0 32px #818cf8cc; }
+		}
+		.tut-pulse { animation: tut-pulse-anim 1s ease-in-out infinite !important; }
 		#dungeon-ui {
 			display: flex;
 			flex-direction: column;
@@ -223,12 +228,24 @@ header .btn-icon {
 		}
 		.enemy-container {
 			display: flex;
-			gap: 8px;
+			flex-direction: column;
+			gap: 4px;
 			justify-content: center;
 			min-height: 100px;
 			width: 100%;
-			flex-wrap: wrap;
 			margin-bottom: 10px;
+			padding: 6px;
+			background: rgba(0,0,0,0.2);
+			border-radius: 8px;
+			border: 1px solid #222;
+		}
+		.party-formation-label {
+			width: 100%;
+			text-align: center;
+			font-size: 0.7rem;
+			letter-spacing: 0.1em;
+			padding-bottom: 2px;
+			margin-bottom: 2px;
 		}
 		.cursor-pointer {
 			cursor: pointer;
@@ -393,7 +410,55 @@ header .btn-icon {
 					
 				</div>
 				
-				<div class="header-right">
+				<div class="header-right" style="display:flex; align-items:center; gap:6px;">
+					<!-- オート周回ヘッダーUI -->
+					<div id="af-header-wrap" style="display:none; position:relative; align-items:center; gap:5px; flex-direction:column;">
+						<div style="display:flex; align-items:center; gap:5px;">
+							<button id="btn-auto-farm"
+								onclick="toggleAutoFarm()"
+								style="padding:5px 11px; font-size:0.78rem; font-weight:bold;
+									background:linear-gradient(135deg,#7c3aed,#4338ca);
+									border:1px solid #5b21b6; color:#fff; border-radius:8px; cursor:pointer;
+									white-space:nowrap;">⚙ オート</button>
+							<button onclick="toggleAfMenu()"
+								style="padding:5px 8px; font-size:0.78rem;
+									background:#1a1a2e; border:1px solid #444; color:#aaa;
+									border-radius:8px; cursor:pointer;" title="オート設定">▼</button>
+						</div>
+						<div id="af-stats-row" style="display:none; font-size:0.68rem; color:#aaa; text-align:center; line-height:1.4;">
+							<span style="color:#4ade80;" id="af-stat-kills">0戦</span>
+							<span style="color:#444;"> | </span>
+							<span style="color:var(--gold);" id="af-stat-gold">0G</span>
+							<span style="color:#444;"> | </span>
+							<span style="color:#60a5fa;" id="af-stat-exp">0EXP</span>
+						</div>
+						<!-- 設定ドロップダウン -->
+						<div id="af-dropdown" style="display:none; position:absolute; top:100%; right:0; z-index:200;
+							background:#1a1a2e; border:1px solid #444; border-radius:10px;
+							padding:12px; min-width:200px; margin-top:4px; box-shadow:0 4px 20px rgba(0,0,0,0.8);">
+							<div style="font-size:0.75rem; color:#888; margin-bottom:8px; border-bottom:1px solid #333; padding-bottom:6px; font-weight:bold;">⚙ オート周回 設定</div>
+							<!-- 速度 -->
+							<div style="font-size:0.72rem; color:#aaa; margin-bottom:4px;">速度</div>
+							<div style="display:flex; gap:5px; margin-bottom:10px;">
+								<button id="af-btn-slow"   onclick="setAutoFarmSpeed('slow')"   style="flex:1; padding:4px; font-size:0.72rem; border-radius:5px; border:1px solid #444; background:#111; color:#aaa; cursor:pointer; opacity:0.5;">🐢遅</button>
+								<button id="af-btn-normal" onclick="setAutoFarmSpeed('normal')" style="flex:1; padding:4px; font-size:0.72rem; border-radius:5px; border:1px solid #444; background:#111; color:#aaa; cursor:pointer; opacity:1.0;">▶標準</button>
+								<button id="af-btn-fast"   onclick="setAutoFarmSpeed('fast')"   style="flex:1; padding:4px; font-size:0.72rem; border-radius:5px; border:1px solid #444; background:#111; color:#aaa; cursor:pointer; opacity:0.5;">⚡速</button>
+							</div>
+							<!-- スキル使用 -->
+							<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+								<span style="font-size:0.72rem; color:#aaa;">スキル使用</span>
+								<button id="af-btn-skills" onclick="setAutoFarmSkills()"
+									style="padding:3px 10px; font-size:0.72rem; border-radius:5px; border:1px solid #444; background:#111; color:#aaa; cursor:pointer;">✅ON</button>
+							</div>
+							<!-- HP危険閾値 -->
+							<div style="font-size:0.72rem; color:#aaa; margin-bottom:4px;">HP危険域（この%以下で停止）</div>
+							<div style="display:flex; gap:5px;">
+								<button id="af-hp-10" onclick="setAutoFarmHP(0.10)" style="flex:1; padding:4px; font-size:0.72rem; border-radius:5px; border:1px solid #444; background:#111; color:#aaa; cursor:pointer; opacity:0.5;">10%</button>
+								<button id="af-hp-25" onclick="setAutoFarmHP(0.25)" style="flex:1; padding:4px; font-size:0.72rem; border-radius:5px; border:1px solid #444; background:#111; color:#aaa; cursor:pointer; opacity:1.0;">25%</button>
+								<button id="af-hp-50" onclick="setAutoFarmHP(0.50)" style="flex:1; padding:4px; font-size:0.72rem; border-radius:5px; border:1px solid #444; background:#111; color:#aaa; cursor:pointer; opacity:0.5;">50%</button>
+							</div>
+						</div>
+					</div>
 					<button class="btn-icon" onclick="openSettingsModal()" title="設定">⚙</button>
 				</div>
 			</header>
@@ -403,8 +468,8 @@ header .btn-icon {
 					<div id="town-ui">
 						<div style="font-size: 1.8rem; letter-spacing: 6px; text-align: center; color: var(--accent-blue); margin-bottom:20px;">【 拠点都市 】</div>
 						<div style="display:flex; flex-direction:column; gap:10px; width:100%; max-width:320px; margin: 0 auto; flex-shrink:0;">
-							<button class="btn-action btn-green" onclick="enterDungeon()">ダンジョン探索</button>
-							<button class="btn-action btn-blue" onclick="openShopMenu()">ショップ</button>
+							<button id="town-dungeon-btn" class="btn-action btn-green" onclick="enterDungeon()">ダンジョン探索</button>
+							<button id="town-shop-btn" class="btn-action btn-blue" onclick="openShopMenu()">ショップ</button>
 							<button class="btn-action btn-purple" onclick="openGuild()">ギルド</button>
 						</div>
 					</div>
@@ -1100,158 +1165,178 @@ const JOB_DATA = {
 
 				const MONSTERS = [
 			// ===== 1F〜5F : 浅層 =====
-			{ id: 'm1',  name: 'スライム',      hp:  40, atk:  15, def:  5, mdef:  5, agi:  6, gold:  15, exp:  40, minFloor:  1, maxFloor:  5, variance: 0.05 },
-			{ id: 'm2',  name: 'ホグ',          hp:  70, atk:  25, def: 12, mdef: 10, agi:  4, gold:  35, exp:  60, minFloor:  1, maxFloor:  5, variance: 0.10 },
-			{ id: 'm3',  name: 'ホーンラビット', hp:  40, atk:  28, def:  5, mdef:  2, agi: 18, gold:  45, exp:  70, minFloor:  2, maxFloor:  5, variance: 0.20 },
-			{ id: 'm4',  name: 'ウルフ',        hp:  60, atk:  32, def:  8, mdef:  5, agi: 15, gold:  60, exp:  90, minFloor:  2, maxFloor:  5, variance: 0.15 },
-			{ id: 'm5',  name: 'ゴブリン',      hp: 110, atk:  35, def: 22, mdef: 15, agi: 10, gold:  90, exp: 120, minFloor:  3, maxFloor:  5, variance: 0.10 },
+			// row: 'front'=前衛(近距離), 'back'=後衛(遠距離/魔法), 'both'=どちらでも出現
+			{ id: 'm1',  name: 'スライム',      hp:  40, mp:  0, atk:  15, def:  5, mdef:  5, agi:  6, gold:  15, exp:  40, minFloor:  1, maxFloor:  5, variance: 0.05, row: 'front', range: 'short' },
+			{ id: 'm2',  name: 'ホグ',          hp:  70, mp: 20, atk:  25, def: 12, mdef: 10, agi:  4, gold:  35, exp:  60, minFloor:  1, maxFloor:  5, variance: 0.10, row: 'front', range: 'short', skills: [{name:'突進', chance:0.20, mult:1.5, type:'physical', target:'single', msg:'突進！'}] },
+			{ id: 'm3',  name: 'ホーンラビット', hp:  40, mp:  0, atk:  28, def:  5, mdef:  2, agi: 18, gold:  45, exp:  70, minFloor:  2, maxFloor:  5, variance: 0.20, row: 'front', range: 'short', skills: [{name:'角突き', chance:0.25, mult:1.8, type:'physical', target:'single', msg:'角突き！'}] },
+			{ id: 'm4',  name: 'ウルフ',        hp:  60, mp: 15, atk:  32, def:  8, mdef:  5, agi: 15, gold:  60, exp:  90, minFloor:  2, maxFloor:  5, variance: 0.15, row: 'front', range: 'short', skills: [{name:'噛み砕き', chance:0.20, mult:1.6, type:'physical', target:'single', msg:'噛み砕き！'}] },
+			{ id: 'm5',  name: 'ゴブリン',      hp: 110, mp: 30, atk:  35, def: 22, mdef: 15, agi: 10, gold:  90, exp: 120, minFloor:  3, maxFloor:  5, variance: 0.10, row: 'front', range: 'short', skills: [{name:'集団攻撃', chance:0.15, mult:1.3, type:'physical', target:'all', msg:'集団攻撃！'}] },
 			// ===== 6F〜10F : 中層前半 =====
-			{ id: 'm6',  name: 'コボルト',      hp: 100, atk:  45, def: 15, mdef: 12, agi: 22, gold: 110, exp: 150, minFloor:  6, maxFloor: 10, variance: 0.15 },
-			{ id: 'm7',  name: 'オーク',        hp: 220, atk:  65, def: 30, mdef: 20, agi: 12, gold: 150, exp: 220, minFloor:  6, maxFloor: 10, variance: 0.10 },
-			{ id: 'm8',  name: 'マンドレイク',  hp: 150, atk:  30, def: 20, mdef: 25, agi: 10, gold: 130, exp: 180, minFloor:  6, maxFloor: 10, variance: 0.20 },
-			{ id: 'm9',  name: 'トレント',      hp: 350, atk:  50, def: 50, mdef: 40, agi:  7, gold: 180, exp: 280, minFloor:  6, maxFloor: 10, variance: 0.05 },
-			{ id: 'm10', name: 'ワイルドベア',  hp: 300, atk:  72, def: 35, mdef: 25, agi: 25, gold: 250, exp: 400, minFloor:  6, maxFloor: 10, variance: 0.15 },
+			{ id: 'm6',  name: 'コボルト',      hp: 100, mp: 30, atk:  45, def: 15, mdef: 12, agi: 22, gold: 110, exp: 150, minFloor:  6, maxFloor: 10, variance: 0.15, row: 'front', range: 'short', skills: [{name:'急所突き', chance:0.20, mult:2.0, type:'physical', target:'single', msg:'急所突き！'}] },
+			{ id: 'm7',  name: 'オーク',        hp: 220, mp: 20, atk:  65, def: 30, mdef: 20, agi: 12, gold: 150, exp: 220, minFloor:  6, maxFloor: 10, variance: 0.10, row: 'front', range: 'short', skills: [{name:'大振り', chance:0.25, mult:2.2, type:'physical', target:'single', msg:'大振り！'}] },
+			{ id: 'm8',  name: 'マンドレイク',  hp: 150, mp: 60, atk:  30, def: 20, mdef: 25, agi: 10, gold: 130, exp: 180, minFloor:  6, maxFloor: 10, variance: 0.20, row: 'back',  range: 'long', skills: [{name:'毒霧', chance:0.30, mult:1.0, type:'poison', target:'single', msg:'毒霧を放つ！'}] },
+			{ id: 'm9',  name: 'トレント',      hp: 350, mp:  0, atk:  50, def: 50, mdef: 40, agi:  7, gold: 180, exp: 280, minFloor:  6, maxFloor: 10, variance: 0.05, row: 'front', range: 'short' },
+			{ id: 'm10', name: 'ワイルドベア',  hp: 300, mp: 40, atk:  72, def: 35, mdef: 25, agi: 25, gold: 250, exp: 400, minFloor:  6, maxFloor: 10, variance: 0.15, row: 'front', range: 'short', skills: [{name:'熊の咆哮', chance:0.20, mult:2.0, type:'physical', target:'all', msg:'熊の咆哮！'}] },
 			// ===== 11F〜15F : 中層 =====
 			// アーマードリザード: 重装甲トカゲ。高DEFで物理攻撃をほぼ無効化するが魔法には弱い。
-			{ id: 'm11', name: 'アーマードリザード', hp: 280, atk: 110, def: 80, mdef: 25, agi: 12, gold: 320, exp: 500, minFloor: 11, maxFloor: 15, variance: 0.10 },
+			{ id: 'm11', name: 'アーマードリザード', hp: 280, mp:  0, atk: 110, def: 80, mdef: 25, agi: 12, gold: 320, exp: 500, minFloor: 11, maxFloor: 15, variance: 0.10, row: 'front', range: 'short' },
 			// ダークゴブリン: ゴブリンの上位種。素早さと攻撃力が増した群れ型の敵。
-			{ id: 'm12', name: 'ダークゴブリン',     hp: 220, atk: 130, def: 35, mdef: 30, agi: 28, gold: 280, exp: 460, minFloor: 11, maxFloor: 15, variance: 0.15 },
+			{ id: 'm12', name: 'ダークゴブリン',     hp: 220, mp: 50, atk: 130, def: 35, mdef: 30, agi: 28, gold: 280, exp: 460, minFloor: 11, maxFloor: 15, variance: 0.15, row: 'front', range: 'short', skills: [{name:'影斬り', chance:0.25, mult:2.0, type:'physical', target:'single', msg:'影斬り！'}] },
 			// アイスウィスプ: 氷の精霊体。物理耐性が高く、魔法攻撃専門の難敵。
-			{ id: 'm13', name: 'アイスウィスプ',     hp: 180, atk:  90, def: 20, mdef: 70, agi: 30, gold: 300, exp: 480, minFloor: 11, maxFloor: 15, variance: 0.20 },
+			{ id: 'm13', name: 'アイスウィスプ',     hp: 180, mp: 80, atk:  90, def: 20, mdef: 70, agi: 30, gold: 300, exp: 480, minFloor: 11, maxFloor: 15, variance: 0.20, row: 'back',  range: 'long', skills: [{name:'吹雪', chance:0.30, mult:1.5, type:'magic', target:'all', msg:'吹雪！'}] },
 			// ストーンゴーレム: 岩石でできた守護者。超高DEF・超低AGIの鈍重な壁役。
-			{ id: 'm14', name: 'ストーンゴーレム',   hp: 480, atk:  95, def:110, mdef: 50, agi:  5, gold: 350, exp: 560, minFloor: 13, maxFloor: 15, variance: 0.05 },
+			{ id: 'm14', name: 'ストーンゴーレム',   hp: 480, mp:  0, atk:  95, def:110, mdef: 50, agi:  5, gold: 350, exp: 560, minFloor: 13, maxFloor: 15, variance: 0.05, row: 'front', range: 'short' },
 			// ヴェノムスコーピオン: 毒の尾を持つ大蠍。中程度の能力バランスが取れた万能型。
-			{ id: 'm15', name: 'ヴェノムスコーピオン', hp: 260, atk: 145, def: 45, mdef: 40, agi: 20, gold: 330, exp: 520, minFloor: 12, maxFloor: 15, variance: 0.12 },
+			{ id: 'm15', name: 'ヴェノムスコーピオン', hp: 260, mp: 60, atk: 145, def: 45, mdef: 40, agi: 20, gold: 330, exp: 520, minFloor: 12, maxFloor: 15, variance: 0.12, row: 'front', range: 'short', skills: [{name:'毒針', chance:0.35, mult:1.2, type:'poison', target:'single', msg:'毒針！'}] },
 			// ===== 16F〜20F : 中層後半 =====
 			// ダークナイト: 闇の鎧を纏った堕落した騎士。高い物理攻撃と防御を誇るバランス型強敵。
-			{ id: 'm16', name: 'ダークナイト',       hp: 450, atk: 210, def: 90, mdef: 60, agi: 18, gold: 500, exp: 820, minFloor: 16, maxFloor: 20, variance: 0.10 },
+			{ id: 'm16', name: 'ダークナイト',       hp: 450, mp: 80, atk: 210, def: 90, mdef: 60, agi: 18, gold: 500, exp: 820, minFloor: 16, maxFloor: 20, variance: 0.10, row: 'front', range: 'short', skills: [{name:'暗黒斬', chance:0.25, mult:2.2, type:'physical', target:'single', msg:'暗黒斬！'}] },
 			// リッチ: 死霊魔術師の成れの果て。物理耐性が高く強力な魔法を操る術者型。
-			{ id: 'm17', name: 'リッチ',             hp: 300, atk: 180, def: 30, mdef:100, agi: 22, gold: 480, exp: 790, minFloor: 16, maxFloor: 20, variance: 0.15 },
+			{ id: 'm17', name: 'リッチ',             hp: 300, mp:150, atk: 180, def: 30, mdef:100, agi: 22, gold: 480, exp: 790, minFloor: 16, maxFloor: 20, variance: 0.15, row: 'back',  range: 'long', skills: [{name:'死霊術', chance:0.30, mult:2.0, type:'magic', target:'single', msg:'死霊術！'},{name:'魔力爆発', chance:0.20, mult:1.8, type:'magic', target:'all', msg:'魔力爆発！'}] },
 			// マグマスライム: 溶岩に生息する変異スライム。スライムより格段に強く炎属性を持つ。
-			{ id: 'm18', name: 'マグマスライム',     hp: 380, atk: 170, def: 55, mdef: 65, agi: 10, gold: 460, exp: 750, minFloor: 16, maxFloor: 20, variance: 0.10 },
+			{ id: 'm18', name: 'マグマスライム',     hp: 380, mp: 60, atk: 170, def: 55, mdef: 65, agi: 10, gold: 460, exp: 750, minFloor: 16, maxFloor: 20, variance: 0.10, row: 'front', range: 'short', skills: [{name:'溶岩噴射', chance:0.25, mult:1.5, type:'magic', target:'all', msg:'溶岩噴射！'}] },
 			// チェインゴースト: 鎖に縛られた怨霊。物理・魔法両方の耐性を持つ難敵だが速度は遅め。
-			{ id: 'm19', name: 'チェインゴースト',   hp: 350, atk: 155, def: 65, mdef: 80, agi: 15, gold: 490, exp: 800, minFloor: 17, maxFloor: 20, variance: 0.15 },
+			{ id: 'm19', name: 'チェインゴースト',   hp: 350, mp:100, atk: 155, def: 65, mdef: 80, agi: 15, gold: 490, exp: 800, minFloor: 17, maxFloor: 20, variance: 0.15, row: 'back',  range: 'long', skills: [{name:'怨霊の呪い', chance:0.30, mult:1.0, type:'curse', target:'single', msg:'怨霊の呪い！'}] },
 			// ブラッドオーガ: 赤い肌を持つ巨人族。生き血を求めて暴れ回る超火力型。
-			{ id: 'm20', name: 'ブラッドオーガ',     hp: 520, atk: 260, def: 70, mdef: 40, agi: 20, gold: 550, exp: 880, minFloor: 18, maxFloor: 20, variance: 0.12 },
+			{ id: 'm20', name: 'ブラッドオーガ',     hp: 520, mp: 50, atk: 260, def: 70, mdef: 40, agi: 20, gold: 550, exp: 880, minFloor: 18, maxFloor: 20, variance: 0.12, row: 'front', range: 'short', skills: [{name:'血の大振り', chance:0.20, mult:2.5, type:'physical', target:'single', msg:'血の大振り！'}] },
 			// ===== 21F〜25F : 深層 =====
 			// シャドウアサシン: 影の中に潜む暗殺者。驚異的な速度と会心率で急所を突いてくる。
-			{ id: 'm21', name: 'シャドウアサシン',   hp: 500, atk: 380, def: 60, mdef: 70, agi: 55, gold: 800, exp: 1300, minFloor: 21, maxFloor: 25, variance: 0.20 },
+			{ id: 'm21', name: 'シャドウアサシン',   hp: 500, mp: 80, atk: 380, def: 60, mdef: 70, agi: 55, gold: 800, exp: 1300, minFloor: 21, maxFloor: 25, variance: 0.20, row: 'front', range: 'short', skills: [{name:'暗殺', chance:0.25, mult:3.0, type:'physical', target:'single', msg:'暗殺！'}] },
 			// ヴァンパイアロード: 吸血鬼の王。攻撃・魔法・速度すべてが高水準の万能強敵。
-			{ id: 'm22', name: 'ヴァンパイアロード',  hp: 620, atk: 340, def: 80, mdef: 95, agi: 40, gold: 850, exp: 1400, minFloor: 21, maxFloor: 25, variance: 0.10 },
+			{ id: 'm22', name: 'ヴァンパイアロード',  hp: 620, mp:200, atk: 340, def: 80, mdef: 95, agi: 40, gold: 850, exp: 1400, minFloor: 21, maxFloor: 25, variance: 0.10, row: 'back',  range: 'long', skills: [{name:'吸血', chance:0.30, mult:2.0, type:'drain', target:'single', msg:'吸血！'},{name:'魔法陣', chance:0.20, mult:1.8, type:'magic', target:'all', msg:'魔法陣展開！'}] },
 			// 古代石像: 深層の番人。極めて高い物理耐性を持ち魔法が弱点のボス級雑魚。
-			{ id: 'm23', name: '古代石像',           hp: 900, atk: 300, def:160, mdef: 55, agi:  8, gold: 780, exp: 1250, minFloor: 21, maxFloor: 25, variance: 0.05 },
+			{ id: 'm23', name: '古代石像',           hp: 900, mp: 100, atk: 300, def:160, mdef: 55, agi:  8, gold: 780, exp: 1250, minFloor: 21, maxFloor: 25, variance: 0.05, row: 'front', range: 'short' },
 			// ドレイクウォリアー: 竜人族の戦士。炎のブレスで後列も容赦なく焼き払う。
-			{ id: 'm24', name: 'ドレイクウォリアー',  hp: 680, atk: 420, def: 95, mdef: 75, agi: 30, gold: 900, exp: 1500, minFloor: 22, maxFloor: 25, variance: 0.12 },
+			{ id: 'm24', name: 'ドレイクウォリアー',  hp: 680, mp: 100, atk: 420, def: 95, mdef: 75, agi: 30, gold: 900, exp: 1500, minFloor: 22, maxFloor: 25, variance: 0.12, row: 'front', range: 'long' },
 			// アビスジェリー: 深淵に棲む知性体。あらゆる属性をある程度吸収する難敵。
-			{ id: 'm25', name: 'アビスジェリー',     hp: 750, atk: 280, def: 85, mdef: 90, agi: 18, gold: 820, exp: 1350, minFloor: 23, maxFloor: 25, variance: 0.10 },
+			{ id: 'm25', name: 'アビスジェリー',     hp: 750, mp: 100, atk: 280, def: 85, mdef: 90, agi: 18, gold: 820, exp: 1350, minFloor: 23, maxFloor: 25, variance: 0.10, row: 'front', range: 'short' },
 			// ===== 26F〜30F : 最深層 =====
 			// デスナイト: 死の騎士。ダークナイトを超える圧倒的な攻撃力と重装甲を誇る。
-			{ id: 'm26', name: 'デスナイト',         hp: 900, atk: 650, def:150, mdef: 90, agi: 22, gold: 1300, exp: 2200, minFloor: 26, maxFloor: 30, variance: 0.10 },
+			{ id: 'm26', name: 'デスナイト',         hp: 900, mp: 100, atk: 650, def:150, mdef: 90, agi: 22, gold: 1300, exp: 2200, minFloor: 26, maxFloor: 30, variance: 0.10, row: 'front', range: 'short' },
 			// アークデーモン: 上位悪魔。高い魔法攻撃と物理攻撃を使い分ける最凶の術者。
-			{ id: 'm27', name: 'アークデーモン',     hp: 780, atk: 580, def: 80, mdef:150, agi: 38, gold: 1250, exp: 2100, minFloor: 26, maxFloor: 30, variance: 0.12 },
+			{ id: 'm27', name: 'アークデーモン',     hp: 780, mp: 100, atk: 580, def: 80, mdef:150, agi: 38, gold: 1250, exp: 2100, minFloor: 26, maxFloor: 30, variance: 0.12, row: 'back',  range: 'long' },
 			// 深淵の番竜: 最深層の守護竜。耐久・攻撃力・魔法耐性すべてが超高水準。
-			{ id: 'm28', name: '深淵の番竜',         hp:1200, atk: 720, def:130, mdef:130, agi: 28, gold: 1500, exp: 2500, minFloor: 27, maxFloor: 30, variance: 0.08 },
+			{ id: 'm28', name: '深淵の番竜',         hp:1200, mp: 100, atk: 720, def:130, mdef:130, agi: 28, gold: 1500, exp: 2500, minFloor: 27, maxFloor: 30, variance: 0.08, row: 'front', range: 'long' },
 			// ソウルイーター: 魂を喰らう怪物。攻撃力は低めだが超高速かつ全ステが均一な難敵。
-			{ id: 'm29', name: 'ソウルイーター',     hp: 850, atk: 530, def:100, mdef:120, agi: 60, gold: 1200, exp: 2000, minFloor: 27, maxFloor: 30, variance: 0.15 },
+			{ id: 'm29', name: 'ソウルイーター',     hp: 850, mp: 100, atk: 530, def:100, mdef:120, agi: 60, gold: 1200, exp: 2000, minFloor: 27, maxFloor: 30, variance: 0.15, row: 'back',  range: 'long' },
 			// ヴォイドゴーレム: 虚無から生まれた巨人。物理・魔法ともに最高水準の耐性を誇る鉄壁の壁役。
-			{ id: 'm30', name: 'ヴォイドゴーレム',   hp:1600, atk: 480, def:200, mdef:180, agi:  6, gold: 1400, exp: 2300, minFloor: 28, maxFloor: 30, variance: 0.05 },
+			{ id: 'm30', name: 'ヴォイドゴーレム',   hp:1600, mp: 100, atk: 480, def:200, mdef:180, agi:  6, gold: 1400, exp: 2300, minFloor: 28, maxFloor: 30, variance: 0.05, row: 'front', range: 'short' },
 			// ===== 31F〜35F : 奈落前層 =====
 			// 奈落の衛兵: 深淵の番人。均整のとれた高い全能力で前衛を脅かすバランス型。
-			{ id: 'm31', name: '奈落の衛兵',         hp:1800, atk: 700, def:230, mdef:200, agi: 28, gold: 1800, exp: 3200, minFloor: 31, maxFloor: 35, variance: 0.10 },
+			{ id: 'm31', name: '奈落の衛兵',         hp:1800, mp: 100, atk: 700, def:230, mdef:200, agi: 28, gold: 1800, exp: 3200, minFloor: 31, maxFloor: 35, variance: 0.10, row: 'front', range: 'short' },
 			// 煉獄の炎魔: 業火を纏う上位デーモン。物理耐性が高く魔法攻撃で全体を焼き払う。
-			{ id: 'm32', name: '煉獄の炎魔',         hp:1500, atk: 650, def:180, mdef:260, agi: 35, gold: 1900, exp: 3400, minFloor: 31, maxFloor: 35, variance: 0.12 },
+			{ id: 'm32', name: '煉獄の炎魔',         hp:1500, mp: 100, atk: 650, def:180, mdef:260, agi: 35, gold: 1900, exp: 3400, minFloor: 31, maxFloor: 35, variance: 0.12, row: 'back',  range: 'long' },
 			// 深淵の鎧武者: 冥界に堕ちた武士の怨霊。超高DEFと高ATKを誇る重装甲型の強敵。
-			{ id: 'm33', name: '深淵の鎧武者',       hp:2200, atk: 820, def:310, mdef:180, agi: 15, gold: 2000, exp: 3600, minFloor: 31, maxFloor: 35, variance: 0.08 },
+			{ id: 'm33', name: '深淵の鎧武者',       hp:2200, mp: 100, atk: 820, def:310, mdef:180, agi: 15, gold: 2000, exp: 3600, minFloor: 31, maxFloor: 35, variance: 0.08, row: 'front', range: 'short' },
 			// 滅亡の使者: 終末を告げる翼持つ悪魔。高速かつ高火力で後衛を狙う奇襲型。
-			{ id: 'm34', name: '滅亡の使者',         hp:1400, atk: 900, def:200, mdef:220, agi: 55, gold: 2100, exp: 3800, minFloor: 32, maxFloor: 35, variance: 0.15 },
+			{ id: 'm34', name: '滅亡の使者',         hp:1400, mp: 100, atk: 900, def:200, mdef:220, agi: 55, gold: 2100, exp: 3800, minFloor: 32, maxFloor: 35, variance: 0.15, row: 'back',  range: 'long' },
 			// 混沌の巨兵: 混沌から生まれた異形の巨人。HP・DEF・MDEFが全て最高水準の超タフな壁役。
-			{ id: 'm35', name: '混沌の巨兵',         hp:3200, atk: 750, def:280, mdef:260, agi:  8, gold: 2200, exp: 4000, minFloor: 33, maxFloor: 35, variance: 0.05 },
+			{ id: 'm35', name: '混沌の巨兵',         hp:3200, mp: 100, atk: 750, def:280, mdef:260, agi:  8, gold: 2200, exp: 4000, minFloor: 33, maxFloor: 35, variance: 0.05, row: 'front', range: 'short' },
 			// ===== 36F〜40F : 奈落層 =====
 			// 冥府の死神: 死の鎌を持つ収穫者。物理・魔法を無差別に振るう全能攻撃型。
-			{ id: 'm36', name: '冥府の死神',         hp:2200, atk:1050, def:280, mdef:260, agi: 42, gold: 2800, exp: 5000, minFloor: 36, maxFloor: 40, variance: 0.10 },
+			{ id: 'm36', name: '冥府の死神',         hp:2200, mp: 100, atk:1050, def:280, mdef:260, agi: 42, gold: 2800, exp: 5000, minFloor: 36, maxFloor: 40, variance: 0.10, row: 'front', range: 'long' },
 			// 星喰いの獣: 星の光を喰らう巨大獣。驚異的なHPと攻撃力を持つ超火力タンク型。
-			{ id: 'm37', name: '星喰いの獣',         hp:3500, atk:1200, def:300, mdef:230, agi: 20, gold: 3000, exp: 5400, minFloor: 36, maxFloor: 40, variance: 0.08 },
+			{ id: 'm37', name: '星喰いの獣',         hp:3500, mp: 100, atk:1200, def:300, mdef:230, agi: 20, gold: 3000, exp: 5400, minFloor: 36, maxFloor: 40, variance: 0.08, row: 'front', range: 'short' },
 			// 虚空の魔導師: 虚空から呪文を放つ上位魔術師。物理無効・魔法攻撃が非常に強力。
-			{ id: 'm38', name: '虚空の魔導師',       hp:1800, atk: 950, def:150, mdef:380, agi: 48, gold: 2900, exp: 5200, minFloor: 36, maxFloor: 40, variance: 0.15 },
+			{ id: 'm38', name: '虚空の魔導師',       hp:1800, mp: 100, atk: 950, def:150, mdef:380, agi: 48, gold: 2900, exp: 5200, minFloor: 36, maxFloor: 40, variance: 0.15, row: 'back',  range: 'long' },
 			// 奈落の番竜: 奈落を守護する古龍の末裔。全能力が高水準で特に物理攻撃が猛烈。
-			{ id: 'm39', name: '奈落の番竜',         hp:2800, atk:1400, def:320, mdef:290, agi: 32, gold: 3200, exp: 5800, minFloor: 37, maxFloor: 40, variance: 0.08 },
+			{ id: 'm39', name: '奈落の番竜',         hp:2800, mp: 100, atk:1400, def:320, mdef:290, agi: 32, gold: 3200, exp: 5800, minFloor: 37, maxFloor: 40, variance: 0.08, row: 'front', range: 'long' },
 			// 終末の鉄塊: 全身鋼鉄の破壊兵器。ATK・DEF・MDEFいずれも突出した最強重装甲型。
-			{ id: 'm40', name: '終末の鉄塊',         hp:4800, atk: 900, def:420, mdef:380, agi:  5, gold: 3400, exp: 6200, minFloor: 38, maxFloor: 40, variance: 0.05 },
+			{ id: 'm40', name: '終末の鉄塊',         hp:4800, mp: 100, atk: 900, def:420, mdef:380, agi:  5, gold: 3400, exp: 6200, minFloor: 38, maxFloor: 40, variance: 0.05, row: 'front', range: 'short' },
 			// ===== 41F〜45F : 深淵核心部 =====
 			// 虚無の騎士王: 廃滅した王国の魔王。圧倒的な物理攻撃と高い耐久を兼ね備えた支配者型。
-			{ id: 'm41', name: '虚無の騎士王',       hp:3500, atk:1800, def:400, mdef:320, agi: 38, gold: 4500, exp: 8000, minFloor: 41, maxFloor: 45, variance: 0.10 },
+			{ id: 'm41', name: '虚無の騎士王',       hp:3500, mp: 100, atk:1800, def:400, mdef:320, agi: 38, gold: 4500, exp: 8000, minFloor: 41, maxFloor: 45, variance: 0.10, row: 'front', range: 'short' },
 			// 深淵の賢者龍: 知性を持つ古代龍。魔法攻撃と物理攻撃を使い分ける最難敵。
-			{ id: 'm42', name: '深淵の賢者龍',       hp:3000, atk:1600, def:340, mdef:450, agi: 44, gold: 4800, exp: 8600, minFloor: 41, maxFloor: 45, variance: 0.10 },
+			{ id: 'm42', name: '深淵の賢者龍',       hp:3000, mp: 100, atk:1600, def:340, mdef:450, agi: 44, gold: 4800, exp: 8600, minFloor: 41, maxFloor: 45, variance: 0.10, row: 'back',  range: 'long' },
 			// 滅世の鬼将: 千の戦場を渡り歩いた不死の将軍。HPが高く手数で削る持久戦型。
-			{ id: 'm43', name: '滅世の鬼将',         hp:5000, atk:1500, def:450, mdef:350, agi: 22, gold: 4600, exp: 8200, minFloor: 41, maxFloor: 45, variance: 0.08 },
+			{ id: 'm43', name: '滅世の鬼将',         hp:5000, mp: 100, atk:1500, def:450, mdef:350, agi: 22, gold: 4600, exp: 8200, minFloor: 41, maxFloor: 45, variance: 0.08, row: 'front', range: 'short' },
 			// 奈落の女帝: 奈落を統治する魔女。高い魔法攻撃と速度で嵐のように攻め立てる。
-			{ id: 'm44', name: '奈落の女帝',         hp:2800, atk:2000, def:300, mdef:500, agi: 60, gold: 5000, exp: 9000, minFloor: 42, maxFloor: 45, variance: 0.12 },
+			{ id: 'm44', name: '奈落の女帝',         hp:2800, mp: 100, atk:2000, def:300, mdef:500, agi: 60, gold: 5000, exp: 9000, minFloor: 42, maxFloor: 45, variance: 0.12, row: 'back',  range: 'long' },
 			// 混沌の創世兵: 世界を壊すために生まれた兵器。物理・魔法の両耐性が極めて高い難攻不落の壁。
-			{ id: 'm45', name: '混沌の創世兵',       hp:7000, atk:1200, def:550, mdef:500, agi:  4, gold: 5200, exp: 9400, minFloor: 43, maxFloor: 45, variance: 0.05 },
+			{ id: 'm45', name: '混沌の創世兵',       hp:7000, mp: 100, atk:1200, def:550, mdef:500, agi:  4, gold: 5200, exp: 9400, minFloor: 43, maxFloor: 45, variance: 0.05, row: 'front', range: 'short' },
 			// ===== 46F〜50F : 原初の深淵 =====
 			// 原初の悪魔: 世界の始まりから存在する根源悪。凶暴な物理攻撃と魔法攻撃を同時に繰り出す。
-			{ id: 'm46', name: '原初の悪魔',         hp:5000, atk:2500, def:500, mdef:480, agi: 52, gold: 7000, exp:13000, minFloor: 46, maxFloor: 50, variance: 0.10 },
+			{ id: 'm46', name: '原初の悪魔',         hp:5000, mp: 100, atk:2500, def:500, mdef:480, agi: 52, gold: 7000, exp:13000, minFloor: 46, maxFloor: 50, variance: 0.10, row: 'front', range: 'long' },
 			// 神殺しの兵器: 神代に作られた対神兵器。破滅的な攻撃力と難攻不落の防御を誇る。
-			{ id: 'm47', name: '神殺しの兵器',       hp:4500, atk:2900, def:580, mdef:420, agi: 35, gold: 7500, exp:14000, minFloor: 46, maxFloor: 50, variance: 0.08 },
+			{ id: 'm47', name: '神殺しの兵器',       hp:4500, mp: 100, atk:2900, def:580, mdef:420, agi: 35, gold: 7500, exp:14000, minFloor: 46, maxFloor: 50, variance: 0.08, row: 'front', range: 'short' },
 			// 深淵竜帝: 深淵を統べる竜の皇帝。全ステータスが最高峰の超強敵。
-			{ id: 'm48', name: '深淵竜帝',           hp:6000, atk:3000, def:550, mdef:550, agi: 45, gold: 8000, exp:15000, minFloor: 46, maxFloor: 50, variance: 0.08 },
+			{ id: 'm48', name: '深淵竜帝',           hp:6000, mp: 100, atk:3000, def:550, mdef:550, agi: 45, gold: 8000, exp:15000, minFloor: 46, maxFloor: 50, variance: 0.08, row: 'front', range: 'long' },
 			// 虚無の審判者: 存在の終わりを告げる者。攻撃は低めだが物魔両方に無尽蔵の耐性を持つ。
-			{ id: 'm49', name: '虚無の審判者',       hp:9000, atk:2000, def:700, mdef:700, agi: 18, gold: 7800, exp:14500, minFloor: 47, maxFloor: 50, variance: 0.05 },
+			{ id: 'm49', name: '虚無の審判者',       hp:9000, mp: 100, atk:2000, def:700, mdef:700, agi: 18, gold: 7800, exp:14500, minFloor: 47, maxFloor: 50, variance: 0.05, row: 'back',  range: 'long' },
 			// 原初混沌体: 全ての混沌の根源。HP・攻撃・速度が全て最上級の最終雑魚敵。
-			{ id: 'm50', name: '原初混沌体',         hp:7500, atk:3500, def:620, mdef:620, agi: 62, gold: 9000, exp:17000, minFloor: 48, maxFloor: 50, variance: 0.08 },
+			{ id: 'm50', name: '原初混沌体',         hp:7500, mp: 100, atk:3500, def:620, mdef:620, agi: 62, gold: 9000, exp:17000, minFloor: 48, maxFloor: 50, variance: 0.08, row: 'front', range: 'long' },
 		]
 		const BOSS_DATA = {
-			 5: { name: 'ジャイアントスライム',   hp:   800, maxHp:   800, atk:  60, def:  40, mdef:  30, agi:  8, gold:  2000, exp:   5000, isBoss: true },
-			10: { name: 'フォレストフェンリル',   hp:  1500, maxHp:  1500, atk:  95, def:  55, mdef:  40, agi: 35, gold:  4500, exp:  12000, isBoss: true },
-			15: { name: '鋼鉄の魔将ゴルドラス',   hp:  3500, maxHp:  3500, atk: 180, def: 100, mdef:  70, agi: 20, gold: 10000, exp:  28000, isBoss: true },
-			20: { name: '闇竜ヴァルナクス',       hp:  6000, maxHp:  6000, atk: 280, def: 120, mdef: 110, agi: 32, gold: 22000, exp:  60000, isBoss: true },
-			25: { name: '深淵魔王ゼラファル',     hp: 10000, maxHp: 10000, atk: 450, def: 160, mdef: 150, agi: 45, gold: 45000, exp: 130000, isBoss: true },
-			30: { name: '虚無神アビサリオン',       hp:  18000, maxHp:  18000, atk:  700, def: 220, mdef: 220, agi:  55, gold:  90000, exp:  280000, isBoss: true },
-			35: { name: '奈落皇帝ガルガデス',       hp:  32000, maxHp:  32000, atk: 1100, def: 320, mdef: 300, agi:  48, gold: 180000, exp:  600000, isBoss: true },
-			40: { name: '星食らいの神獣ヴォラティア', hp:  55000, maxHp:  55000, atk: 1800, def: 420, mdef: 390, agi:  62, gold: 350000, exp: 1200000, isBoss: true },
-			45: { name: '深淵の創造神ルキファリス', hp:  90000, maxHp:  90000, atk: 2900, def: 560, mdef: 540, agi:  75, gold: 700000, exp: 2500000, isBoss: true },
-			50: { name: '原初神アルケーネシア',     hp: 150000, maxHp: 150000, atk: 4500, def: 750, mdef: 750, agi:  90, gold:1500000, exp: 6000000, isBoss: true },
+			 5: { name: 'ジャイアントスライム',   hp:   800, maxHp:   800, mp: 500, atk:  60, def:  40, mdef:  30, agi:  8, gold:  2000, exp:   5000, isBoss: true, row: 'front', range: 'short' },
+			10: { name: 'フォレストフェンリル',   hp:  1500, maxHp:  1500, mp: 500, atk:  95, def:  55, mdef:  40, agi: 35, gold:  4500, exp:  12000, isBoss: true, row: 'front', range: 'short' },
+			15: { name: '鋼鉄の魔将ゴルドラス',   hp:  3500, maxHp:  3500, mp: 500, atk: 180, def: 100, mdef:  70, agi: 20, gold: 10000, exp:  28000, isBoss: true, row: 'front', range: 'short' },
+			20: { name: '闇竜ヴァルナクス',       hp:  6000, maxHp:  6000, mp: 500, atk: 280, def: 120, mdef: 110, agi: 32, gold: 22000, exp:  60000, isBoss: true, row: 'front', range: 'long' },
+			25: { name: '深淵魔王ゼラファル',     hp: 10000, maxHp: 10000, mp: 500, atk: 450, def: 160, mdef: 150, agi: 45, gold: 45000, exp: 130000, isBoss: true, row: 'front', range: 'long' },
+			30: { name: '虚無神アビサリオン',       hp:  18000, maxHp:  18000, mp: 500, atk:  700, def: 220, mdef: 220, agi:  55, gold:  90000, exp:  280000, isBoss: true, row: 'front', range: 'long' },
+			35: { name: '奈落皇帝ガルガデス',       hp:  32000, maxHp:  32000, mp: 500, atk: 1100, def: 320, mdef: 300, agi:  48, gold: 180000, exp:  600000, isBoss: true, row: 'front', range: 'long' },
+			40: { name: '星食らいの神獣ヴォラティア', hp:  55000, maxHp:  55000, mp: 500, atk: 1800, def: 420, mdef: 390, agi:  62, gold: 350000, exp: 1200000, isBoss: true, row: 'front', range: 'long' },
+			45: { name: '深淵の創造神ルキファリス', hp:  90000, maxHp:  90000, mp: 500, atk: 2900, def: 560, mdef: 540, agi:  75, gold: 700000, exp: 2500000, isBoss: true, row: 'front', range: 'long' },
+			50: { name: '原初神アルケーネシア',     hp: 150000, maxHp: 150000, mp: 500, atk: 4500, def: 750, mdef: 750, agi:  90, gold:1500000, exp: 6000000, isBoss: true, row: 'front', range: 'long' },
 		}
-const SHOP_ITEMS = {
+		const SHOP_ITEMS = {
 			weapon: [
 				// --- Tier 1 (1〜10F) ---
-				{ id: 'w1_1', tier: 1, n: '遺された錆剣', p: 200, s: { str: 10 }, m: 1.0, d: '攻+10', dType: 'physical' },
-				{ id: 'w1_2', tier: 1, n: '新緑の小杖', p: 300, s: { matk: 12, mp: 20 }, m: 1.2, d: '特攻+12 / MP+20', dType: 'magic' },
-				{ id: 'w1_3', tier: 1, n: '探窟家の双刃', p: 800, s: { str: 15, agi: 10 }, m: 0.8, d: '2回攻撃 / 攻+15 / 速+10', dType: 'physical', hits: 2 },
-				{ id: 'w1_4', tier: 1, n: '処刑人の断斧', p: 1000, s: { str: 25, agi: -5 }, m: 1.4, d: '攻+25 / 速-5', dType: 'physical' },
+				{ id: 'w1_1', tier: 1, n: '遺された錆剣', p: 200, s: { str: 10 }, m: 1.0, d: '攻+10', dType: 'physical', range: 'short' },
+				{ id: 'w1_2', tier: 1, n: '新緑の小杖', p: 300, s: { matk: 12, mp: 20 }, m: 1.2, d: '特攻+12 / MP+20', dType: 'magic', range: 'long' },
+				{ id: 'w1_3', tier: 1, n: '探窟家の双刃', p: 800, s: { str: 15, agi: 10 }, m: 0.8, d: '2回攻撃 / 攻+15 / 速+10', dType: 'physical', hits: 2, range: 'short' },
+				{ id: 'w1_4', tier: 1, n: '処刑人の断斧', p: 1000, s: { str: 25, agi: -5 }, m: 1.4, d: '攻+25 / 速-5', dType: 'physical', range: 'short' },
+				{ id: 'w1_5', tier: 1, n: '狩人の短弓', p: 600, s: { str: 8, agi: 8 }, m: 0.9, d: '攻+8 / 速+8 / 遠距離', dType: 'physical', ranged: true, range: 'long' },
+				{ id: 'w1_6', tier: 1, n: '毒塗りの吹き矢', p: 750, s: { str: 6, agi: 12 }, m: 0.8, d: '攻+6 / 速+12 / 毒付与(30%) / 後列向き', dType: 'physical', ranged: true, range: 'long', effect: { type: 'poison', chance: 0.3 } },
 				// --- Tier 2 (11〜20F) ---
-				{ id: 'w2_1', tier: 2, n: '深層鉱の戦剣', p: 3000, s: { str: 60 }, m: 1.1, d: '攻+60', dType: 'physical' },
-				{ id: 'w2_2', tier: 2, n: '赤熱の魔道杖', p: 3500, s: { matk: 75, mp: 50 }, m: 1.3, d: '特攻+75 / MP+50', dType: 'magic' },
-				{ id: 'w2_3', tier: 2, n: '白銀の連撃剣', p: 5500, s: { str: 45, agi: 20 }, m: 0.85, d: '2回攻撃 / 攻+45 / 速+20', dType: 'physical', hits: 2 },
-				{ id: 'w2_4', tier: 2, n: '重鉄の大剣', p: 6000, s: { str: 90, vit: 20, agi: -10 }, m: 1.5, d: '攻+90 / 防+20 / 速-10', dType: 'physical' },
+				{ id: 'w2_1', tier: 2, n: '深層鉱の戦剣', p: 3000, s: { str: 60 }, m: 1.1, d: '攻+60', dType: 'physical', range: 'short' },
+				{ id: 'w2_2', tier: 2, n: '赤熱の魔道杖', p: 3500, s: { matk: 75, mp: 50 }, m: 1.3, d: '特攻+75 / MP+50', dType: 'magic', range: 'long' },
+				{ id: 'w2_3', tier: 2, n: '白銀の連撃剣', p: 5500, s: { str: 45, agi: 20 }, m: 0.85, d: '2回攻撃 / 攻+45 / 速+20', dType: 'physical', hits: 2, range: 'short' },
+				{ id: 'w2_4', tier: 2, n: '重鉄の大剣', p: 6000, s: { str: 90, vit: 20, agi: -10 }, m: 1.5, d: '攻+90 / 防+20 / 速-10', dType: 'physical', range: 'short' },
+				{ id: 'w2_5', tier: 2, n: '深淵の猟弓', p: 7000, s: { str: 50, agi: 25, cri: 0.04 }, m: 1.0, d: '攻+50 / 速+25 / 会心+4% / 遠距離', dType: 'physical', ranged: true, range: 'long' },
+				{ id: 'w2_6', tier: 2, n: '霜の魔弓', p: 8000, s: { matk: 55, agi: 20 }, m: 0.95, d: '特攻+55 / 速+20 / 凍結付与(20%) / 後列向き', dType: 'magic', ranged: true, range: 'long', effect: { type: 'freeze', chance: 0.2 } },
+				{ id: 'w2_7', tier: 2, n: '出血のクロスボウ', p: 7500, s: { str: 48, agi: 15 }, m: 0.9, d: '攻+48 / 速+15 / 出血付与(35%) / 後列向き', dType: 'physical', ranged: true, range: 'long', effect: { type: 'bleed', chance: 0.35 } },
 				// --- Tier 3 (21〜30F) ---
-				{ id: 'w3_1', tier: 3, n: '幻鋼ミスリル刃', p: 15000, s: { str: 220, cri: 0.05 }, m: 1.2, d: '攻+220 / 会心+5%', dType: 'physical' },
-				{ id: 'w3_2', tier: 3, n: 'アーク・タワーの杖', p: 18000, s: { matk: 280, mp: 150 }, m: 1.4, d: '特攻+280 / MP+150', dType: 'magic' },
-				{ id: 'w3_3', tier: 3, n: '暗殺者の血刃', p: 25000, s: { str: 180, luk: 50 }, m: 0.7, d: '3回攻撃 / 攻+180 / 運+50', dType: 'physical', hits: 3 },
-				{ id: 'w3_4', tier: 3, n: '地裂の戦鎚', p: 28000, s: { str: 350, vit: 50, agi: -20 }, m: 1.6, d: '攻+350 / 防+50 / 速-20', dType: 'physical' },
+				{ id: 'w3_1', tier: 3, n: '幻鋼ミスリル刃', p: 15000, s: { str: 220, cri: 0.05 }, m: 1.2, d: '攻+220 / 会心+5%', dType: 'physical', range: 'short' },
+				{ id: 'w3_2', tier: 3, n: 'アーク・タワーの杖', p: 18000, s: { matk: 280, mp: 150 }, m: 1.4, d: '特攻+280 / MP+150', dType: 'magic', range: 'long' },
+				{ id: 'w3_3', tier: 3, n: '暗殺者の血刃', p: 25000, s: { str: 180, luk: 50 }, m: 0.7, d: '3回攻撃 / 攻+180 / 運+50', dType: 'physical', hits: 3, range: 'short' },
+				{ id: 'w3_4', tier: 3, n: '地裂の戦鎚', p: 28000, s: { str: 350, vit: 50, agi: -20 }, m: 1.6, d: '攻+350 / 防+50 / 速-20', dType: 'physical', range: 'short' },
+				{ id: 'w3_5', tier: 3, n: '精霊の長弓', p: 30000, s: { str: 200, matk: 80, agi: 60 }, m: 1.1, d: '攻+200 / 特攻+80 / 速+60 / 遠距離', dType: 'physical', ranged: true, range: 'long' },
+				{ id: 'w3_6', tier: 3, n: '冥府の毒爪弩', p: 32000, s: { str: 160, agi: 50, luk: 30 }, m: 0.85, d: '攻+160 / 速+50 / 毒付与(50%) / 後列向き', dType: 'physical', ranged: true, range: 'long', effect: { type: 'poison', chance: 0.5 } },
+				{ id: 'w3_7', tier: 3, n: '深淵の呪術書', p: 35000, s: { matk: 320, mp: 120 }, m: 1.25, d: '特攻+320 / MP+120 / 気絶付与(15%) / 後列向き', dType: 'magic', range: 'long', effect: { type: 'stun', chance: 0.15 } },
 				// --- Tier 4 (31〜40F) ---
-				{ id: 'w4_1', tier: 4, n: '古代機神の光剣', p: 80000, s: { str: 850, agi: 50 }, m: 1.2, d: '攻+850 / 速+50', dType: 'physical' },
-				{ id: 'w4_2', tier: 4, n: '星詠みの賢杖', p: 95000, s: { matk: 1100, mp: 400 }, m: 1.5, d: '特攻+1100 / MP+400', dType: 'magic' },
-				{ id: 'w4_3', tier: 4, n: '九頭龍の穿牙', p: 120000, s: { str: 600, cri: 0.1 }, m: 0.75, d: '3回攻撃 / 攻+600 / 会心+10%', dType: 'physical', hits: 3 },
-				{ id: 'w4_4', tier: 4, n: '巨神滅しの竜斧', p: 140000, s: { str: 1400, vit: 150, agi: -40 }, m: 1.7, d: '攻+1400 / 防+150', dType: 'physical' },
+				{ id: 'w4_1', tier: 4, n: '古代機神の光剣', p: 80000, s: { str: 850, agi: 50 }, m: 1.2, d: '攻+850 / 速+50', dType: 'physical', range: 'short' },
+				{ id: 'w4_2', tier: 4, n: '星詠みの賢杖', p: 95000, s: { matk: 1100, mp: 400 }, m: 1.5, d: '特攻+1100 / MP+400', dType: 'magic', range: 'long' },
+				{ id: 'w4_3', tier: 4, n: '九頭龍の穿牙', p: 120000, s: { str: 600, cri: 0.1 }, m: 0.75, d: '3回攻撃 / 攻+600 / 会心+10%', dType: 'physical', hits: 3, range: 'short' },
+				{ id: 'w4_4', tier: 4, n: '巨神滅しの竜斧', p: 140000, s: { str: 1400, vit: 150, agi: -40 }, m: 1.7, d: '攻+1400 / 防+150', dType: 'physical', range: 'short' },
+				{ id: 'w4_5', tier: 4, n: '天帝の神弓', p: 160000, s: { str: 900, agi: 200, cri: 0.08 }, m: 1.15, d: '攻+900 / 速+200 / 会心+8% / 遠距離', dType: 'physical', ranged: true, range: 'long' },
+				{ id: 'w4_6', tier: 4, n: '奈落の冷気砲', p: 170000, s: { matk: 1000, agi: 80 }, m: 1.1, d: '特攻+1000 / 速+80 / 凍結(25%) / 後列向き', dType: 'magic', ranged: true, range: 'long', effect: { type: 'freeze', chance: 0.25 } },
+				{ id: 'w4_7', tier: 4, n: '業炎の長射砲', p: 180000, s: { str: 950, matk: 200, agi: 60 }, m: 1.0, d: '攻+950 / 特攻+200 / 後列向き 2連射', dType: 'physical', ranged: true, range: 'long', hits: 2 },
 				// --- Tier 5 (41〜50F) ---
-				{ id: 'w5_1', tier: 5, n: '【神話】アビス・ブレイカー', p: 500000, s: { str: 3200, all: 100 }, m: 1.3, d: '攻+3200 / 究極の物理剣', dType: 'physical' },
-				{ id: 'w5_2', tier: 5, n: '【神話】深淵竜の魔帝杖', p: 550000, s: { matk: 4000, mp: 1000 }, m: 1.6, d: '特攻+4000 / MP+1000', dType: 'magic' },
-				{ id: 'w5_3', tier: 5, n: '【神話】千刃神・阿修羅', p: 800000, s: { str: 2500, agi: 300, cri: 0.15 }, m: 0.8, d: '4回攻撃 / 攻+2500', dType: 'physical', hits: 4 },
+				{ id: 'w5_1', tier: 5, n: '【神話】アビス・ブレイカー', p: 500000, s: { str: 3200, all: 100 }, m: 1.3, d: '攻+3200 / 究極の物理剣', dType: 'physical', range: 'short' },
+				{ id: 'w5_2', tier: 5, n: '【神話】深淵竜の魔帝杖', p: 550000, s: { matk: 4000, mp: 1000 }, m: 1.6, d: '特攻+4000 / MP+1000', dType: 'magic', range: 'long' },
+				{ id: 'w5_3', tier: 5, n: '【神話】千刃神・阿修羅', p: 800000, s: { str: 2500, agi: 300, cri: 0.15 }, m: 0.8, d: '4回攻撃 / 攻+2500', dType: 'physical', hits: 4, range: 'short' },
+				{ id: 'w5_4', tier: 5, n: '【神話】絶対零度の魔弓矢', p: 750000, s: { matk: 3500, agi: 300, cri: 0.12 }, m: 1.2, d: '特攻+3500 / 速+300 / 凍結(40%) / 後列向き', dType: 'magic', ranged: true, range: 'long', effect: { type: 'freeze', chance: 0.4 } },
+				{ id: 'w5_5', tier: 5, n: '【神話】奈落の毒竜砲', p: 700000, s: { str: 2800, agi: 250 }, m: 1.0, d: '攻+2800 / 2連射 / 毒付与(60%) / 後列向き', dType: 'physical', ranged: true, range: 'long', hits: 2, effect: { type: 'poison', chance: 0.6 } },
 				// --- Tier 6 (21〜30F) ---
-				{ id: 'w6_1', tier: 6, n: '深淵鋼の覇剣', p: 200000, s: { str: 1200, cri: 0.08 }, m: 1.3, d: '攻+1200 / 会心+8%', dType: 'physical' },
-				{ id: 'w6_2', tier: 6, n: '虚無詠唱の杖', p: 240000, s: { matk: 1600, mp: 600 }, m: 1.5, d: '特攻+1600 / MP+600', dType: 'magic' },
-				{ id: 'w6_3', tier: 6, n: '魔将の双刃', p: 320000, s: { str: 900, agi: 120, cri: 0.12 }, m: 0.78, d: '3回攻撃 / 攻+900 / 会心+12%', dType: 'physical', hits: 3 },
-				{ id: 'w6_4', tier: 6, n: '滅竜の巨大鎚', p: 380000, s: { str: 2000, vit: 300, agi: -30 }, m: 1.8, d: '攻+2000 / 防+300 / 速-30', dType: 'physical' },
+				{ id: 'w6_1', tier: 6, n: '深淵鋼の覇剣', p: 200000, s: { str: 1200, cri: 0.08 }, m: 1.3, d: '攻+1200 / 会心+8%', dType: 'physical', range: 'short' },
+				{ id: 'w6_2', tier: 6, n: '虚無詠唱の杖', p: 240000, s: { matk: 1600, mp: 600 }, m: 1.5, d: '特攻+1600 / MP+600', dType: 'magic', range: 'long' },
+				{ id: 'w6_3', tier: 6, n: '魔将の双刃', p: 320000, s: { str: 900, agi: 120, cri: 0.12 }, m: 0.78, d: '3回攻撃 / 攻+900 / 会心+12%', dType: 'physical', hits: 3, range: 'short' },
+				{ id: 'w6_4', tier: 6, n: '滅竜の巨大鎚', p: 380000, s: { str: 2000, vit: 300, agi: -30 }, m: 1.8, d: '攻+2000 / 防+300 / 速-30', dType: 'physical', range: 'short' },
+				{ id: 'w6_5', tier: 6, n: '奈落の毒矢連弩', p: 350000, s: { str: 1100, agi: 180, luk: 80 }, m: 0.82, d: '3連射 / 攻+1100 / 毒(50%) / 後列向き', dType: 'physical', ranged: true, range: 'long', hits: 3, effect: { type: 'poison', chance: 0.5 } },
+				{ id: 'w6_6', tier: 6, n: '深淵魔道砲', p: 400000, s: { matk: 1800, mp: 400 }, m: 1.4, d: '特攻+1800 / MP+400 / 気絶(20%) / 後列向き', dType: 'magic', ranged: true, range: 'long', effect: { type: 'stun', chance: 0.2 } },
 				// --- Tier 7 (31〜40F) ---
-				{ id: 'w7_1', tier: 7, n: '奈落覇王の刃', p: 650000, s: { str: 3500, cri: 0.10 }, m: 1.35, d: '攻+3500 / 会心+10%', dType: 'physical' },
-				{ id: 'w7_2', tier: 7, n: '星砕きの魔槍', p: 700000, s: { str: 3000, agi: 180, cri: 0.15 }, m: 0.80, d: '3回攻撃 / 攻+3000 / 速+180', dType: 'physical', hits: 3 },
-				{ id: 'w7_3', tier: 7, n: '冥府の霊術杖', p: 750000, s: { matk: 4500, mp: 1200 }, m: 1.6, d: '特攻+4500 / MP+1200', dType: 'magic' },
-				{ id: 'w7_4', tier: 7, n: '終末の大破壊鎚', p: 850000, s: { str: 5500, vit: 500, agi: -50 }, m: 2.0, d: '攻+5500 / 防+500 / 速-50', dType: 'physical' },
+				{ id: 'w7_1', tier: 7, n: '奈落覇王の刃', p: 650000, s: { str: 3500, cri: 0.10 }, m: 1.35, d: '攻+3500 / 会心+10%', dType: 'physical', range: 'short' },
+				{ id: 'w7_2', tier: 7, n: '星砕きの魔槍', p: 700000, s: { str: 3000, agi: 180, cri: 0.15 }, m: 0.80, d: '3回攻撃 / 攻+3000 / 速+180', dType: 'physical', hits: 3, range: 'short' },
+				{ id: 'w7_3', tier: 7, n: '冥府の霊術杖', p: 750000, s: { matk: 4500, mp: 1200 }, m: 1.6, d: '特攻+4500 / MP+1200', dType: 'magic', range: 'long' },
+				{ id: 'w7_4', tier: 7, n: '終末の大破壊鎚', p: 850000, s: { str: 5500, vit: 500, agi: -50 }, m: 2.0, d: '攻+5500 / 防+500 / 速-50', dType: 'physical', range: 'short' },
+				{ id: 'w7_5', tier: 7, n: '終焉の氷爆弓', p: 900000, s: { matk: 4000, agi: 300, cri: 0.12 }, m: 1.1, d: '特攻+4000 / 凍結(35%) / 後列向き', dType: 'magic', ranged: true, range: 'long', effect: { type: 'freeze', chance: 0.35 } },
+				{ id: 'w7_6', tier: 7, n: '深淵血斬砲', p: 950000, s: { str: 3800, agi: 200 }, m: 0.85, d: '2連射 / 攻+3800 / 出血(55%) / 後列向き', dType: 'physical', ranged: true, range: 'long', hits: 2, effect: { type: 'bleed', chance: 0.55 } },
 				// --- Tier 8 (41〜50F) ---
-				{ id: 'w8_1', tier: 8, n: '【創世】神断剣クリエイティオ', p: 1500000, s: { str: 8000, cri: 0.15 }, m: 1.4, d: '攻+8000 / 会心+15%', dType: 'physical' },
-				{ id: 'w8_2', tier: 8, n: '【創世】原初の魔導書', p: 1800000, s: { matk: 10000, mp: 2000 }, m: 1.7, d: '特攻+10000 / MP+2000', dType: 'magic' },
-				{ id: 'w8_3', tier: 8, n: '【創世】虚空四刃・原初', p: 2200000, s: { str: 6000, agi: 400, cri: 0.20 }, m: 0.82, d: '4回攻撃 / 攻+6000 / 会心+20%', dType: 'physical', hits: 4 },
+				{ id: 'w8_1', tier: 8, n: '【創世】神断剣クリエイティオ', p: 1500000, s: { str: 8000, cri: 0.15 }, m: 1.4, d: '攻+8000 / 会心+15%', dType: 'physical', range: 'short' },
+				{ id: 'w8_2', tier: 8, n: '【創世】原初の魔導書', p: 1800000, s: { matk: 10000, mp: 2000 }, m: 1.7, d: '特攻+10000 / MP+2000', dType: 'magic', range: 'long' },
+				{ id: 'w8_3', tier: 8, n: '【創世】虚空四刃・原初', p: 2200000, s: { str: 6000, agi: 400, cri: 0.20 }, m: 0.82, d: '4回攻撃 / 攻+6000 / 会心+20%', dType: 'physical', hits: 4, range: 'short' },
+				{ id: 'w8_4', tier: 8, n: '【創世】原初毒竜の幻弩', p: 2500000, s: { str: 7500, agi: 500, cri: 0.18 }, m: 0.85, d: '3連射 / 攻+7500 / 毒(70%) / 後列向き', dType: 'physical', ranged: true, range: 'long', hits: 3, effect: { type: 'poison', chance: 0.7 } },
+				{ id: 'w8_5', tier: 8, n: '【創世】絶滅の虚無砲', p: 2800000, s: { matk: 12000, agi: 300 }, m: 1.6, d: '特攻+12000 / 凍結(50%) / 気絶(30%) / 後列向き', dType: 'magic', ranged: true, range: 'long', effect: { type: 'freeze', chance: 0.5 } },
 			],
 			armor: [
 				// --- Tier 1 & 2 ---
@@ -1586,6 +1671,7 @@ const SHOP_ITEMS = {
 						else if (p.job === '探索者') p.job = 'レンジャー'
 						p.equip = p.equip ?? { weapon: null, armor: null, acc: null, runes: [] }
 						p.learnedSkills = p.learnedSkills ?? {}
+						p.row = p.row ?? 'front'
 						p.skillCooldowns = p.skillCooldowns || {}
 						p.exp = p.exp ?? 0
 						p.nextExp = p.nextExp ?? 100
@@ -1723,6 +1809,27 @@ const SHOP_ITEMS = {
 					return
 				}
 			}
+			// ── チュートリアル中の探索処理 ──
+			if (tutState.active && tutState.phase === 'B') {
+				const _ts = TUT_STEPS[tutState.stepIdx]
+				if (_ts && _ts.hook === 'explore') {
+					_tutClearHighlight()
+					if (tutState.stepIdx === 2) {
+						// 最初の探索: スライム固定戦闘を開始し、戦闘説明(step3)へ
+						tutState.stepIdx = 3
+						tutState.phase = 'A'
+						_tutForceBattle()
+						setTimeout(_tutPhaseA, 500)
+					} else {
+						// 2回目の探索: Tier1武器を宝箱として確定ドロップ
+						_tutDropChestWeapon()
+						tutState.stepIdx++
+						tutState.phase = 'A'
+						setTimeout(_tutPhaseA, 300)
+					}
+					return
+				}
+			}
 			exploreRandomEvent()
 		}
 
@@ -1766,6 +1873,7 @@ const SHOP_ITEMS = {
 					const roll = 1 + (Math.random() * 2 - 1) * variance
 					const enemy = { ...b, id: i,
 						hp:   Math.floor(b.hp   * roll), maxHp: Math.floor(b.hp * roll),
+						mp:   b.mp || 0, maxMp: b.mp || 0,
 						atk:  Math.floor(b.atk  * roll), def: Math.floor(b.def * roll),
 						mdef: Math.floor(b.mdef * roll), exp: Math.floor(b.exp * roll),
 						gold: Math.floor(b.gold * roll)
@@ -1781,6 +1889,11 @@ const SHOP_ITEMS = {
 			document.getElementById('dungeon-ui').classList.add('hidden')
 			document.getElementById('battle-view').classList.remove('hidden')
 			updateBattleUI()
+			// 前衛/後衛の状況をログに表示
+			const _fN = gameState.party.filter(p=>p.row==='front'&&p.hp>0).map(p=>p.name).join('・')
+			const _bN = gameState.party.filter(p=>p.row==='back' &&p.hp>0).map(p=>p.name).join('・')
+			if (_fN) addLog(`⚔️ 前衛: ${_fN}`, 'log-sys')
+			if (_bN) addLog(`🏹 後衛: ${_bN}（前衛が全滅するまで守られる）`, 'log-sys')
 			setTurn('player')
 		}
 
@@ -1830,7 +1943,25 @@ const SHOP_ITEMS = {
 			}
 		}
 
-		function playerAttack() {
+		// 遠距離武器かどうかを判定
+		function isRangedWeapon(p) {
+			return !!(p.equip && p.equip.weapon && p.equip.weapon.ranged)
+		}
+		// 武器の射程を返す（long=後衛でもペナルティなし, short=後衛からペナルティあり）
+		function getWeaponRange(p) {
+			if (!p.equip || !p.equip.weapon) return 'short'
+			const w = p.equip.weapon
+			if (w.range) return w.range
+			if (w.ranged || w.dType === 'magic') return 'long'
+			return 'short'
+		}
+
+		// スキルが全体攻撃かどうかを判定
+		function isAoeSkill(s) {
+			return s && (s.target === 'all' || s.target === 'aoe' || s.target === 'all_enemy')
+		}
+
+				function playerAttack() {
 			if (battle.isProcessing || battle.turn !== 'player') return
 			if (battle.targeting !== null) return
 			const p = gameState.party[battle.activeUnitIndex]
@@ -1873,7 +2004,16 @@ const SHOP_ITEMS = {
 			const _damageMult = getEnemyDamageMult(target.id, dType)
 			const res = calcTacticalDamage(getFinalStats(p), target.def, target.mdef, p.lv, false, dType)
 			res.val = Math.floor(res.val * _damageMult)
-			addLog(`${p.name}の攻撃：${res.val}ダメージ ${res.crit ? '★会心' : ''} <span style="font-size:0.75em; color:${dType==='magic'?'#a78bfa':'#fb923c'}; border:1px solid ${dType==='magic'?'#7c5cbf':'#c2622a'}; border-radius:3px; padding:0 3px;">${dType==='magic'?'特殊':'物理'}</span>`, res.crit ? 'log-crit' : 'log-p-atk')
+			// 後衛からshort射程武器での攻撃はダメージ-20%（射程ペナルティ）
+			const _isBackPenalty = (p.row === 'back' && getWeaponRange(p) === 'short')
+			if (_isBackPenalty) res.val = Math.floor(res.val * 0.8)
+			const _rowNote = _isBackPenalty ? ' <span style=\"font-size:0.72em;color:#aaa;\">(後衛-20%)</span>' : ''
+			// 武器のonHitエフェクト処理（後で setTimeout 内で適用）
+			const _weapEff = p.equip && p.equip.weapon && p.equip.weapon.effect ? p.equip.weapon.effect : null
+			const _rangeNote = getWeaponRange(p) === 'long'
+			? `<span style="font-size:0.7em;color:#60a5fa;border:1px solid #3a5a8a;border-radius:3px;padding:0 3px;margin-left:2px;">遠距離</span>`
+			: `<span style="font-size:0.7em;color:#fb923c;border:1px solid #8a4a1a;border-radius:3px;padding:0 3px;margin-left:2px;">近接</span>`
+		addLog(`${p.name}の攻撃：${res.val}ダメージ ${res.crit ? '★会心' : ''}${_rowNote}${_rangeNote} <span style="font-size:0.75em; color:${dType==='magic'?'#a78bfa':'#fb923c'}; border:1px solid ${dType==='magic'?'#7c5cbf':'#c2622a'}; border-radius:3px; padding:0 3px;">${dType==='magic'?'特殊':'物理'}</span>`, res.crit ? 'log-crit' : 'log-p-atk')
 			setTimeout(() => {
 				target.hp = Math.max(0, target.hp - res.val)
 				// 復讐する：反射
@@ -1890,6 +2030,26 @@ const SHOP_ITEMS = {
 					const ex = (battle.enemyDots||[]).find(d=>d.eId===target.id&&d.type==='poison')
 					if (!ex) battle.enemyDots.push({ eId: target.id, type: 'poison', turns: 3 })
 					addLog(`☠ 反呪！ ${target.name}に毒を付与！`, 'log-e-atk')
+				}
+				// 武器のonHitエフェクト
+				if (_weapEff && target.hp > 0 && Math.random() < _weapEff.chance) {
+					if (_weapEff.type === 'poison') {
+						const _ex = (battle.enemyDots||[]).find(d=>d.eId===target.id&&d.type==='poison')
+						if (!_ex) battle.enemyDots.push({ eId: target.id, type: 'poison', turns: 3 })
+						addLog(`☠ 武器効果：${target.name}に毒付与！`, 'log-sys')
+					} else if (_weapEff.type === 'bleed') {
+						const _ex = (battle.enemyDots||[]).find(d=>d.eId===target.id&&d.type==='bleed')
+						if (!_ex) battle.enemyDots.push({ eId: target.id, type: 'bleed', turns: 3 })
+						addLog(`🩸 武器効果：${target.name}に出血付与！`, 'log-sys')
+					} else if (_weapEff.type === 'stun') {
+						const _ex = (battle.enemyStatus||[]).find(s=>s.eId===target.id&&s.type==='stun')
+						if (!_ex) battle.enemyStatus.push({ eId: target.id, type: 'stun', turns: 1 })
+						addLog(`⚡ 武器効果：${target.name}が気絶！`, 'log-sys')
+					} else if (_weapEff.type === 'freeze') {
+						const _ex = (battle.enemyStatus||[]).find(s=>s.eId===target.id&&s.type==='freeze')
+						if (!_ex) battle.enemyStatus.push({ eId: target.id, type: 'freeze', turns: 1 })
+						addLog(`❄ 武器効果：${target.name}が凍結！`, 'log-sys')
+					}
 				}
 				updateBattleUI()
 				
@@ -2154,7 +2314,18 @@ const SHOP_ITEMS = {
 			if (index < 0 || index >= battle.enemies.length) return
 			const target = battle.enemies[index]
 			if (target.hp <= 0) return
+			// 射程チェック：short武器で敵後衛を直接狙う場合、前衛が残っていれば不可
 			if (battle.targeting === 'attack') {
+				const p = gameState.party[battle.activeUnitIndex]
+				const wRange = p ? getWeaponRange(p) : 'short'
+				if (wRange === 'short' && target.row === 'back') {
+					const aliveFront = battle.enemies.filter(e => e.hp > 0 && e.row !== 'back')
+					if (aliveFront.length > 0) {
+						showMsg('⚔️ 短射程武器では前衛を倒すまで後衛を攻撃できません！')
+						playSE('error')
+						return
+					}
+				}
 				executeAttack(target)
 			} else if (battle.targeting === 'skill' && battle.pendingSkill) {
 				executeSkill(battle.pendingSkill, target, battle.pendingSkillLv)
@@ -2310,8 +2481,22 @@ const SHOP_ITEMS = {
 					continue
 				}
 
-				const targetIndex = Math.floor(Math.random() * aliveParty.length)
-				const targetP = aliveParty[targetIndex]
+				// 前衛がいれば前衛のみ、前衛が全滅したら後衛を攻撃（射程longの敵は後衛も狙える）
+				const aliveFront = aliveParty.filter(p => p.row === 'front')
+				let attackPool
+				if (e.range === 'long') {
+					// long射程: 前衛がいても後衛を狙える（前衛がいれば前衛優先75%）
+					if (aliveFront.length > 0 && Math.random() < 0.75) {
+						attackPool = aliveFront
+					} else {
+						attackPool = aliveParty
+					}
+				} else {
+					// short射程: 前衛がいれば必ず前衛のみ攻撃
+					attackPool = aliveFront.length > 0 ? aliveFront : aliveParty
+				}
+				const targetIndex = Math.floor(Math.random() * attackPool.length)
+				const targetP = attackPool[targetIndex]
 
 				// ===== ボス固有行動パターン =====
 
@@ -2711,6 +2896,71 @@ const SHOP_ITEMS = {
 					addLog(`${e.name}の攻撃：${targetP.name}に${resAK.val}ダメージ` + ` <span style=\"font-size:0.75em; color:#fb923c; border:1px solid #c2622a; border-radius:3px; padding:0 3px;\">物理</span>`, 'log-e-atk')
 
 				} else {
+					// ── 通常モンスターのスキル判定 ──
+					if (e.skills && e.skills.length > 0 && !e.isBoss) {
+						const roll = Math.random()
+						let cumChance = 0
+						let usedSkill = null
+						for (const sk of e.skills) {
+							cumChance += sk.chance
+							if (roll < cumChance) { usedSkill = sk; break }
+						}
+						if (usedSkill) {
+							playSE('magic')
+							const alivePSk = gameState.party.filter(p => p.hp > 0)
+							const aliveFrontSk = alivePSk.filter(p => p.row === 'front')
+							const poolSk = e.range === 'long' ? alivePSk : (aliveFrontSk.length > 0 ? aliveFrontSk : alivePSk)
+							const tgSk = poolSk[Math.floor(Math.random() * poolSk.length)]
+							if (usedSkill.target === 'all') {
+								addLog(`✨ ${e.name}の${usedSkill.msg || usedSkill.name}`, 'log-e-atk')
+								const targets = [...alivePSk]
+								for (const t of targets) {
+									if (usedSkill.type === 'poison') {
+										const pIdx = gameState.party.indexOf(t)
+										const ex = (battle.partyDots||[]).find(d=>d.pIdx===pIdx&&d.type==='poison')
+										if (!ex) (battle.partyDots=battle.partyDots||[]).push({pIdx,type:'poison',turns:3,src:'enemy'})
+										addLog(`☠ ${t.name}が毒状態に！`, 'log-e-atk')
+									} else {
+										const ds = getFinalStats(t)
+										const dType = usedSkill.type === 'magic' ? 'magic' : 'physical'
+										const res = calcTacticalDamage({str: dType==='physical'?Math.floor(e.atk*usedSkill.mult):0, matk: dType==='magic'?Math.floor(e.atk*usedSkill.mult):0, cri:0.05, multiplier:1.0}, ds.vit, ds.mdef, 1, true, dType)
+										applyDamageToPartyMember(t, res.val, 'log-e-atk')
+										addLog(`${t.name}に${res.val}ダメージ <span style="font-size:0.75em; color:${dType==='magic'?'#a78bfa':'#fb923c'}; border:1px solid ${dType==='magic'?'#7c5cbf':'#c2622a'}; border-radius:3px; padding:0 3px;">${dType==='magic'?'特殊':'物理'}</span>`, 'log-e-atk')
+									}
+								}
+							} else {
+								// single target
+								if (usedSkill.type === 'poison') {
+									const pIdx = gameState.party.indexOf(tgSk)
+									const ex = (battle.partyDots||[]).find(d=>d.pIdx===pIdx&&d.type==='poison')
+									if (!ex) (battle.partyDots=battle.partyDots||[]).push({pIdx,type:'poison',turns:3,src:'enemy'})
+									addLog(`✨ ${e.name}の${usedSkill.msg||usedSkill.name} → ${tgSk.name}が毒状態に！`, 'log-e-atk')
+								} else if (usedSkill.type === 'drain') {
+									const ds = getFinalStats(tgSk)
+									const res = calcTacticalDamage({str:Math.floor(e.atk*usedSkill.mult),matk:0,cri:0.05,multiplier:1.0}, ds.vit, ds.mdef, 1, true, 'physical')
+									applyDamageToPartyMember(tgSk, res.val, 'log-e-atk')
+									const healAmt = Math.floor(res.val * 0.5)
+									e.hp = Math.min(e.maxHp, e.hp + healAmt)
+									addLog(`✨ ${e.name}の${usedSkill.msg||usedSkill.name} → ${tgSk.name}に${res.val}ダメージ、HP+${healAmt}回復！`, 'log-e-atk')
+								} else if (usedSkill.type === 'curse') {
+									const pIdx = gameState.party.indexOf(tgSk)
+									// curse = bleedとして実装
+									const ex = (battle.partyDots||[]).find(d=>d.pIdx===pIdx&&d.type==='bleed')
+									if (!ex) (battle.partyDots=battle.partyDots||[]).push({pIdx,type:'bleed',turns:3,src:'enemy'})
+									addLog(`✨ ${e.name}の${usedSkill.msg||usedSkill.name} → ${tgSk.name}が出血状態に！`, 'log-e-atk')
+								} else {
+									const dType = usedSkill.type === 'magic' ? 'magic' : 'physical'
+									const ds = getFinalStats(tgSk)
+									const res = calcTacticalDamage({str: dType==='physical'?Math.floor(e.atk*usedSkill.mult):0, matk: dType==='magic'?Math.floor(e.atk*usedSkill.mult):0, cri:0.05,multiplier:1.0}, ds.vit, ds.mdef, 1, true, dType)
+									applyDamageToPartyMember(tgSk, res.val, 'log-e-atk')
+									addLog(`✨ ${e.name}の${usedSkill.msg||usedSkill.name} → ${tgSk.name}に${res.val}ダメージ <span style="font-size:0.75em; color:${dType==='magic'?'#a78bfa':'#fb923c'}; border:1px solid ${dType==='magic'?'#7c5cbf':'#c2622a'}; border-radius:3px; padding:0 3px;">${dType==='magic'?'特殊':'物理'}</span>`, 'log-e-atk')
+								}
+							}
+							updateBattleUI()
+							if (gameState.party.every(p => p.hp <= 0)) { handleDeath(); return }
+							continue
+						}
+					}
 					if (e.name === 'フォレストフェンリル' && battle.turnCycle % 2 === 0) {
 						if (e.fenrirNextSkill === undefined) e.fenrirNextSkill = 0
 						const skillId = e.fenrirNextSkill
@@ -2816,12 +3066,12 @@ const SHOP_ITEMS = {
 			if (wrap && dd && !wrap.contains(e.target)) dd.style.display = 'none'
 		}, true)
 
-				function _afHeaderShow(show) {
+		function _afHeaderShow(show) {
 			const w = document.getElementById('af-header-wrap')
 			if (w) w.style.display = show ? 'flex' : 'none'
 		}
 
-				function setAutoFarmSpeed(speed) {
+		function setAutoFarmSpeed(speed) {
 			if (autoFarm.active) return
 			autoFarm.speed = speed
 			const map = { slow: 'af-btn-slow', normal: 'af-btn-normal', fast: 'af-btn-fast' }
@@ -3023,8 +3273,13 @@ const SHOP_ITEMS = {
 						battle.targeting = null
 						battle.pendingSkill = null
 						if (needsTarget) {
-							// 一番HPが低い敵を狙う
-							const tgt = aliveE.reduce((a,b) => a.hp < b.hp ? a : b)
+							// 射程チェック：短射程なら前衛の敵のみ対象
+							let _afSkPool = aliveE
+							if (getWeaponRange(p) === 'short') {
+								const _afFront = aliveE.filter(e => e.row !== 'back')
+								if (_afFront.length > 0) _afSkPool = _afFront
+							}
+							const tgt = _afSkPool.reduce((a,b) => a.hp < b.hp ? a : b)
 							executeSkill(s, tgt, lv)
 						} else if (needsPartyTarget) {
 							// 最もHP%が低い生存メンバー
@@ -3041,7 +3296,14 @@ const SHOP_ITEMS = {
 			const aliveEnemies = battle.enemies.filter(e => e.hp > 0)
 			if (!aliveEnemies.length) return
 			battle.remainingHits = (p.equip?.weapon?.hits) || 1
-			const target = aliveEnemies.reduce((a,b) => a.hp < b.hp ? a : b)
+			// 射程チェック：短射程武器＋後衛は前衛の敵のみ狙う
+			const _afWRange = getWeaponRange(p)
+			let _afTargetPool = aliveEnemies
+			if (_afWRange === 'short') {
+				const _frontAlive = aliveEnemies.filter(e => e.row !== 'back')
+				if (_frontAlive.length > 0) _afTargetPool = _frontAlive
+			}
+			const target = _afTargetPool.reduce((a,b) => a.hp < b.hp ? a : b)
 			executeAttack(target)
 		}
 
@@ -3094,6 +3356,7 @@ function winBattle() {
 					document.getElementById('btn-next-floor').classList.remove('hidden')
 				}
 				updateUI()
+				tutHook('battle_win')
 				// オート周回中なら次の戦闘を自動開始
 				if (autoFarm.active) {
 					autoFarm.kills++
@@ -3462,12 +3725,24 @@ function winBattle() {
 			}
 		}
 		function closeModal() {
+			if (tutState.active && tutState._inventoryOpen) {
+				tutState._inventoryOpen = false
+				_tutClearHighlight()
+				tutHook('inventory_closed')
+			}
+			const _ml2 = document.getElementById('modal-layer')
+			if (_ml2) { _ml2.style.position = ''; _ml2.style.zIndex = '' }
+			tutHook('close_shop')
 			document.getElementById('modal-layer').classList.add('hidden')
 			battle.targeting = null; // ターゲット選択中に閉じられた場合のリセット
 			updateBattleUI();
 		}
 		function openModalWrapper() {
-			document.getElementById('modal-layer').classList.remove('hidden')
+			// チュートリアル中はfixedで最前面表示
+			const _ml = document.getElementById('modal-layer')
+			_ml.style.position = 'fixed'
+			_ml.style.zIndex = '9500'
+			_ml.classList.remove('hidden')
 		}
 		function showMsg(msg) {
 			addLog(msg, 'log-sys')
@@ -3525,7 +3800,7 @@ function winBattle() {
 						<span style="color:#555;">制作者</span>
 						<span style="color:#eee; font-weight:bold;">ねぎらーめん</span>
 						<span style="color:#555;">バージョン</span>
-						<span style="color:#aaa;">v2.21</span>
+						<span style="color:#aaa;">v1.511</span>
 						<span style="color:#555;">ジャンル</span>
 						<span style="color:#aaa;">テキストRPG / ハック＆スラッシュ</span>
 						<span style="color:#555;">推奨環境</span>
@@ -3633,6 +3908,34 @@ function winBattle() {
 						</div>
 					</div>
 					<p style="color:#aaa; font-size:0.82rem; margin:0;"><b style="color:#eee;">ダメージ計算：</b>物理は物耐（VIT）、魔法は特耐（MDEF）で軽減。属性デバフで防御を下げると大ダメージが狙えます。</p>`
+				},
+				{
+					id: 'formation', icon: '⚔️🏹', title: '前衛・後衛',
+					body: `
+					<p style="color:#aaa; margin:0 0 10px;">キャラクターには<b style="color:#f87171;">⚔️ 前衛</b>と<b style="color:#60a5fa;">🏹 後衛</b>の配置があり、戦略の核心です。</p>
+					<div style="display:flex; flex-direction:column; gap:8px; margin-bottom:10px;">
+						<div style="background:#111; border-left:3px solid #f87171; border-radius:0 6px 6px 0; padding:8px 10px;">
+							<b style="color:#f87171;">⚔️ 前衛の役割</b>
+							<p style="color:#aaa; font-size:0.82rem; margin:4px 0 0;">敵の攻撃を一手に引き受ける盾。後衛が生存している間、敵（短射程）は前衛しか狙えない。<b>近接武器</b>の威力をフルに発揮できる。</p>
+						</div>
+						<div style="background:#111; border-left:3px solid #60a5fa; border-radius:0 6px 6px 0; padding:8px 10px;">
+							<b style="color:#60a5fa;">🏹 後衛の役割</b>
+							<p style="color:#aaa; font-size:0.82rem; margin:4px 0 0;">前衛が生きている間は<b>敵の短射程攻撃を受けない</b>安全地帯。魔法使いやアーチャーの定位置。ただし近接武器でのダメージは<b style="color:#f87171;">-20%</b>のペナルティ。</p>
+						</div>
+					</div>
+					<b style="color:#eee; font-size:0.88rem;">武器の射程</b>
+					<div style="display:flex; flex-direction:column; gap:6px; margin-top:6px; margin-bottom:10px;">
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px 10px; display:flex; align-items:center; gap:8px;">
+							<span style="font-size:0.78rem;padding:2px 8px;background:rgba(251,146,60,0.15);border:1px solid #c2622a;border-radius:4px;color:#fb923c;white-space:nowrap;">近接</span>
+							<p style="color:#aaa; font-size:0.82rem; margin:0;">剣・斧・槌など。後衛から使うとダメージ<b style="color:#f87171;">-20%</b>。前衛で最大火力。</p>
+						</div>
+						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px 10px; display:flex; align-items:center; gap:8px;">
+							<span style="font-size:0.78rem;padding:2px 8px;background:rgba(96,165,250,0.15);border:1px solid #60a5fa;border-radius:4px;color:#60a5fa;white-space:nowrap;">遠距離</span>
+							<p style="color:#aaa; font-size:0.82rem; margin:0;">弓・杖・魔法書など。前衛・後衛いずれからでもペナルティなし。後衛に最適。</p>
+						</div>
+					</div>
+					<b style="color:#eee; font-size:0.88rem;">敵の射程と配置</b>
+					<p style="color:#aaa; font-size:0.82rem; margin:5px 0 0;">敵にも前衛・後衛があります。<b>短射程の敵</b>は前衛が残っている間、こちらの後衛を直接攻撃できません。<b>長射程の敵</b>（魔法使いタイプなど）は前衛・後衛を問わず狙ってきます。<br><br>⚠️ 配置変更は<b style="color:#f87171;">戦闘中は不可</b>です。戦闘前に配置を決めておきましょう。</p>`
 				},
 				{
 					id: 'stats', icon: '📊', title: 'ステータス詳細',
@@ -3822,7 +4125,7 @@ function winBattle() {
 			c.innerHTML = `
 				<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
 					<h2 style="margin:0;">❓ ヘルプ</h2>
-					<button onclick="openTutorial(0)" style="padding:6px 10px; font-size:0.75rem;
+					<button onclick="startTutorialFromHelp()" style="padding:6px 10px; font-size:0.75rem;
 						background:rgba(66,153,225,0.15); border:1px solid var(--accent-blue); border-radius:16px;
 						color:var(--accent-blue); cursor:pointer;">📖 チュートリアル</button>
 				</div>
@@ -3842,48 +4145,89 @@ function winBattle() {
 			openHelpModal()
 		}
 		function openShopMenu() {
+			tutHook('open_shop')
 			const c = document.getElementById('modal-content')
-			c.innerHTML = `<h2>ショップ</h2><p>所持金：${gameState.gold}G</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><button class="btn-action btn-blue" style="font-size:1rem; padding:15px;" onclick="openShopList('weapon')">⚔️ 武器屋</button><button class="btn-action btn-blue" style="font-size:1rem; padding:15px;" onclick="openShopList('armor')">🛡️ 防具屋</button><button class="btn-action btn-blue" style="font-size:1rem; padding:15px;" onclick="openShopList('acc')">💍 装飾品</button><button class="btn-action btn-blue" style="font-size:1rem; padding:15px;" onclick="openShopList('item')">🧪 道具屋</button></div><button onclick="closeModal()" class="btn-action btn-red" style="margin-top:20px; width:100%;">戻る</button>`
+			c.innerHTML = `<h2>ショップ</h2><p>所持金：${gameState.gold}G</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><button class="btn-action btn-blue" style="font-size:1rem; padding:15px;" onclick="openShopList('weapon')">⚔️ 武器屋</button><button class="btn-action btn-blue" style="font-size:1rem; padding:15px;" onclick="openShopList('armor')">🛡️ 防具屋</button><button class="btn-action btn-blue" style="font-size:1rem; padding:15px;" onclick="openShopList('acc')">💍 装飾品</button><button class="btn-action btn-blue" style="font-size:1rem; padding:15px;" onclick="openShopList('item')">🧪 道具屋</button><button class="btn-action" style="font-size:1rem; padding:15px; grid-column:1/-1; background:linear-gradient(135deg,#b45309,#d97706); border-color:#f59e0b; color:#fff;" onclick="openShopSell()">💰 アイテム売却</button></div><button onclick="closeModal()" class="btn-action btn-red" style="margin-top:20px; width:100%;">戻る</button>`
 			openModalWrapper()
 		}
-		function setShopFilter(cat, type) {
-			if (!gameState.shopFilters) gameState.shopFilters = { weapon: 'all', armor: 'all' }
-			gameState.shopFilters[cat] = type
+		function setShopFilter(cat, type, sort) {
+			if (!gameState.shopFilters) gameState.shopFilters = {}
+			if (!gameState.shopSorts)   gameState.shopSorts = {}
+			if (type !== undefined) gameState.shopFilters[cat] = type
+			if (sort !== undefined) gameState.shopSorts[cat] = sort
 			openShopList(cat)
 		}
 		function openShopList(cat, justBought = false) {
 			const c = document.getElementById('modal-content')
 			// 到達フロアから販売可能なTierを計算
 			const maxTier = Math.min(8, Math.floor((gameState.maxFloor - 1) / 10) + 1);
-			// そのTier以下のアイテムだけをショップに並べる
-			let items = SHOP_ITEMS[cat].filter(i => i.tier <= maxTier);
-			
-			const catMap = { weapon: '武器屋', armor: '防具屋', acc: '装飾品', item: '道具屋' }
+			if (!gameState.shopFilters) gameState.shopFilters = {}
+			if (!gameState.shopSorts)   gameState.shopSorts = {}
+
+			const catMap = { weapon: '⚔️ 武器屋', armor: '🛡️ 防具屋', acc: '💍 装飾品', item: '🧪 道具屋' }
 
 			let guideHtml = ''
 			if (justBought) {
-				guideHtml = `<div style="background:rgba(76, 175, 80, 0.2); border:1px solid var(--accent-green); color:#fff; padding:10px; border-radius:6px; margin-bottom:15px; font-size:0.9rem;">✅ 購入しました。カバンから装備できます。</div>`
+				guideHtml = `<div style="background:rgba(76, 175, 80, 0.2); border:1px solid var(--accent-green); color:#fff; padding:10px; border-radius:6px; margin-bottom:12px; font-size:0.9rem;">✅ 購入しました。カバンから装備できます。</div>`
 			}
 
+			// ─── カテゴリタブ ───
+			const catTabs = [
+				{ key: 'weapon', label: '武器', icon: '⚔️' },
+				{ key: 'armor',  label: '防具', icon: '🛡️' },
+				{ key: 'acc',    label: '装飾', icon: '💍' },
+				{ key: 'item',   label: '道具', icon: '🧪' },
+			]
+			const catTabHtml = `<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px;">
+				${catTabs.map(t => {
+					const active = cat === t.key
+					const cnt = SHOP_ITEMS[t.key] ? SHOP_ITEMS[t.key].filter(i => i.tier <= maxTier).length : 0
+					return `<button onclick="openShopList('${t.key}')"
+						style="display:flex; align-items:center; gap:4px; padding:5px 10px; font-size:0.8rem;
+						border-radius:20px; border:1px solid ${active ? 'var(--accent-blue)' : '#444'};
+						background:${active ? 'rgba(66,153,225,0.25)' : '#111'};
+						color:${active ? '#fff' : '#aaa'}; cursor:pointer;">
+						<span>${t.icon}</span><span>${t.label}</span>
+						<span style="background:${active ? 'var(--accent-blue)' : '#333'}; color:#fff;
+							border-radius:10px; padding:0 5px; font-size:0.7rem; min-width:16px; text-align:center;">${cnt}</span>
+					</button>`
+				}).join('')}
+			</div>`
+
+			// ─── 絞り込み（武器・防具） ───
+			const currentFilter = gameState.shopFilters[cat] || 'all'
+			const currentSort   = gameState.shopSorts[cat]   || 'default'
 			let filterHtml = ''
 			if (cat === 'weapon' || cat === 'armor') {
-				if (!gameState.shopFilters) gameState.shopFilters = { weapon: 'all', armor: 'all' }
-				const currentFilter = gameState.shopFilters[cat] || 'all'
-
-				const activeStyle = type => (currentFilter === type ? 'background:var(--accent-blue); color:#fff; border-color:#fff;' : '')
-
-				filterHtml = `
-						<div style="display:flex; gap:5px; margin-bottom:15px; justify-content:center;">
-							<button class="btn-icon" style="${activeStyle('all')}" onclick="setShopFilter('${cat}', 'all')">全て</button>
-							<button class="btn-icon" style="${activeStyle('physical')}" onclick="setShopFilter('${cat}', 'physical')">物理</button>
-							<button class="btn-icon" style="${activeStyle('magic')}" onclick="setShopFilter('${cat}', 'magic')">魔法</button>
-						</div>
-					`
-
-				if (currentFilter !== 'all') {
-					items = items.filter(i => i.dType === currentFilter)
-				}
+				const activeF = type => (currentFilter === type ? 'background:var(--accent-blue); color:#fff; border-color:var(--accent-blue);' : '')
+				filterHtml = `<div style="display:flex; gap:5px; margin-bottom:8px; flex-wrap:wrap;">
+					<span style="font-size:0.75rem; color:#666; align-self:center; margin-right:2px;">種別:</span>
+					<button class="btn-icon" style="font-size:0.75rem;${activeF('all')}" onclick="setShopFilter('${cat}','all')">全て</button>
+					<button class="btn-icon" style="font-size:0.75rem;${activeF('physical')}" onclick="setShopFilter('${cat}','physical')">物理</button>
+					<button class="btn-icon" style="font-size:0.75rem;${activeF('magic')}" onclick="setShopFilter('${cat}','magic')">魔法</button>
+				</div>`
 			}
+
+			// ─── ソート ───
+			const sortOpts = [
+				{ key: 'default',    label: 'Tier↑' },
+				{ key: 'tier_desc',  label: 'Tier↓' },
+				{ key: 'price_asc',  label: '価格↑' },
+				{ key: 'price_desc', label: '価格↓' },
+			]
+			const activeS = key => (currentSort === key ? 'background:rgba(255,196,0,0.2); color:var(--gold); border-color:var(--gold);' : '')
+			const sortHtml = `<div style="display:flex; gap:4px; margin-bottom:12px; flex-wrap:wrap;">
+				<span style="font-size:0.75rem; color:#666; align-self:center; margin-right:2px;">並び:</span>
+				${sortOpts.map(s => `<button class="btn-icon" style="font-size:0.75rem;${activeS(s.key)}" onclick="setShopFilter('${cat}',undefined,'${s.key}')">${s.label}</button>`).join('')}
+			</div>`
+
+			// ─── アイテム絞り込み＆ソート ───
+			let items = SHOP_ITEMS[cat].filter(i => i.tier <= maxTier);
+			if (currentFilter !== 'all') items = items.filter(i => i.dType === currentFilter)
+			if      (currentSort === 'tier_desc')  items = [...items].sort((a,b) => (b.tier||0) - (a.tier||0))
+			else if (currentSort === 'price_asc')  items = [...items].sort((a,b) => a.p - b.p)
+			else if (currentSort === 'price_desc') items = [...items].sort((a,b) => b.p - a.p)
+			else items = [...items].sort((a,b) => (a.tier||0) - (b.tier||0))
 
 			// Tier / タイプ表示ヘルパー
 			const tierColors = ['','#999','#7dc','#4af','#c8f','#fa4','#f80','#f44','#f0f']
@@ -3900,7 +4244,7 @@ function winBattle() {
 					<div style="flex:1; min-width:0;">
 						${topMeta ? `<div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap; margin-bottom:4px;">${topMeta}</div>` : ''}
 						<b style="font-size:0.92rem; color:${canAfford ? '#eee' : '#555'};">${i.n}</b>
-						<div style="font-size:0.77rem; color:#666; margin-top:2px;">${i.d}</div>
+						<div style="font-size:0.77rem; color:#666; margin-top:2px;">${i.d}${cat !== 'item' ? (i.range==='long' ? ' <span style=\"font-size:0.7rem;padding:0 4px;background:rgba(96,165,250,0.15);border:1px solid #60a5fa;border-radius:3px;color:#60a5fa;\">遠距離</span>' : ' <span style=\"font-size:0.7rem;padding:0 4px;background:rgba(251,146,60,0.15);border:1px solid #c2622a;border-radius:3px;color:#fb923c;\">近接</span>') : ''}</div>
 					</div>
 					<div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0;">
 						<span style="color:${canAfford ? 'var(--gold)' : '#555'}; font-weight:bold; font-size:0.88rem; white-space:nowrap;">${i.p.toLocaleString()}G</span>
@@ -3911,21 +4255,154 @@ function winBattle() {
 			}).join('')
 
 			c.innerHTML = `
-				<div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
-					<h2 style="margin:0;">${catMap[cat] || cat}</h2>
+				<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+					<h2 style="margin:0;">ショップ</h2>
 					<span style="color:var(--gold); font-weight:bold; font-size:0.9rem;">💰 ${gameState.gold.toLocaleString()}G</span>
 				</div>
-				<div style="font-size:0.72rem; color:#555; margin-bottom:10px;">
-					販売上限 Tier${maxTier}（最深 ${gameState.maxFloor}F 到達）
-				</div>
-				${guideHtml}${filterHtml}
-				<div style="display:grid; gap:7px; max-height:56vh; overflow-y:auto; padding-right:2px;">
+				<div style="font-size:0.72rem; color:#555; margin-bottom:8px;">販売上限 Tier${maxTier}（最深 ${gameState.maxFloor}F 到達）</div>
+				${catTabHtml}
+				${guideHtml}${filterHtml}${sortHtml}
+				<div style="display:grid; gap:7px; max-height:48vh; overflow-y:auto; padding-right:2px;">
 					${itemCards || '<p style="text-align:center; color:#555; padding:20px;">販売中のアイテムがありません</p>'}
 				</div>
-				<button onclick="openShopMenu()" class="btn-action btn-red" style="margin-top:12px; width:100%;">← ショップへ戻る</button>`
+				<button onclick="closeModal()" class="btn-action btn-red" style="margin-top:12px; width:100%;">閉じる</button>`
 			openModalWrapper()
 		}
-		function buyItem(cat, id) {
+		function openShopSell(msg = '', filterType = 'all', sortType = 'default') {
+			const c = document.getElementById('modal-content')
+			const successHtml = msg ? `<div style="background:rgba(76,175,80,0.2);border:1px solid #4caf50;color:#fff;padding:8px 12px;border-radius:6px;margin-bottom:10px;font-size:0.9rem;">${msg}</div>` : ''
+
+			// Tier表示ヘルパー
+			const tierLabel = tier => {
+				if (!tier) return ''
+				const stars = '★'.repeat(Math.min(tier, 8)) + '☆'.repeat(Math.max(0, 8 - tier))
+				const colors = ['','#aaa','#7dc','#4af','#c8f','#fa4','#f80','#f44','#f0f']
+				return `<span style="font-size:0.72rem; color:${colors[tier]||'#fff'}; letter-spacing:1px;">Tier${tier} ${stars}</span>`
+			}
+
+			// ─── フィルタータブ（カバンと同じ）───
+			const tabs = [
+				{ key: 'all',    label: '全て',   icon: '📦' },
+				{ key: 'weapon', label: '武器',   icon: '⚔️' },
+				{ key: 'armor',  label: '防具',   icon: '🛡️' },
+				{ key: 'acc',    label: '装飾',   icon: '💍' },
+				{ key: 'rune',   label: 'ルーン', icon: '🔮' },
+			]
+			const sellableAll = gameState.inventory.filter(item => item.type !== 'item')
+			const counts = { all: sellableAll.length }
+			tabs.slice(1).forEach(t => { counts[t.key] = sellableAll.filter(i => i.type === t.key).length })
+			const tabHtml = `<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px;">
+				${tabs.map(t => {
+					const active = filterType === t.key
+					const cnt = counts[t.key] ?? 0
+					return `<button onclick="openShopSell('','${t.key}','${sortType}')"
+						style="display:flex; align-items:center; gap:4px; padding:5px 10px; font-size:0.8rem;
+						border-radius:20px; border:1px solid ${active ? 'var(--accent-blue)' : '#444'};
+						background:${active ? 'rgba(66,153,225,0.25)' : '#111'};
+						color:${active ? '#fff' : '#aaa'}; cursor:pointer;">
+						<span>${t.icon}</span><span>${t.label}</span>
+						<span style="background:${active ? 'var(--accent-blue)' : '#333'}; color:#fff;
+							border-radius:10px; padding:0 5px; font-size:0.7rem; min-width:16px; text-align:center;">${cnt}</span>
+					</button>`
+				}).join('')}
+			</div>`
+
+			// ─── ソート ───
+			const sortOpts = [
+				{ key: 'default', label: '取得順' },
+				{ key: 'tier',    label: 'Tier順' },
+				{ key: 'price',   label: '価格順' },
+				{ key: 'locked',  label: 'ロック優先' },
+			]
+			const sortHtml = `<div style="display:flex; gap:4px; margin-bottom:10px; flex-wrap:wrap;">
+				<span style="font-size:0.75rem; color:#666; align-self:center; margin-right:2px;">並び替え:</span>
+				${sortOpts.map(s => {
+					const active = sortType === s.key
+					return `<button onclick="openShopSell('','${filterType}','${s.key}')"
+						style="padding:3px 9px; font-size:0.75rem; border-radius:12px;
+						border:1px solid ${active ? 'var(--gold)' : '#333'};
+						background:${active ? 'rgba(255,196,0,0.15)' : '#111'};
+						color:${active ? 'var(--gold)' : '#777'}; cursor:pointer;">${s.label}</button>`
+				}).join('')}
+			</div>`
+
+			// ─── 絞り込み＋ソート ───
+			let sellable = filterType === 'all'
+				? sellableAll.map((item) => ({ item, idx: gameState.inventory.indexOf(item) }))
+				: sellableAll.filter(item => item.type === filterType).map(item => ({ item, idx: gameState.inventory.indexOf(item) }))
+			if (sortType === 'tier')   sellable.sort((a, b) => (b.item.tier||0) - (a.item.tier||0))
+			if (sortType === 'price')  sellable.sort((a, b) => (b.item.p||0) - (a.item.p||0))
+			if (sortType === 'locked') sellable.sort((a, b) => (b.item.locked ? 1 : 0) - (a.item.locked ? 1 : 0))
+
+			c.innerHTML = `
+				<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+					<h2 style="margin:0;">💰 アイテム売却</h2>
+					<span style="color:var(--gold);font-weight:bold;">${gameState.gold.toLocaleString()}G</span>
+				</div>
+				${successHtml}
+				<div style="font-size:0.78rem;color:#aaa;margin:0 0 10px;background:#1a1a1a;border-radius:6px;padding:8px 10px;border-left:3px solid #f59e0b;">
+					💡 <b style="color:var(--gold)">🔒 鍵マーク</b> でロックすると誤売却を防止できます。
+				</div>
+				${tabHtml}${sortHtml}
+				<div id="sell-list" style="display:flex;flex-direction:column;gap:8px;max-height:44vh;overflow-y:auto;padding-right:3px;"></div>
+				<button onclick="openShopMenu()" class="btn-action btn-red" style="margin-top:14px;width:100%;">← ショップに戻る</button>`
+			openModalWrapper()
+
+			const list = document.getElementById('sell-list')
+			if (sellable.length === 0) {
+				list.innerHTML = '<p style="text-align:center;padding:20px;color:#666;">売却できる装備がありません</p>'
+			} else {
+				sellable.forEach(({ item, idx }) => {
+					const div = document.createElement('div')
+					div.style.cssText = 'display:flex; flex-direction:column; padding:10px; border:1px solid #333; background:#111; border-radius:8px;'
+					const sellPrice = Math.max(1, Math.floor((item.p || 100) * 0.4))
+					const lockIcon = item.locked ? '🔒' : '🔓'
+					const lockStyle = item.locked ? 'color:var(--gold); border-color:var(--gold);' : ''
+					const nameColor = item.rarityColor || '#eee'
+					const itemName = item.rarityLabel ? `[${item.rarityLabel}] ${item.n}` : item.n
+					let subText = ''
+					if (item.subEffects && item.subEffects.length > 0) {
+						subText = `<div style="font-size:0.75rem; color:var(--accent-blue); margin:3px 0;">◆ ${item.subEffects.map(e => e.n + '+' + (e.k === 'cri' ? (e.v*100)+'%' : e.v)).join(' / ')}</div>`
+					}
+					const tierHtml = item.tier ? `<div style="margin-top:2px;">${tierLabel(item.tier)}</div>` : ''
+					const typeIcons = { weapon:'⚔️', armor:'🛡️', acc:'💍', rune:'🔮' }
+					const typeBadge = item.type ? `<span style="font-size:0.68rem; color:#555; margin-right:4px;">${typeIcons[item.type]||''}</span>` : ''
+					const rangeBadge = item.type !== 'item' && item.range
+						? (item.range==='long' ? ' <span style="font-size:0.7rem;padding:0 4px;background:rgba(96,165,250,0.15);border:1px solid #60a5fa;border-radius:3px;color:#60a5fa;">遠距離</span>'
+						                       : ' <span style="font-size:0.7rem;padding:0 4px;background:rgba(251,146,60,0.15);border:1px solid #c2622a;border-radius:3px;color:#fb923c;">近接</span>')
+						: ''
+					div.innerHTML = `
+						<div style="display:flex; justify-content:space-between; align-items:flex-start;">
+							<div style="flex:1; min-width:0;">
+								<div style="display:flex; align-items:center; gap:3px; flex-wrap:wrap;">
+									${typeBadge}<b style="color:${nameColor}; font-size:0.95rem;">${itemName}</b>
+								</div>
+								${tierHtml}
+								<div style="font-size:0.8rem; color:#aaa; margin-top:2px;">${item.d}${rangeBadge}</div>
+								${subText}
+								<div style="font-size:0.8rem; color:var(--gold); margin-top:4px;">売値: ${sellPrice.toLocaleString()}G</div>
+							</div>
+							<div style="display:flex; flex-direction:column; gap:6px; margin-left:8px; flex-shrink:0; align-items:stretch; min-width:72px;">
+								<button style="padding:8px 12px;font-size:0.88rem;font-weight:bold;width:100%;background:${item.locked ? '#555' : 'linear-gradient(135deg,#b45309,#d97706)'};border:1px solid ${item.locked ? '#666' : '#f59e0b'};color:#fff;border-radius:6px;cursor:${item.locked ? 'not-allowed' : 'pointer'};opacity:${item.locked ? '0.5' : '1'};" onclick="shopSellItem(${idx})" ${item.locked ? 'disabled title="🔒 ロックを外してから売却"' : ''}>売却</button>
+								<button class="btn-icon" style="background:transparent; border:1px solid #444; ${lockStyle} font-size:0.85rem; padding:4px 7px; width:100%;" onclick="toggleLock(${idx}); openShopSell('','${filterType}','${sortType}')" title="ロック">${lockIcon}</button>
+							</div>
+						</div>`
+					list.appendChild(div)
+				})
+			}
+		}
+		function shopSellItem(idx) {
+			const item = gameState.inventory[idx]
+			if (!item) return
+			if (item.locked) { addLog(`${item.n}はロック中のため売却できません。`, 'log-red'); return }
+			const sellPrice = Math.max(1, Math.floor((item.p || 100) * 0.4))
+			gameState.gold += sellPrice
+			gameState.inventory.splice(idx, 1)
+			addLog(`${item.n}を${sellPrice}Gで売却しました。`, 'log-gold')
+			openShopSell(`✅ ${item.n} を ${sellPrice}G で売却しました！`)
+		}
+
+				function buyItem(cat, id) {
 			const itemData = SHOP_ITEMS[cat].find(i => i.id === id)
 			if (!itemData) {
 				console.error('Item not found:', id)
@@ -3984,6 +4461,18 @@ function winBattle() {
 			openInventory()
 		}
 		function openInventory(filterType = 'all', sortType = 'default') {
+			if (tutState.active) {
+				tutState._inventoryOpen = true
+				// step8: カバンを開いたら最初の装備するボタンをハイライト
+				const _s = TUT_STEPS[tutState.stepIdx]
+				if (_s && _s.hook === 'inventory_closed') {
+					// DOM描画後にハイライト
+					requestAnimationFrame(() => requestAnimationFrame(() => {
+						const _firstEquipBtn = document.getElementById('inv-equip-btn-0')
+						if (_firstEquipBtn) _tutHighlightInModal('inv-equip-btn-0', '👆 装備する')
+					}))
+				}
+			}
 			const c = document.getElementById('modal-content')
 			const maxCap = getMaxCapacity()
 			const inTown = !gameState.inDungeon
@@ -4145,16 +4634,15 @@ function winBattle() {
 									${typeBadge}<b style="color:${nameColor}; font-size:0.95rem;">${itemName}</b>
 								</div>
 								${tierHtml}
-								<div style="font-size:0.8rem; color:#aaa; margin-top:2px;">${item.d}</div>
+								<div style="font-size:0.8rem; color:#aaa; margin-top:2px;">${item.d}${item.type !== 'item' ? (item.range==='long' ? ' <span style=\"font-size:0.7rem;padding:0 4px;background:rgba(96,165,250,0.15);border:1px solid #60a5fa;border-radius:3px;color:#60a5fa;\">遠距離</span>' : ' <span style=\"font-size:0.7rem;padding:0 4px;background:rgba(251,146,60,0.15);border:1px solid #c2622a;border-radius:3px;color:#fb923c;\">近接</span>') : ''}</div>
 								${subText}
 							</div>
-							<div style="display:flex; flex-direction:column; gap:5px; margin-left:8px; flex-shrink:0;">
+							<div style="display:flex; flex-direction:column; gap:6px; margin-left:8px; flex-shrink:0; align-items:stretch; min-width:72px;">
+								<button class="btn-icon btn-blue" id="inv-equip-btn-${idx}" style="font-size:0.88rem; font-weight:bold; padding:8px 12px; width:100%;" onclick="selectTarget(${idx})">${item.type === 'item' ? '使う' : '装備する'}</button>
 								<div style="display:flex; gap:5px;">
-									<button class="btn-icon" style="background:transparent; border:1px solid #444; ${lockStyle} font-size:0.85rem; padding:4px 7px;" onclick="toggleLock(${idx})">${lockIcon}</button>
-									${item.type !== 'item' ? `<button class="btn-icon" style="background:#333; border-color:#555; font-size:0.78rem; padding:5px 8px;" onclick="sellItem(${idx})">売却</button>` : ''}
-									<button class="btn-icon btn-blue" style="font-size:0.78rem; padding:5px 10px;" onclick="selectTarget(${idx})">${item.type === 'item' ? '使う' : '装備'}</button>
+									<button class="btn-icon" style="background:transparent; border:1px solid #444; ${lockStyle} font-size:0.85rem; padding:4px 7px; flex:0 0 auto;" onclick="toggleLock(${idx})" title="ロック">${lockIcon}</button>
+									${depositBtn ? depositBtn.replace('style="', 'style="flex:1;') : ''}
 								</div>
-								${depositBtn}
 							</div>
 						</div>`
 					list.appendChild(div)
@@ -4351,6 +4839,7 @@ function winBattle() {
 		// ────────────────────────────────────────────────────────────────
 
 		function selectTarget(idx) {
+			_tutClearHighlight()  // チュートリアルハイライトを解除
 			const item = gameState.inventory[idx]
 			const c = document.getElementById('modal-content')
 			c.innerHTML = `<h2>使用対象の選択</h2><div id="target-list" style="display:grid; gap:12px;"></div><button onclick="openInventory()" class="btn-action btn-red" style="margin-top:20px; width:100%;">戻る</button>`
@@ -4504,7 +4993,7 @@ function winBattle() {
 		function confirmHire(key) {
 			const name = document.getElementById('new-name').value || '冒険者'
 			const jobData = JOB_DATA[key]
-			gameState.party.push({ name: name, job: jobData.name, lv: 1, exp: 0, nextExp: 100, learnedSkills: {}, equip: { weapon: null, armor: null, acc: null, runes: [] } })
+			gameState.party.push({ name: name, job: jobData.name, lv: 1, exp: 0, nextExp: 100, learnedSkills: {}, equip: { weapon: null, armor: null, acc: null, runes: [] }, row: 'front' })
 			const p = gameState.party[gameState.party.length - 1]
 			const fs = getFinalStats(p)
 			p.hp = fs.maxHp
@@ -4514,110 +5003,472 @@ function winBattle() {
 			addLog(`${name}が入隊しました。`, 'log-sys')
 		}
 		// ═══════════════════════════════════════════════════════
-		// チュートリアルシステム
+		// チュートリアルシステム（体験型）
 		// ═══════════════════════════════════════════════════════
-		const TUTORIAL_STEPS = [
+		// ═══════════════════════════════════════════════════════
+		//  体験型チュートリアル v3
+		//  Phase A: 説明モーダル（「わかった！」ボタンのみ押せる）
+		//  Phase B: 指定ボタン1つだけハイライト・他は暗幕でブロック
+		// ═══════════════════════════════════════════════════════
+		let tutState = {
+			active: false,
+			stepIdx: 0,
+			phase: 'A',          // 'A'=説明中 'B'=操作待ち
+			pendingBattle: false,
+			_inventoryOpen: false
+		}
+
+		// ── ステップ定義 ─────────────────────────────────────
+		// explain  : フェーズAで見せる説明文
+		// targetId : フェーズBでハイライトするボタンのid（nullなら操作待ちなし→次へ）
+		// hint     : ボタン上に出るラベル
+		// hook     : tutHook(event) で一致したら次ステップへ
+		const TUT_STEPS = [
+			// 0 ウェルカム（OKで次へ）
 			{
-				title: '🗺️ ゲームの目的',
-				icon: '🏚️',
-				body: `<p style="margin:0 0 10px;">Abyss Rediveは<b style="color:var(--accent-blue);">テキストベースのハック＆スラッシュRPG</b>です。</p>
-				<p style="margin:0 0 10px;">あなたの目標は、<b style="color:var(--gold);">地下に広がる深淵ダンジョン</b>を探索し、最深部に潜む<b style="color:var(--accent-red);">原初神アルケーネシア（50F）</b>を倒すことです。</p>
-				<p style="margin:0; color:#aaa; font-size:0.85rem;">まずは仲間を集め、装備を整えながら少しずつ深部へ進みましょう。</p>`,
+				explain: `<div style="text-align:center;margin-bottom:14px;font-size:2rem;">⚔️</div>
+				<b style="font-size:1.1rem;color:#60a5fa;">Abyss Rediveへようこそ！</b><br><br>
+				ダンジョンを探索し、敵を倒して強くなる<br><b>ハック＆スラッシュRPG</b>です。<br><br>
+				実際に操作しながらゲームを体験しましょう。<br><br>
+				<span style="color:#888;font-size:0.8rem;">※ いつでも⚙設定→ヘルプから再表示できます</span>`,
+				targetId: null, hook: null
 			},
+			// 1 ダンジョンへ
 			{
-				title: '🏠 拠点でできること',
-				icon: '🏠',
-				body: `<div style="display:flex; flex-direction:column; gap:8px;">
-				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
-					<b style="color:var(--accent-blue);">⚔️ ダンジョン探索</b>
-					<p style="margin:4px 0 0; font-size:0.82rem; color:#aaa;">メイン画面の「ダンジョン」ボタンから探索を開始します。探索・戦闘・階段の3つの行動があります。</p>
-				</div>
-				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
-					<b style="color:var(--gold);">🏪 ショップ</b>
-					<p style="margin:4px 0 0; font-size:0.82rem; color:#aaa;">ダンジョンで稼いだゴールドで武器・防具・アイテムを購入できます。ショップのラインナップはフロア進行で解放されます。</p>
-				</div>
-				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
-					<b style="color:var(--accent-green);">⚗️ ギルド</b>
-					<p style="margin:4px 0 0; font-size:0.82rem; color:#aaa;">仲間を雇用できます。リーダーがLv10で2人目、Lv20で3人目まで仲間にできます。</p>
-				</div>
-				</div>`,
+				explain: `🗺️ <b style="font-size:1rem;">ダンジョンに入ろう</b><br><br>
+				冒険の舞台、<b style="color:#4caf50;">ダンジョン</b>に入ります。<br><br>
+				「わかった！」を押すと <b style="color:#4ade80;border:1px solid #4ade80;padding:1px 6px;border-radius:4px;font-size:0.82rem;">ダンジョン探索</b> ボタンが光ります。それを押してください。`,
+				targetId: 'town-dungeon-btn', hook: 'enter_dungeon',
+				hint: '👆 ここを押す！'
 			},
+			// 2 探索
 			{
-				title: '⚔️ 戦闘の仕組み',
-				icon: '⚔️',
-				body: `<p style="margin:0 0 8px;">戦闘はキャラクターの<b style="color:var(--gold);">速度（AGI）が高い順</b>に行動します。</p>
-				<div style="display:flex; flex-direction:column; gap:7px;">
-				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
-					<b style="color:#eee;">通常攻撃</b>
-					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">敵を選択して攻撃。物理防御を参照したダメージを与えます。</p>
-				</div>
-				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
-					<b style="color:var(--accent-blue);">スキル</b>
-					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">「スキル」ボタンで習得済みのアクティブスキルを使用。MPを消費します。育成画面でスキルを習得しましょう。</p>
-				</div>
-				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
-					<b style="color:var(--accent-green);">アイテム</b>
-					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">ポーションなどの道具をカバンから使用できます。MPポーションでMPを回復可能です。</p>
-				</div>
-				</div>`,
+				explain: `🔍 <b style="font-size:1rem;">探索してみよう</b><br><br>
+				フロアを歩き回って敵を探します。<br><br>
+				「わかった！」を押すと <b style="color:#4ade80;border:1px solid #4ade80;padding:1px 6px;border-radius:4px;font-size:0.82rem;">探索を続ける</b> ボタンが光ります。押してみましょう。`,
+				targetId: 'btn-explore', hook: 'explore',
+				hint: '👆 探索する'
 			},
+			// 3 戦闘
 			{
-				title: '📦 装備とカバン',
-				icon: '📦',
-				body: `<p style="margin:0 0 8px;">アイテムは<b style="color:var(--accent-blue);">カバン</b>に保管されます。ヘッダーの👜マークから開けます。</p>
-				<div style="display:flex; flex-direction:column; gap:7px;">
-				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
-					<b style="color:var(--gold);">装備できるもの</b>
-					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">⚔️武器 / 🛡️防具 / 💍装飾品 / 🔮ルーン（最大3つ）。カバンから「装備」を押してキャラを選択。</p>
-				</div>
-				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
-					<b style="color:#aaa;">カバン容量</b>
-					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">基本15枠＋キャラのレベル5ごとに+1枠。装飾品やゴールドで拡張できます。溢れたアイテムはギルド倉庫へ。</p>
-				</div>
-				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
-					<b style="color:var(--accent-red);">レア度</b>
-					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">ダンジョンで拾うアイテムには<span style="color:#7dc;">上等品</span>・<span style="color:#4af;">稀少品</span>・<span style="color:#c8f;">至宝</span>・<span style="color:#fa4;">神話</span>などのレア度があります。サブ効果が付いており強力です。</p>
-				</div>
-				</div>`,
+				explain: `⚔️ <b style="font-size:1rem;">スライムと戦おう！</b><br><br>
+				スライムが現れました！<br><br>
+				「わかった！」を押すと <b style="color:#f87171;border:1px solid #f87171;padding:1px 6px;border-radius:4px;font-size:0.82rem;">通常攻撃</b> ボタンが光ります。押して攻撃しましょう。<br><br>
+				<span style="color:#888;font-size:0.8rem;">敵を全滅させると勝利です</span>`,
+				targetId: 'atk-btn', hook: 'battle_win',
+				hint: '👆 攻撃！'
 			},
+			// 4 勝利後→宝箱探索
 			{
-				title: '📈 育成とスキル',
-				icon: '📈',
-				body: `<p style="margin:0 0 8px;">キャラカードの<b style="color:var(--accent-blue);">「育成」ボタン</b>からスキルを習得できます。</p>
-				<div style="display:flex; flex-direction:column; gap:7px;">
-				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
-					<b style="color:var(--accent-green);">パッシブスキル</b>
-					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">習得するだけで永続的にステータスが上昇します。HP・攻撃力・防御力など様々な効果があります。</p>
-				</div>
-				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
-					<b style="color:var(--accent-blue);">アクティブスキル</b>
-					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">戦闘中に「スキル」から使用。攻撃・回復・バフ・デバフなど種類が豊富。各スキルにはMPコストとクールダウンがあります。</p>
-				</div>
-				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
-					<b style="color:var(--gold);">マイルストーン選択</b>
-					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">Lv2・5・7・10…と決まったレベルに達するたびに<b>2択のスキルを1つ選択</b>します。選択したら変更できません。</p>
-				</div>
-				</div>`,
+				explain: `🎉 <b style="font-size:1rem;">勝利！</b><br><br>
+				敵を倒すと <b style="color:#ffc107;">ゴールド</b> と <b style="color:#60a5fa;">経験値</b> を獲得！<br><br>
+				もう一度探索すると<b style="color:#ffc107;">宝箱</b>が見つかるかもしれません。<br>
+				「わかった！」を押すと <b style="color:#4ade80;border:1px solid #4ade80;padding:1px 6px;border-radius:4px;font-size:0.82rem;">探索を続ける</b> ボタンが光ります。`,
+				targetId: 'btn-explore', hook: 'explore',
+				hint: '👆 もっと探索'
 			},
+			// 5 宝箱発見 → レアリティ説明（説明のみ、OKで次へ）
 			{
-				title: '💾 セーブについて',
-				icon: '💾',
-				body: `<p style="margin:0 0 8px;">ゲームは<b style="color:var(--accent-green);">ブラウザに自動セーブ</b>されます。右上の「💾セーブ」ボタンで手動保存もできます。</p>
-				<div style="display:flex; flex-direction:column; gap:7px;">
-				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
-					<b style="color:var(--accent-blue);">セーブコード</b>
-					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">「セーブ」→「データ出力」でコードを取得できます。このコードを控えておけば、<b>別の端末やブラウザ</b>でも同じデータで再開できます。</p>
-				</div>
-				<div style="background:#1a1a2e; border:1px solid #334; border-radius:6px; padding:8px 10px;">
-					<b style="color:var(--gold);">⚠️ 注意</b>
-					<p style="margin:3px 0 0; font-size:0.82rem; color:#aaa;">ブラウザのキャッシュをクリアするとセーブデータが消える場合があります。定期的にセーブコードを控えておくことをおすすめします。</p>
-				</div>
-				</div>
-				<p style="margin:10px 0 0; font-size:0.88rem; color:var(--accent-green);">✅ チュートリアルは以上です。冒険の準備ができました！</p>`,
+				explain: `📦 <b style="font-size:1rem;">宝箱を発見！</b><br><br>
+				武器を入手しました！<br>
+				入手したアイテムは<b style="color:#60a5fa;">👜カバン</b>に入っています。<br><br>
+				アイテムには<b>レアリティ（希少度）</b>が確率で付与されます。`,
+				targetId: null, hook: null
+			},
+			// 5.5 レアリティ詳細説明（OKで次へ）
+			{
+				explain: `✨ <b style="font-size:1rem;">レアリティとは？</b><br><br>
+				<div style="display:flex;flex-direction:column;gap:5px;font-size:0.82rem;">
+					<div style="background:#111;border-radius:6px;padding:6px 10px;border-left:3px solid #aaa;">⬜ <b style="color:#eee;">コモン</b> — 基本性能のみ</div>
+					<div style="background:#111;border-radius:6px;padding:6px 10px;border-left:3px solid #4caf50;"><b style="color:#4caf50;">🟢 アンコモン</b> — サブ効果1つ付き</div>
+					<div style="background:#111;border-radius:6px;padding:6px 10px;border-left:3px solid #2196f3;"><b style="color:#2196f3;">🔵 レア</b> — サブ効果2つ・性能UP</div>
+					<div style="background:#111;border-radius:6px;padding:6px 10px;border-left:3px solid #9c27b0;"><b style="color:#c084fc;">🟣 エピック</b> — サブ効果3つ・強力</div>
+					<div style="background:#111;border-radius:6px;padding:6px 10px;border-left:3px solid #ff9800;"><b style="color:#f59e0b;">🟠 レジェンダリー</b> — 最高レア・超強力</div>
+				</div><br>
+				高レアほど<b style="color:#ffc107;">サブ効果が多く</b>強力です。<br>
+				<span style="color:#888;font-size:0.78rem;">👜カバンのアイテム名をタップで詳細確認できます</span>`,
+				targetId: null, hook: null
+			},
+			// 6 街に戻る説明 → btn-retreatをハイライト
+			{
+				explain: `🏠 <b style="font-size:1rem;">街に戻ろう</b><br><br>
+				稼いだゴールドは<b style="color:#ffc107;">街に戻ったとき</b>に確定します。<br><br>
+				「わかった！」を押すと <b style="color:#f87171;">「街に戻る」</b> ボタンが光ります。押してゴールドを回収しましょう。`,
+				targetId: 'btn-retreat', hook: 'retreated',
+				hint: '👆 街に戻る'
+			},
+			// 6 帰還確認モーダルの「戻る」ハイライト（説明なし・自動でハイライト）
+			{
+				explain: `🏠 <b style="font-size:1rem;">帰還の確認</b><br><br>
+				「戻る」ボタンを押して街へ帰還しましょう。<br>ゴールドを持ち帰れます！`,
+				targetId: 'tut-confirm-retreat-btn', hook: 'confirm_retreat',
+				hint: '👆 戻る', skipExplain: true
+			},
+			// 7 獲得ゴールド表示の「閉じる」ハイライト（説明なし・自動でハイライト）
+			{
+				explain: `💰 <b style="font-size:1rem;">ゴールド獲得！</b><br><br>
+				稼いだゴールドが手元に入りました。`,
+				targetId: 'tut-gold-close-btn', hook: 'gold_closed',
+				hint: '👆 閉じる', skipExplain: true
+			},
+			// 8 インベントリで装備
+			{
+				explain: `⚔️ <b style="font-size:1rem;">拾った武器を装備しよう</b><br><br>
+				ヘッダーの<b>👜カバン</b>を開いて、入手した武器を装備できます。<br><br>
+				「わかった！」でカバンが開き、<b style="color:#60a5fa;border:1px solid #60a5fa;padding:1px 6px;border-radius:4px;font-size:0.82rem;">装備する</b> ボタンが光ります。<br>
+				キャラクターを選んで装備させましょう！<br>
+				<span style="color:#888;font-size:0.8rem;">装備できたらカバンを閉じてください</span>`,
+				targetId: 'header-bag-btn', hook: 'inventory_closed',
+				hint: '👆 カバンを開く'
+			},
+			// 9 ショップ
+			{
+				explain: `🏪 <b style="font-size:1rem;">ショップで強くなろう</b><br><br>
+				稼いだゴールドで装備を購入できます。<br><br>
+				<div style="display:flex;flex-direction:column;gap:5px;font-size:0.8rem;">
+					<div style="background:#111;border-radius:6px;padding:6px 10px;border-left:3px solid #60a5fa;">⚔️ <b>武器屋</b> — 攻撃力・会心率を上げる武器</div>
+					<div style="background:#111;border-radius:6px;padding:6px 10px;border-left:3px solid #4ade80;">🛡️ <b>防具屋</b> — 物理・魔法耐性を上げる防具</div>
+					<div style="background:#111;border-radius:6px;padding:6px 10px;border-left:3px solid #c084fc;">💍 <b>装飾品</b> — 各種ステータスを補強</div>
+					<div style="background:#111;border-radius:6px;padding:6px 10px;border-left:3px solid #4ade80;">🧪 <b>道具屋</b> — 戦闘中に使えるHP/MP回復アイテム</div>
+					<div style="background:#111;border-radius:6px;padding:6px 10px;border-left:3px solid #f59e0b;">💰 <b>売却</b> — 不要な装備をゴールドに換金</div>
+				</div><br>
+				「わかった！」を押すと <b style="color:#60a5fa;border:1px solid #60a5fa;padding:1px 6px;border-radius:4px;font-size:0.82rem;">ショップ</b> ボタンが光ります。`,
+				targetId: 'town-shop-btn', hook: 'open_shop',
+				hint: '👆 ショップへ'
+			},
+			// 9.5 前衛・後衛説明（説明のみ、OKで次へ）
+			{
+				explain: `⚔️🏹 <b style="font-size:1rem;">前衛・後衛システム</b><br><br>
+				キャラクターには<b style="color:#f87171;">前衛</b>と<b style="color:#60a5fa;">後衛</b>の配置があります。<br><br>
+				<div style="display:flex;flex-direction:column;gap:6px;font-size:0.82rem;">
+					<div style="background:#111;border-radius:6px;padding:8px 10px;border-left:3px solid #f87171;">
+						<b style="color:#f87171;">⚔️ 前衛</b><br>
+						<span style="color:#aaa;">最前線で戦う。敵の攻撃を受けやすいが、<b>近接武器</b>の威力をフルに発揮できる。後衛を守る盾。</span>
+					</div>
+					<div style="background:#111;border-radius:6px;padding:8px 10px;border-left:3px solid #60a5fa;">
+						<b style="color:#60a5fa;">🏹 後衛</b><br>
+						<span style="color:#aaa;">前衛が生きている間は攻撃を受けない。ただし<b>近接武器</b>だとダメージ<b style="color:#f87171;">-20%</b>のペナルティ。魔法・弓などの<b>遠距離武器</b>なら全力攻撃可能。</span>
+					</div>
+				</div><br>
+				<span style="color:#aaa;font-size:0.8rem;">サイドバーの⚔️前衛/🏹後衛ボタンで配置を切り替えられます（<b style="color:#f87171;">戦闘中は変更不可</b>）。</span>`,
+				targetId: null, hook: null
+			},
+			// 10 完了
+			{
+				explain: `🌑 <b style="font-size:1rem;color:#ffc107;">チュートリアル完了！</b><br><br>
+				基本の流れを覚えましたね！<br><br>
+				<b>探索 → 戦闘 → 装備強化</b> を繰り返して<br>
+				最深部 <b style="color:#f87171;">50F の原初神アルケーネシア</b> を目指しましょう！<br><br>
+				<span style="color:#888;font-size:0.8rem;">⚙設定 → ヘルプ でいつでも操作説明を確認できます</span>`,
+				targetId: null, hook: null, isLast: true
 			},
 		]
 
-		function openTitleScreen() {
+		// ─── メイン制御 ──────────────────────────────────────
+		// チュートリアル：Tier1武器を宝箱として確定ドロップ
+		function _tutDropChestWeapon() {
+			const tier1weapons = SHOP_ITEMS['weapon'].filter(w => w.tier === 1)
+			const base = tier1weapons[Math.floor(Math.random() * tier1weapons.length)]
+			const item = { ...base, type: 'weapon', locked: false }
+			const disp = document.getElementById('event-display')
+			if (gameState.inventory.length < getMaxCapacity()) {
+				gameState.inventory.push(item)
+				if (disp) disp.innerHTML = `<span style="color:var(--gold)">📦 宝箱発見！ [${item.n}] を入手！</span>`
+				addLog(`📦 宝箱：[${item.n}] を入手！`, 'log-gold')
+			} else {
+				if (disp) disp.innerHTML = '<span style="color:var(--accent-red)">宝箱があったが、カバンが一杯で持てなかった...</span>'
+				addLog('宝箱：カバンが一杯で持ち帰れなかった。', 'log-red')
+			}
+			updateUI()
+		}
+
+				// チュートリアル：スライム1体だけの固定戦闘を起動する
+		function _tutForceBattle() {
+			const slimeBase = MONSTERS.find(m => m.name === 'スライム') || MONSTERS[0]
+			playBGM('battle')
+			battle.active = true
+			battle.isProcessing = false
+			battle.enemies = [{ ...slimeBase, id: 0, hp: slimeBase.hp, maxHp: slimeBase.hp }]
+			battle.enemyDebuffs = []; battle.buffs = []; battle.shields = []; battle.guardIdx = -1
+			battle.enemyDots = []; battle.partyRegens = []; battle.enemyStatus = []; battle.mpCostDown = []
+			battle.activeUnitIndex = 0; battle.turnCycle = 0; battle.remainingHits = 0
+			gameState.party.forEach(p => { p.skillCooldowns = {} })
+			gameState.exploreCount++
+			document.getElementById('dungeon-ui').classList.add('hidden')
+			document.getElementById('battle-view').classList.remove('hidden')
+			updateBattleUI()
+			// 前衛/後衛の状況をログに表示
+			const _fN = gameState.party.filter(p=>p.row==='front'&&p.hp>0).map(p=>p.name).join('・')
+			const _bN = gameState.party.filter(p=>p.row==='back' &&p.hp>0).map(p=>p.name).join('・')
+			if (_fN) addLog(`⚔️ 前衛: ${_fN}`, 'log-sys')
+			if (_bN) addLog(`🏹 後衛: ${_bN}（前衛が全滅するまで守られる）`, 'log-sys')
+			setTurn('player')
+			addLog('チュートリアル：スライムが現れた！', 'log-sys')
+		}
+
+				// ヘルプ画面からのチュートリアル起動（データ警告あり）
+		function startTutorialFromHelp() {
+			const _hasData = gameState.party.length > 0 || gameState.gold > 500 || gameState.inventory.length > 0
+			if (_hasData) {
+				// セーブデータがある場合は警告
+				const c = document.getElementById('modal-content')
+				c.innerHTML = `
+					<div style="text-align:center;padding:10px 0;">
+						<div style="font-size:2.5rem;margin-bottom:8px;">⚠️</div>
+						<h2 style="color:#f87171;margin:0 0 12px;">チュートリアルの注意</h2>
+						<p style="color:#ddd;font-size:0.9rem;line-height:1.75;text-align:left;">
+							チュートリアルは<b style="color:#ffc107;">新規プレイヤーとして</b>進行します。<br><br>
+							現在のセーブデータ（パーティ・装備・ゴールド）は<b style="color:#f87171;">変更されません</b>が、チュートリアル中の行動（アイテム取得・ゴールド獲得など）は<b style="color:#f87171;">実際のデータに反映されます。</b><br><br>
+							操作説明だけ確認したい場合は<b>「ヘルプ」タブ</b>をご覧ください。
+						</p>
+						<div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
+							<button class="btn-action btn-blue" onclick="startInteractiveTutorial()" style="padding:12px;">
+								📖 それでもチュートリアルを始める
+							</button>
+							<button class="btn-action" onclick="closeModal();openHelpModal();" style="padding:10px;background:#222;border-color:#444;">
+								← ヘルプに戻る
+							</button>
+						</div>
+					</div>`
+				document.getElementById('modal-layer').classList.remove('hidden')
+			} else {
+				// データなし（新規）はそのまま起動
+				startInteractiveTutorial()
+			}
+		}
+
+				function startInteractiveTutorial() {
+			closeModal()
+			tutState.active = true
+			tutState.stepIdx = 0
+			tutState.phase = 'A'
+			tutState.pendingBattle = false
+			tutState._inventoryOpen = false
+			setTimeout(_tutPhaseA, 80)
+		}
+
+		// ─── Phase A: 説明モーダル ───────────────────────────
+		function _tutPhaseA() {
+			_tutClearHighlight()
+			const s = TUT_STEPS[tutState.stepIdx]
+			if (!s) { _tutFinish(); return }
+			// skipExplain:true のステップは説明モーダルを飛ばして直接ハイライトへ
+			if (s.skipExplain) { _tutAdvanceToHighlight(); return }
+			const total = TUT_STEPS.length
+			const num   = tutState.stepIdx + 1
+			const isLast = !!s.isLast
+
+			// プログレスドット
+			const dots = TUT_STEPS.map((_,i) =>
+				`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 3px;
+				background:${i < num ? '#6366f1' : i === tutState.stepIdx ? '#60a5fa' : '#333'};"></span>`
+			).join('')
+
+			const c = document.getElementById('modal-content')
+			c.innerHTML = `
+				<div style="padding:2px 0 8px;">
+					<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+						<span style="font-size:0.68rem;color:#555;letter-spacing:2px;">TUTORIAL ${num} / ${total}</span>
+						<button onclick="closeModal();tutState.active=false;_tutClearHighlight();" style="
+							background:none;border:none;color:#444;cursor:pointer;font-size:0.8rem;padding:2px 6px;
+						">✕ スキップ</button>
+					</div>
+					<div style="display:flex;gap:3px;margin-bottom:18px;">
+						${TUT_STEPS.map((_,i)=>`<div style="flex:1;height:3px;border-radius:2px;background:${i<tutState.stepIdx?'#6366f1':i===tutState.stepIdx?'#818cf8':'#222'};transition:background 0.3s;"></div>`).join('')}
+					</div>
+					<div style="font-size:0.9rem;line-height:1.8;color:#ddd;">${s.explain}</div>
+					<button id="tut-ok-btn" onclick="_tutPhaseAOK()" style="
+						margin-top:20px; width:100%; padding:14px;
+						border-radius:8px; border:none;
+						background:linear-gradient(135deg,#4338ca,#6366f1);
+						color:#fff; font-size:1rem; font-weight:bold; cursor:pointer;
+						letter-spacing:1px;
+					">${isLast ? '🌑 冒険を始める！' : 'わかった！ ▶'}</button>
+				</div>`
+			document.getElementById('modal-layer').classList.remove('hidden')
+		}
+
+		function _tutPhaseAOK() {
+			closeModal()
+			_tutAdvanceToHighlight()
+		}
+
+		// フェーズAのOKまたはskipExplainで呼ばれる共通処理
+		function _tutAdvanceToHighlight() {
+			const s = TUT_STEPS[tutState.stepIdx]
+			if (!s) { _tutFinish(); return }
+
+			if (s.isLast) { _tutFinish(); return }
+
+			// targetIdがある → Phase B（ハイライト）
+			if (s.targetId) {
+				tutState.phase = 'B'
+				// step8 (inventory): カバンを自動で開いてから内部ボタンをハイライト
+				if (s.hook === 'inventory_closed') {
+					openInventory()  // カバンを開く（openInventory内でハイライトも実行）
+				} else {
+					_tutHighlight(s.targetId, s.hint)
+				}
+			} else if (s.hook) {
+				// targetIdなし・hookあり → hookを待つだけ
+				tutState.phase = 'B'
+			} else {
+				// targetIdなし・hookなし → 次のステップへ
+				tutState.stepIdx++
+				setTimeout(_tutPhaseA, 100)
+			}
+		}
+
+		// ─── Phase B: ハイライト＋暗幕 ───────────────────────
+		function _tutHighlight(targetId, hint) {
+			_tutClearHighlight()
+			const el = document.getElementById(targetId)
+			if (!el) return
+
+			// 暗幕（全画面をブロック）
+			const mask = document.createElement('div')
+			mask.id = 'tut-mask'
+			mask.style.cssText = `
+				position:fixed;inset:0;
+				background:rgba(0,0,0,0.78);
+				z-index:8000;pointer-events:all;
+			`
+			document.body.appendChild(mask)
+
+			// ターゲット要素をz-index最前面に浮かせてクリック可能に
+			el._tutSavedStyle = el.getAttribute('style') || ''
+			el.style.position = 'relative'
+			el.style.zIndex   = '8100'
+			el.style.boxShadow = '0 0 0 3px #6366f1, 0 0 20px #6366f1aa, 0 0 40px #6366f144'
+			el.style.borderRadius = '8px'
+			el.dataset.tutActive = '1'
+			// アニメーション用クラス
+			el.classList.add('tut-pulse')
+
+			// ヒントラベル（ボタンの直上）
+			if (hint) {
+				const lbl = document.createElement('div')
+				lbl.id = 'tut-hint-lbl'
+				lbl.style.cssText = `
+					position:fixed;z-index:8200;
+					background:#6366f1;color:#fff;
+					padding:5px 14px;border-radius:16px;
+					font-size:0.85rem;font-weight:bold;
+					pointer-events:none;white-space:nowrap;
+					box-shadow:0 2px 12px #0008;
+				`
+				lbl.textContent = hint
+				document.body.appendChild(lbl)
+
+				const _pos = () => {
+					const r = el.getBoundingClientRect()
+					lbl.style.left = Math.max(8, r.left + r.width/2 - lbl.offsetWidth/2) + 'px'
+					lbl.style.top  = (r.top - lbl.offsetHeight - 10) + 'px'
+				}
+				_pos(); setTimeout(_pos, 60)
+				// ラベルをゆらす
+				let _bounce = 0
+				lbl._ti = setInterval(() => {
+					_bounce = !_bounce
+					lbl.style.transform = _bounce ? 'translateY(-4px)' : 'translateY(0)'
+				}, 500)
+			}
+		}
+
+		// モーダル内ボタン用ハイライト（暗幕なし・パルスのみ）
+		// モーダルが既に他操作をブロックしているので暗幕は不要
+		function _tutHighlightInModal(targetId, hint) {
+			// 既存ハイライトをクリア（暗幕のみ除去）
+			const mask = document.getElementById('tut-mask')
+			if (mask) mask.remove()
+			const oldLbl = document.getElementById('tut-hint-lbl')
+			if (oldLbl) { clearInterval(oldLbl._ti); oldLbl.remove() }
+
+			const el = document.getElementById(targetId)
+			if (!el) { console.warn('[TUT] element not found:', targetId); return }
+
+			// ボタン自体にパルスを当てる
+			el._tutSavedStyle = el.getAttribute('style') || ''
+			el.style.boxShadow = '0 0 0 3px #6366f1, 0 0 20px #6366f1aa'
+			el.style.borderRadius = '8px'
+			el.dataset.tutActive = '1'
+			el.classList.add('tut-pulse')
+
+			// ヒントラベルをボタンの上に表示
+			if (hint) {
+				const lbl = document.createElement('div')
+				lbl.id = 'tut-hint-lbl'
+				lbl.style.cssText = `
+					position:fixed;z-index:9500;
+					background:#6366f1;color:#fff;
+					padding:5px 14px;border-radius:16px;
+					font-size:0.85rem;font-weight:bold;
+					pointer-events:none;white-space:nowrap;
+					box-shadow:0 2px 12px #0008;
+				`
+				lbl.textContent = hint
+				document.body.appendChild(lbl)
+				const _pos = () => {
+					const r = el.getBoundingClientRect()
+					if (r.width === 0) return  // 要素が非表示なら何もしない
+					lbl.style.left = Math.max(8, r.left + r.width/2 - lbl.offsetWidth/2) + 'px'
+					lbl.style.top  = (r.top - lbl.offsetHeight - 10) + 'px'
+				}
+				_pos(); setTimeout(_pos, 60)
+				let _b = 0
+				lbl._ti = setInterval(() => {
+					_b = !_b
+					lbl.style.transform = _b ? 'translateY(-4px)' : 'translateY(0)'
+				}, 500)
+			}
+		}
+
+				function _tutClearHighlight() {
+			const mask = document.getElementById('tut-mask')
+			if (mask) mask.remove()
+			const lbl = document.getElementById('tut-hint-lbl')
+			if (lbl) { clearInterval(lbl._ti); lbl.remove() }
+			// ハイライト中の要素を戻す
+			document.querySelectorAll('[data-tut-active]').forEach(el => {
+				el.setAttribute('style', el._tutSavedStyle || '')
+				delete el._tutSavedStyle
+				el.removeAttribute('data-tut-active')
+				el.classList.remove('tut-pulse')
+			})
+		}
+
+		function _tutFinish() {
+			tutState.active = false
+			tutState._inventoryOpen = false
+			_tutClearHighlight()
+			closeModal()
+			addLog('✅ チュートリアル完了！冒険の準備ができました。', 'log-sys')
+			// キャラクリエイト画面へ（新規プレイヤー向け）
+			setTimeout(() => {
+				if (gameState.party.length === 0) {
+					openFirstCharModal()
+				}
+			}, 400)
+		}
+
+		// ─── フック（各ゲーム処理から呼ぶ）──────────────────
+		function tutHook(event) {
+			if (!tutState.active) return
+			const s = TUT_STEPS[tutState.stepIdx]
+			if (!s || s.hook !== event) return
+			// battle_win / confirm_retreat / gold_closed はモーダル中でも受付
+			const _phaseSkip = ['battle_win','confirm_retreat','gold_closed','inventory_closed']
+			if (!_phaseSkip.includes(event) && tutState.phase !== 'B') return
+			_tutClearHighlight()
+			tutState.stepIdx++
+			tutState.phase = 'A'
+			// inventory_closed は town 画面でカバンが閉じた後なので即表示
+			const _delay = event === 'inventory_closed' ? 200 : 600
+			setTimeout(_tutPhaseA, _delay)
+		}
+
+
+				function openTitleScreen() {
 			const c = document.getElementById('modal-content')
 			c.innerHTML = `
 				<div style="text-align:center; padding:10px 0 6px;">
@@ -4626,7 +5477,7 @@ function winBattle() {
 					<p style="font-size:0.8rem; color:#555; letter-spacing:2px; margin:0 0 18px;">深淵への再潜入</p>
 					<p style="font-size:0.9rem; color:#aaa; margin:0 0 24px;">初めてのプレイですか？<br>ゲームの基本を説明するチュートリアルがあります。</p>
 					<div style="display:flex; flex-direction:column; gap:10px; max-width:280px; margin:0 auto;">
-						<button class="btn-action btn-blue" style="padding:14px; font-size:1rem;" onclick="openTutorial(0)">
+						<button class="btn-action btn-blue" style="padding:14px; font-size:1rem;" onclick="startInteractiveTutorial()">
 							📖 チュートリアルを見る
 						</button>
 						<button class="btn-action btn-green" style="padding:14px; font-size:1rem;" onclick="openFirstCharModal()">
@@ -4638,40 +5489,7 @@ function winBattle() {
 			openModalWrapper()
 		}
 
-		function openTutorial(step) {
-			const c = document.getElementById('modal-content')
-			const s = TUTORIAL_STEPS[step]
-			const total = TUTORIAL_STEPS.length
-			const isLast = step === total - 1
-			const dots = TUTORIAL_STEPS.map((_, i) =>
-				`<span style="display:inline-block; width:8px; height:8px; border-radius:50%; margin:0 3px;
-				background:${i === step ? 'var(--accent-blue)' : '#333'}; vertical-align:middle;"></span>`
-			).join('')
-
-			c.innerHTML = `
-				<div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
-					<span style="font-size:1.5rem;">${s.icon}</span>
-					<div>
-						<div style="font-size:0.72rem; color:#555; letter-spacing:1px;">TUTORIAL ${step + 1} / ${total}</div>
-						<h2 style="margin:0; font-size:1.1rem; color:var(--accent-blue);">${s.title}</h2>
-					</div>
-				</div>
-				<div style="font-size:0.88rem; color:#ddd; line-height:1.7; margin-bottom:16px; max-height:52vh; overflow-y:auto; padding-right:2px;">
-					${s.body}
-				</div>
-				<div style="text-align:center; margin-bottom:12px;">${dots}</div>
-				<div style="display:flex; gap:8px;">
-					${step > 0
-						? `<button class="btn-action" style="flex:1; background:#222; border-color:#444; padding:10px;" onclick="openTutorial(${step - 1})">◀ 前へ</button>`
-						: `<button class="btn-action" style="flex:1; background:#111; border-color:#333; padding:10px; color:#555;" onclick="openFirstCharModal()">スキップ</button>`
-					}
-					${isLast
-						? `<button class="btn-action btn-green" style="flex:2; padding:10px; font-size:0.95rem;" onclick="openFirstCharModal()">✅ キャラ作成へ進む</button>`
-						: `<button class="btn-action btn-blue"  style="flex:2; padding:10px; font-size:0.95rem;" onclick="openTutorial(${step + 1})">次へ ▶</button>`
-					}
-				</div>`
-			openModalWrapper()
-		}
+		function openTutorial(step) { startInteractiveTutorial() }
 
 		function openFirstCharModal() {
 			const c = document.getElementById('modal-content')
@@ -4743,7 +5561,7 @@ function winBattle() {
 		function confirmFirstHire(key) {
 			const name = document.getElementById('first-name').value.trim() || '冒険者'
 			const jobData = JOB_DATA[key]
-			gameState.party.push({ name: name, job: jobData.name, lv: 1, exp: 0, nextExp: 100, learnedSkills: {}, equip: { weapon: null, armor: null, acc: null, runes: [] } })
+			gameState.party.push({ name: name, job: jobData.name, lv: 1, exp: 0, nextExp: 100, learnedSkills: {}, equip: { weapon: null, armor: null, acc: null, runes: [] }, row: 'front' })
 			const p = gameState.party[0]
 			const fs = getFinalStats(p)
 			p.hp = fs.maxHp
@@ -4765,6 +5583,8 @@ function winBattle() {
 					unlockedFloors.push(floor + 1)
 				}
 			})
+			// チュートリアル中は強制1F・モーダル一切スキップ
+			if (tutState.active) { startDungeonFromFloor(1); return }
 			// 選択肢が1Fのみなら即スタート
 			if (unlockedFloors.length === 1) {
 				startDungeonFromFloor(1)
@@ -4800,6 +5620,7 @@ function winBattle() {
 			gameState.floor = floor
 			gameState.inDungeon = true
 			_afHeaderShow(true)
+			tutHook('enter_dungeon')
 			gameState.tempGold = 0
 			gameState.exploreCount = 0
 			gameState.stairsFound = false
@@ -4841,10 +5662,26 @@ function winBattle() {
 		function retreat() {
 			if (autoFarm.active) stopAutoFarm('手動帰還')
 			const c = document.getElementById('modal-content')
-			c.innerHTML = `<div style="text-align:center;padding:20px;"><h2>街に帰還しますか？</h2><p style="color:#aaa;">獲得したゴールドを持ち帰ることができます。</p><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px;"><button class="btn-action btn-blue" onclick="confirmRetreat()">戻る</button><button class="btn-action btn-red" onclick="closeModal()">キャンセル</button></div></div>`
+			// チュートリアル中は「戻る」ボタンにID付与
+			const _confirmId = tutState.active ? 'id="tut-confirm-retreat-btn"' : ''
+			c.innerHTML = `<div style="text-align:center;padding:20px;"><h2>街に帰還しますか？</h2><p style="color:#aaa;">獲得したゴールドを持ち帰ることができます。</p><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px;"><button ${_confirmId} class="btn-action btn-blue" onclick="confirmRetreat()">戻る</button><button class="btn-action btn-red" onclick="closeModal()">キャンセル</button></div></div>`
 			document.getElementById('modal-layer').classList.remove('hidden')
+			// チュートリアル：btn-retreatが押された → 帰還確認モーダルの「戻る」をハイライト
+			if (tutState.active && tutState.phase === 'B') {
+				const _s = TUT_STEPS[tutState.stepIdx]
+				if (_s && _s.hook === 'retreated') {
+					_tutClearHighlight()
+					tutState.stepIdx++   // → step6 (confirm_retreat)
+					tutState.phase = 'B' // すぐにB（ハイライト待ち）
+					// モーダルのDOMが確定してからハイライト（requestAnimationFrame×2で確実に）
+					requestAnimationFrame(() => requestAnimationFrame(() => {
+						_tutHighlightInModal('tut-confirm-retreat-btn', '👆 戻る')
+					}))
+				}
+			}
 		}
 		function confirmRetreat() {
+			_tutClearHighlight()
 			closeModal()
 			playBGM('town');
 			const gained = gameState.tempGold
@@ -4854,9 +5691,36 @@ function winBattle() {
 			recoverParty()
 			returnToTown()
 			addLog('ダンジョンから帰還しました。', 'log-sys')
+			// ゴールド表示モーダル
 			const content = document.getElementById('modal-content')
-			content.innerHTML = `<div style="text-align:center;padding:20px;"><h2>帰還報告</h2><p style="font-size:1.2rem;color:var(--gold)">獲得金額: ${gained}G</p><button class="btn-action btn-blue" style="width:100%;" onclick="closeModal()">閉じる</button></div>`
+			const _closeId = tutState.active ? 'id="tut-gold-close-btn"' : ''
+			const _closeFn = tutState.active ? '_tutGoldClose()' : 'closeModal()'
+			content.innerHTML = `<div style="text-align:center;padding:20px;"><h2>帰還報告</h2><p style="font-size:1.2rem;color:var(--gold)">獲得金額: ${gained}G</p><button ${_closeId} class="btn-action btn-blue" style="width:100%;" onclick="${_closeFn}">閉じる</button></div>`
 			document.getElementById('modal-layer').classList.remove('hidden')
+			// チュートリアル：「戻る」が押された → ゴールドモーダルの「閉じる」をハイライト
+			if (tutState.active && tutState.phase === 'B') {
+				const _s = TUT_STEPS[tutState.stepIdx]
+				if (_s && _s.hook === 'confirm_retreat') {
+					tutState.stepIdx++   // → step7 (gold_closed)
+					tutState.phase = 'B'
+					requestAnimationFrame(() => requestAnimationFrame(() => {
+						_tutHighlightInModal('tut-gold-close-btn', '👆 閉じる')
+					}))
+				}
+			}
+		}
+		function _tutGoldClose() {
+			_tutClearHighlight()
+			closeModal()
+			// gold_closed → step8(カバン装備説明) へ
+			if (tutState.active) {
+				const _s = TUT_STEPS[tutState.stepIdx]
+				if (_s && _s.hook === 'gold_closed') {
+					tutState.stepIdx++
+					tutState.phase = 'A'
+					setTimeout(_tutPhaseA, 350)
+				}
+			}
 		}
 		function handleDeath() {
 			if (autoFarm.active) { autoFarm.gold = 0; autoFarm.exp = 0; stopAutoFarm('全員戦闘不能') }
@@ -4972,66 +5836,194 @@ function winBattle() {
 				menu.classList.add('hidden')
 			}
 		}
+		function openMonsterInfo(eIdx) {
+			const e = battle.enemies[eIdx]
+			if (!e) return
+			const c = document.getElementById('modal-content')
+			const nameColor = e._isElite ? e.eliteColor : '#e0e0e0'
+			const hpPct = Math.max(0, e.hp / e.maxHp * 100)
+			const hpColor = hpPct > 50 ? 'var(--hp-color)' : hpPct > 25 ? 'var(--gold)' : '#f87171'
+			const mpPct = e.maxMp > 0 ? Math.max(0, e.mp / e.maxMp * 100) : 0
+			const skillsHtml = (e.skills && e.skills.length > 0)
+				? `<div style="margin-top:10px;"><b style="font-size:0.82rem;color:#c084fc;">スキル</b><div style="display:flex;flex-direction:column;gap:5px;margin-top:5px;">${
+					e.skills.map(sk => `<div style="background:#111;border:1px solid #333;border-radius:6px;padding:6px 10px;">
+						<span style="color:#e0e0e0;font-size:0.85rem;font-weight:bold;">${sk.name}</span>
+						<span style="color:#666;font-size:0.75rem;margin-left:8px;">発動率 ${Math.round(sk.chance*100)}%</span><br>
+						<span style="font-size:0.78rem;color:#aaa;">${sk.type==='poison'?'毒付与':sk.type==='drain'?'吸血（HP回復）':sk.type==='curse'?'出血付与':sk.target==='all'?`全体${sk.type==='magic'?'魔法':'物理'} ×${sk.mult}`:`単体${sk.type==='magic'?'魔法':'物理'} ×${sk.mult}`}</span>
+					</div>`).join('')
+				}</div></div>` : ''
+			const eliteHtml = e._isElite
+				? `<div style="margin-top:8px;background:#1a1a1a;border:1px solid ${e.eliteColor};border-radius:6px;padding:8px 10px;">
+					<b style="color:${e.eliteColor};font-size:0.82rem;">[${e.eliteTier}個体]</b>
+					<p style="color:#aaa;font-size:0.78rem;margin:4px 0 0;">${(e.eliteTraits||[]).map(t=>t.desc).join(' / ')}</p>
+				  </div>` : ''
+			c.innerHTML = `
+				<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+					<h2 style="margin:0;color:${nameColor};">${e.name}</h2>
+					<span style="font-size:0.78rem;color:${e.isBoss?'#f87171':'#aaa'};">${e.isBoss?'👑 BOSS':e.row==='back'?'🏹 後衛':'⚔️ 前衛'}</span>
+				</div>
+				${eliteHtml}
+				<div style="margin-bottom:10px;">
+					<div style="display:flex;justify-content:space-between;font-size:0.78rem;margin-bottom:3px;">
+						<span style="color:#f87171;">HP</span>
+						<span style="color:${hpColor};">${e.hp} <span style="color:#444;">/ ${e.maxHp}</span></span>
+					</div>
+					<div class="bar-bg" style="height:7px;"><div class="bar-fill" style="background:${hpColor};width:${hpPct}%;"></div></div>
+					${e.maxMp > 0 ? `<div style="display:flex;justify-content:space-between;font-size:0.78rem;margin-top:5px;margin-bottom:3px;">
+						<span style="color:#60a5fa;">MP</span>
+						<span style="color:#aaa;">${e.mp} <span style="color:#444;">/ ${e.maxMp}</span></span>
+					</div>
+					<div class="bar-bg" style="height:5px;"><div class="bar-fill" style="background:var(--mp-color);width:${mpPct}%;"></div></div>` : ''}
+				</div>
+				<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+					<div style="background:#111;border:1px solid #222;border-radius:6px;padding:7px 10px;">
+						<div style="font-size:0.68rem;color:#666;margin-bottom:2px;">ATK（攻撃力）</div>
+						<div style="font-size:0.88rem;color:#fb923c;font-weight:bold;">${e.atk}</div>
+					</div>
+					<div style="background:#111;border:1px solid #222;border-radius:6px;padding:7px 10px;">
+						<div style="font-size:0.68rem;color:#666;margin-bottom:2px;">AGI（速度）</div>
+						<div style="font-size:0.88rem;color:#facc15;font-weight:bold;">${e.agi}</div>
+					</div>
+					<div style="background:#111;border:1px solid #222;border-radius:6px;padding:7px 10px;">
+						<div style="font-size:0.68rem;color:#666;margin-bottom:2px;">DEF（物耐）</div>
+						<div style="font-size:0.88rem;color:#34d399;font-weight:bold;">${e.def}</div>
+					</div>
+					<div style="background:#111;border:1px solid #222;border-radius:6px;padding:7px 10px;">
+						<div style="font-size:0.68rem;color:#666;margin-bottom:2px;">MDEF（特耐）</div>
+						<div style="font-size:0.88rem;color:#38bdf8;font-weight:bold;">${e.mdef}</div>
+					</div>
+				</div>
+				${skillsHtml}
+				<button onclick="closeModal()" class="btn-action btn-blue" style="margin-top:14px;width:100%;">閉じる</button>`
+			openModalWrapper()
+		}
+		function renderEnemyCard(e, i, isTargeting) {
+			const isDead = e.hp <= 0
+			const clickable = isTargeting && !isDead ? `onclick="selectEnemyTarget(${i})"` : ''
+			const cursorClass = isTargeting && !isDead ? 'cursor-pointer targeting-active' : ''
+			const eliteBorder = e._isElite ? `border:1.5px solid ${e.eliteColor}; box-shadow:0 0 6px ${e.eliteColor}44;` : ''
+			const eliteDot    = e._isElite ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${e.eliteColor};flex-shrink:0;margin-left:2px;" title="${e.eliteTier}"></span>` : ''
+			const nameColor   = e._isElite ? e.eliteColor : '#e0e0e0'
+			const rowBadge = e.isBoss ? '' : (e.row === 'back'
+				? `<span style="font-size:0.72rem;margin-left:2px;" title="後衛">🏹</span>`
+				: `<span style="font-size:0.72rem;margin-left:2px;" title="前衛">⚔️</span>`)
+			const hpPct = Math.max(0, (e.hp / e.maxHp) * 100)
+			const hpBarColor = e._isElite ? e.eliteColor : 'var(--hp-color)'
+			const hpTextColor = e.hp/e.maxHp>0.5?'#ccc':e.hp/e.maxHp>0.25?'var(--gold)':'#f87171'
+			const mpPct = e.maxMp > 0 ? Math.max(0, (e.mp / e.maxMp) * 100) : 0
+			const statusTags = (()=>{ const st=(battle.enemyStatus||[]).filter(s=>s.eId===e.id); const dt=(battle.enemyDots||[]).filter(d=>d.eId===e.id); const tags=[...st.map(s=>s.type==='stun'?`<span style="background:#f97316;color:#000;font-size:0.6rem;padding:0 2px;border-radius:2px;">⚡${s.turns}T</span>`:`<span style="background:#60a5fa;color:#000;font-size:0.6rem;padding:0 2px;border-radius:2px;">❄${s.turns}T</span>`),...dt.map(d=>d.type==='poison'?`<span style="background:#a3e635;color:#000;font-size:0.6rem;padding:0 2px;border-radius:2px;">☠${d.turns}T</span>`:`<span style="background:#f87171;color:#000;font-size:0.6rem;padding:0 2px;border-radius:2px;">🩸${d.turns}T</span>`)]; return tags.length?`<div style="display:flex;gap:1px;flex-wrap:wrap;margin-top:2px;">${tags.join('')}</div>`:'' })()
+			return `<div class="battle-unit-box ${isDead ? 'hidden' : ''} ${e.isBoss ? 'is-boss' : ''} ${cursorClass}" style="${isDead ? 'opacity:0' : ''}${eliteBorder}" ${clickable}>
+				<div style="display:flex; align-items:center; gap:3px; margin-bottom:2px;">
+					<span style="font-weight:bold; font-size:0.78rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; color:${nameColor};">${e.name}</span>
+					${eliteDot}${rowBadge}
+					<button onclick="event.stopPropagation();openMonsterInfo(${i})" style="flex-shrink:0;background:transparent;border:1px solid #444;border-radius:3px;color:#aaa;font-size:0.6rem;padding:0 3px;cursor:pointer;line-height:1.4;">ℹ</button>
+				</div>
+				<div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-bottom:2px;">
+					<span style="color:#f87171;">HP</span>
+					<span style="color:${hpTextColor};">${e.hp}<span style="color:#444;">/${e.maxHp}</span></span>
+				</div>
+				<div class="bar-bg" style="height:5px;"><div class="bar-fill" style="background:${hpBarColor}; width:${hpPct}%"></div></div>
+				${e.maxMp > 0 ? `<div style="display:flex; justify-content:space-between; font-size:0.68rem; margin-top:2px; margin-bottom:1px;">
+					<span style="color:#60a5fa;">MP</span>
+					<span style="color:#aaa;">${e.mp}<span style="color:#444;">/${e.maxMp}</span></span>
+				</div>
+				<div class="bar-bg" style="height:3px;"><div class="bar-fill" style="background:var(--mp-color); width:${mpPct}%"></div></div>` : ''}
+				${statusTags}
+			</div>`
+		}
+
 		function updateBattleUI() {
 			const container = document.getElementById('enemy-container')
 			const isTargeting = battle.targeting === 'attack' || battle.targeting === 'skill'
-			container.innerHTML = battle.enemies
-				.map((e, i) => {
-					const isDead = e.hp <= 0
-					const clickable = isTargeting && !isDead ? `onclick="selectEnemyTarget(${i})"` : ''
-					const cursorClass = isTargeting && !isDead ? 'cursor-pointer targeting-active' : ''
-					const eliteBorder = e._isElite ? `border:1.5px solid ${e.eliteColor}; box-shadow:0 0 6px ${e.eliteColor}44;` : ''
-					const eliteDot    = e._isElite ? `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${e.eliteColor};flex-shrink:0;margin-left:3px;" title="${e.eliteTier}"></span>` : ''
-					const nameColor   = e._isElite ? e.eliteColor : '#e0e0e0'
-					return `<div class="battle-unit-box ${isDead ? 'hidden' : ''} ${e.isBoss ? 'is-boss' : ''} ${cursorClass}" style="${isDead ? 'opacity:0' : ''}${eliteBorder}" ${clickable}>
-						<div style="display:flex;align-items:center;justify-content:center;gap:2px;width:100%;margin-bottom:2px;">
-							<b style="font-size:0.8rem;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${nameColor};max-width:calc(100% - 14px);">${e.name}</b>${eliteDot}
-						</div>
-						<div class="bar-bg" style="margin:3px 0;"><div class="bar-fill" style="background:${e._isElite ? e.eliteColor : 'var(--hp-color)'}; width:${Math.max(0, (e.hp / e.maxHp) * 100)}%"></div></div>
-						<small style="font-size:0.7rem;">HP: <span style="color:${e.hp/e.maxHp>0.5?'#ccc':e.hp/e.maxHp>0.25?'var(--gold)':'#f87171'}">${e.hp}</span><span style="color:#444;">/${e.maxHp}</span></small>
-					</div>`
-
-				})
-				.join('')
+			// 前衛・後衛で分けてレンダリング
+			const frontEnemies = battle.enemies.map((e,i)=>({e,i})).filter(({e})=> e.row !== 'back')
+			const backEnemies  = battle.enemies.map((e,i)=>({e,i})).filter(({e})=> e.row === 'back')
+			const hasFrontE = frontEnemies.some(({e})=>e.hp>0)
+			const hasBackE  = backEnemies.some(({e})=>e.hp>0)
+			let html = ''
+			if (hasBackE) {
+				html += `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:6px;">`
+				backEnemies.forEach(({e,i})=>{ html += renderEnemyCard(e,i,isTargeting) })
+				html += `</div>`
+			}
+			if (hasFrontE) {
+				html += `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:4px;">`
+				frontEnemies.forEach(({e,i})=>{ html += renderEnemyCard(e,i,isTargeting) })
+				html += `</div>`
+			}
+			if (!hasFrontE && !hasBackE && battle.enemies.length > 0) {
+				html = battle.enemies.map((e,i)=>renderEnemyCard(e,i,isTargeting)).join('')
+			}
+			container.innerHTML = html
 			if (battle.active && battle.enemies.length > 0 && battle.enemies.every(e => e.hp <= 0)) {
 				container.innerHTML = '<div style="font-size:1.5rem; color:var(--gold); font-weight:bold;">勝利！</div>'
 			}
 			const partyContainer = document.getElementById('party-battle-container')
 			if (gameState.party.length > 0) {
-				partyContainer.innerHTML = gameState.party
-					.map((p, i) => {
-						const fs = getFinalStats(p)
-						const isCurrent = battle.turn === 'player' && i === battle.activeUnitIndex
-						const isHealTargeting = battle.targeting === 'heal'
-						const clickable = isHealTargeting ? `onclick="selectPartyTarget(${i})"` : ''
-						const cursorClass = isHealTargeting ? 'cursor-pointer targeting-active' : ''
-						
-						const pIdx = gameState.party.indexOf(p)
-						const shieldData = (battle.shields||[]).find(s => s.pIdx === pIdx)
-						const isGuarding = battle.guardIdx === pIdx
-						return `<div class="battle-unit-box ${isCurrent ? 'active-turn' : ''} ${cursorClass}" style="${p.hp <= 0 ? 'opacity:0.5;filter:grayscale(1);' : ''}" ${clickable}>
-							<div style="display:flex; align-items:center; gap:4px; margin-bottom:2px;">
-								<span style="font-weight:bold; font-size:0.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">${p.name}</span>
-								${isGuarding ? '<span style="font-size:0.68rem; background:rgba(251,146,60,0.2); border:1px solid #fb923c; border-radius:3px; padding:0 4px; color:#fb923c;">🛡身代わり</span>' : ''}
-							</div>
-							<div style="display:flex; justify-content:space-between; font-size:0.72rem; margin-bottom:2px;">
-								<span style="color:#f87171;">HP</span>
-								<span style="color:${p.hp / fs.maxHp > 0.5 ? '#ccc' : p.hp / fs.maxHp > 0.25 ? 'var(--gold)' : '#f87171'};">${p.hp}<span style="color:#444;">/${fs.maxHp}</span></span>
-							</div>
-							<div class="bar-bg" style="height:5px;"><div class="bar-fill" style="background:var(--hp-color); width:${Math.max(0, (p.hp / fs.maxHp) * 100)}%"></div></div>
-							${shieldData ? `<div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-top:2px; color:#60d394;"><span>🔷 SHD</span><span>${shieldData.val} <span style="color:#555;">(${shieldData.turns}T)</span></span></div>` : ''}
-							${(()=>{ const rg=(battle.partyRegens||[]).find(r=>r.pIdx===pIdx); const mc=(battle.mpCostDown||[]).find(m=>m.pIdx===pIdx); let t=''; if(rg)t+=`<span style="background:#4ade80;color:#000;font-size:0.65rem;padding:0 3px;border-radius:2px;">💚再生${rg.turns}T</span>`; if(mc)t+=`<span style="background:#818cf8;color:#000;font-size:0.65rem;padding:0 3px;border-radius:2px;">💧MP軽減</span>`; return t?`<div style="display:flex;gap:2px;flex-wrap:wrap;margin-top:2px;">${t}</div>`:''; })()}
-							<div style="display:flex; justify-content:space-between; font-size:0.72rem; margin-top:3px; margin-bottom:2px;">
-								<span style="color:#60a5fa;">MP</span>
-								<span style="color:#aaa;">${p.mp}<span style="color:#444;">/${fs.maxMp}</span></span>
-							</div>
-							<div class="bar-bg" style="height:4px;"><div class="bar-fill" style="background:var(--mp-color); width:${Math.max(0, (p.mp / fs.maxMp) * 100)}%"></div></div>
-						</div>`
-					})
-					.join('')
+				const renderPartyCard = (p, i) => {
+					const fs = getFinalStats(p)
+					const isCurrent = battle.turn === 'player' && i === battle.activeUnitIndex
+					const isHealTargeting = battle.targeting === 'heal'
+					const clickable = isHealTargeting ? `onclick="selectPartyTarget(${i})"` : ''
+					const cursorClass = isHealTargeting ? 'cursor-pointer targeting-active' : ''
+					const wRange = getWeaponRange(p)
+					const rangeBadge = wRange === 'long'
+						? `<span style="font-size:0.75rem;margin-left:3px;" title="遠距離">🏹</span>`
+						: `<span style="font-size:0.75rem;margin-left:3px;" title="近接">⚔️</span>`
+					const pIdx = gameState.party.indexOf(p)
+					const shieldData = (battle.shields||[]).find(s => s.pIdx === pIdx)
+					const isGuarding = battle.guardIdx === pIdx
+					return `<div class="battle-unit-box ${isCurrent ? 'active-turn' : ''} ${cursorClass}" style="${p.hp <= 0 ? 'opacity:0.5;filter:grayscale(1);' : ''}" ${clickable}>
+						<div style="display:flex; align-items:center; gap:4px; margin-bottom:2px;">
+							<span style="font-weight:bold; font-size:0.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">${p.name}</span>
+							${rangeBadge}
+							${isGuarding ? '<span style="font-size:0.68rem; background:rgba(251,146,60,0.2); border:1px solid #fb923c; border-radius:3px; padding:0 4px; color:#fb923c;">🛡身代わり</span>' : ''}
+						</div>
+						<div style="display:flex; justify-content:space-between; font-size:0.72rem; margin-bottom:2px;">
+							<span style="color:#f87171;">HP</span>
+							<span style="color:${p.hp / fs.maxHp > 0.5 ? '#ccc' : p.hp / fs.maxHp > 0.25 ? 'var(--gold)' : '#f87171'};">${p.hp}<span style="color:#444;">/${fs.maxHp}</span></span>
+						</div>
+						<div class="bar-bg" style="height:5px;"><div class="bar-fill" style="background:var(--hp-color); width:${Math.max(0, (p.hp / fs.maxHp) * 100)}%"></div></div>
+						${shieldData ? `<div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-top:2px; color:#60d394;"><span>🔷 SHD</span><span>${shieldData.val} <span style="color:#555;">(${shieldData.turns}T)</span></span></div>` : ''}
+						${(()=>{ const rg=(battle.partyRegens||[]).find(r=>r.pIdx===pIdx); const mc=(battle.mpCostDown||[]).find(m=>m.pIdx===pIdx); let t=''; if(rg)t+=`<span style="background:#4ade80;color:#000;font-size:0.65rem;padding:0 3px;border-radius:2px;">💚再生${rg.turns}T</span>`; if(mc)t+=`<span style="background:#818cf8;color:#000;font-size:0.65rem;padding:0 3px;border-radius:2px;">💧MP軽減</span>`; return t?`<div style="display:flex;gap:2px;flex-wrap:wrap;margin-top:2px;">${t}</div>`:''; })()}
+						<div style="display:flex; justify-content:space-between; font-size:0.72rem; margin-top:3px; margin-bottom:2px;">
+							<span style="color:#60a5fa;">MP</span>
+							<span style="color:#aaa;">${p.mp}<span style="color:#444;">/${fs.maxMp}</span></span>
+						</div>
+						<div class="bar-bg" style="height:4px;"><div class="bar-fill" style="background:var(--mp-color); width:${Math.max(0, (p.mp / fs.maxMp) * 100)}%"></div></div>
+					</div>`
+				}
+				// 前衛・後衛で分けてレンダリング
+				const frontParty = gameState.party.map((p,i)=>({p,i})).filter(({p})=>p.row==='front')
+				const backParty  = gameState.party.map((p,i)=>({p,i})).filter(({p})=>p.row==='back')
+				let pHtml = ''
+				if (frontParty.length > 0) {
+					pHtml += `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:6px;">`
+					frontParty.forEach(({p,i})=>{ pHtml += renderPartyCard(p,i) })
+					pHtml += `</div>`
+				}
+				if (backParty.length > 0) {
+					pHtml += `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:4px;">`
+					backParty.forEach(({p,i})=>{ pHtml += renderPartyCard(p,i) })
+					pHtml += `</div>`
+				}
+				partyContainer.innerHTML = pHtml
 			}
 		}
-		function updateUI() {
+		function toggleRow(idx) {
+			if (battle.active) {
+				showMsg('⚠️ 戦闘中は前衛・後衛を変更できません')
+				playSE('error')
+				return
+			}
+			const p = gameState.party[idx]
+			if (!p) return
+			p.row = (p.row === 'front') ? 'back' : 'front'
+			addLog(`${p.name} を ${p.row === 'front' ? '⚔️ 前衛' : '🏹 後衛'} に変更しました。`, 'log-sys')
+			updateUI()
+		}
+
+				function updateUI() {
 			document.getElementById('h-gold').innerText = gameState.gold + (gameState.inDungeon ? gameState.tempGold : 0)
 			document.getElementById('h-max-floor').innerText = gameState.maxFloor + 'F'
 			document.getElementById('h-cap').innerText = gameState.inventory.length
@@ -5058,7 +6050,12 @@ function winBattle() {
 					const wC = p.equip.weapon ? (p.equip.weapon.rarityColor || '#eee') : '#eee'
 					const aC = p.equip.armor ? (p.equip.armor.rarityColor || '#eee') : '#eee'
 					const acC = p.equip.acc ? (p.equip.acc.rarityColor || '#eee') : '#eee'
-					return `<div class="char-card"><div style="display:flex;justify-content:space-between;align-items:center"><b>${p.name}</b> <div style="display:flex;gap:5px"><button class="btn-icon" onclick="openCharDetailModal(${i})" style="font-size:0.75rem; padding:4px 8px;">詳細</button><button class="btn-icon" style="padding:4px 8px; font-size:0.75rem;" onclick="openTraining(${i})">育成</button></div></div><div style="font-size:0.8rem;color:#aaa;margin-bottom:4px;">Lv.${p.lv} ${p.job}</div>
+					const rowLabel = p.row === 'front' ? '⚔️前衛' : '🏹後衛'
+					const rowColor = p.row === 'front' ? '#f87171' : '#60a5fa'
+					const rowBtnStyle = battle.active
+						? `font-size:0.72rem;padding:2px 8px;background:#222;border:1px solid #444;color:#555;border-radius:12px;cursor:not-allowed;opacity:0.5;`
+						: `font-size:0.72rem;padding:2px 8px;background:${rowColor}22;border:1px solid ${rowColor};color:${rowColor};border-radius:12px;cursor:pointer;`
+					return `<div class="char-card"><div style="display:flex;justify-content:space-between;align-items:center"><b>${p.name}</b> <div style="display:flex;gap:5px"><button class="btn-icon" onclick="openCharDetailModal(${i})" style="font-size:0.75rem; padding:4px 8px;">詳細</button><button class="btn-icon" style="padding:4px 8px; font-size:0.75rem;" onclick="openTraining(${i})">育成</button></div></div><div style="font-size:0.8rem;color:#aaa;margin-bottom:4px;">Lv.${p.lv} ${p.job}</div><div style="margin-bottom:4px;"><button onclick="toggleRow(${i})" ${battle.active ? 'disabled title="戦闘中は変更不可"' : ''} style="${rowBtnStyle}">${rowLabel}</button></div>
                             <div class="bar-bg"><div class="bar-fill" style="background:var(--hp-color); width:${(p.hp / fs.maxHp) * 100}%"></div></div>
                             <div class="bar-bg" style="height:4px;"><div class="bar-fill" style="background:var(--mp-color); width:${(p.mp / fs.maxMp) * 100}%"></div></div>
                             <div class="bar-bg" style="height:3px;"><div class="bar-fill" style="background:var(--exp-color); width:${expP}%"></div></div>
