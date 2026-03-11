@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-		<title>Abyss Redive ver2.22</title>
+		<title>Abyss Redive ver2.30</title>
 		<style>
 		:root {
 			--bg-dark: #0d0d0d;
@@ -58,7 +58,7 @@
 			border-bottom: 1px solid var(--border-color);
 			display: flex;
 			align-items: center;
-			padding: 5px 15px;
+			padding: 3px 8px;
 			justify-content: space-between;
 			flex-shrink: 0;
 			flex-wrap: wrap;
@@ -83,12 +83,12 @@
 		#main-container {
 			flex: 1;
 			display: grid;
-			grid-template-columns: 1fr 340px;
+			grid-template-columns: 1fr 260px;
 			overflow: hidden;
 			min-height: 0;
 		}
 		#viewport {
-			padding: 10px;
+			padding: 6px;
 			display: flex;
 			flex-direction: column;
 			align-items: center;
@@ -101,11 +101,11 @@
 		aside {
 			background: #111;
 			border-left: 1px solid var(--border-color);
-			padding: 10px;
+			padding: 6px 8px;
 			overflow-y: auto;
 		}
 		#log-area {
-			height: 150px;
+			height: 110px;
 			flex-shrink: 0;
 			background: #050505;
 			border-top: 1px solid var(--border-color);
@@ -113,6 +113,59 @@
 			overflow-y: auto;
 			font-family: "Consolas", monospace;
 			font-size: 0.9rem;
+			cursor: pointer;
+			position: relative;
+			transition: background 0.2s;
+		}
+		#log-area:hover {
+			background: #080808;
+		}
+		#log-expand-hint {
+			position: absolute;
+			bottom: 4px;
+			right: 8px;
+			font-size: 0.65rem;
+			color: #333;
+			pointer-events: none;
+			user-select: none;
+		}
+		#log-modal-overlay {
+			display: none;
+			position: fixed;
+			top: 0; left: 0; right: 0; bottom: 0;
+			background: rgba(0,0,0,0.85);
+			z-index: 9999;
+			align-items: center;
+			justify-content: center;
+		}
+		#log-modal-overlay.active {
+			display: flex;
+		}
+		#log-modal-box {
+			background: #0a0a0a;
+			border: 1px solid #333;
+			border-radius: 12px;
+			width: min(90vw, 700px);
+			height: min(80vh, 600px);
+			display: flex;
+			flex-direction: column;
+			box-shadow: 0 8px 40px rgba(0,0,0,0.9);
+		}
+		#log-modal-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 10px 16px;
+			border-bottom: 1px solid #222;
+			font-size: 0.82rem;
+			color: #666;
+		}
+		#log-modal-content {
+			flex: 1;
+			overflow-y: auto;
+			padding: 10px 16px;
+			font-family: "Consolas", monospace;
+			font-size: 0.88rem;
 		}
 		.log-entry {
 			margin-bottom: 2px;
@@ -182,13 +235,13 @@ header .btn-icon {
 		.btn-red { background: var(--accent-red); }
 
 		.modal-overlay {
-			position: absolute;
-			inset: 0;
+			position: fixed;
+			top: 0; left: 0; right: 0; bottom: 0;
 			background: rgba(0, 0, 0, 0.9);
 			display: flex;
 			justify-content: center;
 			align-items: center;
-			z-index: 1000;
+			z-index: 9000;
 		}
 		.modal {
 			background: var(--panel-bg);
@@ -222,7 +275,7 @@ header .btn-icon {
 		.char-card {
 			background: #1a1a1a;
 			border: 1px solid #333;
-			padding: 12px;
+			padding: 8px;
 			margin-bottom: 10px;
 			border-radius: 8px;
 		}
@@ -259,15 +312,16 @@ header .btn-icon {
 			100% { border-color: #444; box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
 		}
 		.battle-unit-box {
-			flex: 1 1 calc(50% - 16px);
-			min-width: 140px;
-			max-width: 200px;
+			flex: 1 1 calc(33% - 12px);
+			min-width: 110px;
+			max-width: 180px;
 			background: #151515;
-			border: 2px solid #444;
-			padding: 10px;
+			border: 2px solid #333;
+			padding: 8px 6px;
 			border-radius: 8px;
 			text-align: center;
-			font-size: 0.9rem;
+			font-size: 0.82rem;
+			box-sizing: border-box;
 		}
 		.party-battle-container {
 			display: flex;
@@ -339,7 +393,7 @@ header .btn-icon {
 		@media (max-width: 900px) {
 			#main-container {
 				grid-template-columns: 1fr;
-				grid-template-rows: 1fr 40%;
+				grid-template-rows: 1fr 35%;
 			}
 			aside {
 				border-left: none;
@@ -381,18 +435,172 @@ header .btn-icon {
 
 		@media (max-height: 600px) {
 			#log-area {
-				height: 80px;
+				height: 70px;
+				font-size: 0.78rem;
 			}
 			.modal {
 				max-height: 95vh;
 			}
 			#viewport {
-				padding: 5px;
+				padding: 4px;
 			}
+			.btn-action {
+				padding: 8px 10px;
+				font-size: 0.82rem;
+			}
+			.char-card {
+				padding: 6px;
+			}
+		}
+		@media (max-width: 480px) {
+			.stat-badge { font-size: 0.72rem; gap: 3px; }
+			header .btn-icon { padding: 3px 6px; font-size: 0.72rem; }
+			#log-area { height: 90px; font-size: 0.78rem; }
+			.char-card { padding: 6px; }
+			.battle-unit-box { padding: 5px; font-size: 0.75rem; }
+		}
+
+		/* ═══ エンチャントポップアップ ═══ */
+		#enchant-popup-overlay {
+			position: absolute; top:0; left:0; right:0; bottom:0;
+			z-index: 50000;
+			background: rgba(0,0,0,0.88);
+			display: none;
+			align-items: center; justify-content: center;
+		}
+		#enchant-popup-overlay.active {
+			display: flex;
+		}
+		#enchant-popup-box {
+			position: relative;
+			width: min(360px, 92vw);
+			border-radius: 18px;
+			padding: 36px 28px 28px;
+			text-align: center;
+			border: 2px solid transparent;
+		}
+		#enchant-popup-box.success {
+			background: linear-gradient(160deg, #1c1100, #2e1c00, #1c1000);
+			border-color: #d08010;
+			box-shadow: 0 0 80px rgba(200,130,10,0.4), 0 0 30px rgba(0,0,0,0.95), inset 0 0 30px rgba(200,130,10,0.05);
+		}
+		#enchant-popup-box.failure {
+			background: linear-gradient(160deg, #0d0d0d, #111, #0d0d0d);
+			border-color: #2a2a2a;
+			box-shadow: 0 0 40px rgba(0,0,0,0.95);
+		}
+		.enchant-popup-particles {
+			position: absolute; inset: 0;
+			pointer-events: none; overflow: hidden; border-radius: 18px;
+		}
+		@keyframes enchantFloat {
+			0%   { transform: translateY(0) scale(1);   opacity: 1; }
+			100% { transform: translateY(-90px) scale(0.3); opacity: 0; }
+		}
+		@keyframes enchantPulse {
+			0%,100% { filter: drop-shadow(0 0 8px currentColor); }
+			50%     { filter: drop-shadow(0 0 24px currentColor) drop-shadow(0 0 48px currentColor); }
+		}
+		@keyframes enchantAppear {
+			0%   { opacity:0; transform: scale(0.6) translateY(20px); }
+			60%  { opacity:1; transform: scale(1.06) translateY(-4px); }
+			100% { opacity:1; transform: scale(1) translateY(0); }
+		}
+		@keyframes enchantShake {
+			0%,100% { transform: translateX(0); }
+			20%     { transform: translateX(-8px); }
+			40%     { transform: translateX(8px); }
+			60%     { transform: translateX(-5px); }
+			80%     { transform: translateX(5px); }
+		}
+		.enchant-appear { animation: enchantAppear 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+		.enchant-shake  { animation: enchantShake 0.45s ease; }
+
+		/* ═══ パーティクル・演出システム ═══ */
+		#fx-layer {
+			position: fixed;
+			top: 0; left: 0; width: 100%; height: 100%;
+			pointer-events: none;
+			z-index: 9000;
+			overflow: hidden;
+		}
+		.fx-particle {
+			position: absolute;
+			border-radius: 50%;
+			pointer-events: none;
+			animation: fx-float linear forwards;
+		}
+		@keyframes fx-float {
+			0%   { transform: translate(0,0) scale(1); opacity: 1; }
+			100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
+		}
+		.fx-slash {
+			position: absolute;
+			pointer-events: none;
+			animation: fx-slash-anim 0.35s ease-out forwards;
+		}
+		@keyframes fx-slash-anim {
+			0%   { opacity: 1; transform: scaleX(0.3) rotate(var(--rot)); }
+			60%  { opacity: 0.9; transform: scaleX(1) rotate(var(--rot)); }
+			100% { opacity: 0; transform: scaleX(1.3) rotate(var(--rot)); }
+		}
+		.fx-burst {
+			position: absolute;
+			border-radius: 50%;
+			pointer-events: none;
+			animation: fx-burst-anim 0.4s ease-out forwards;
+		}
+		@keyframes fx-burst-anim {
+			0%   { transform: scale(0.1); opacity: 1; }
+			60%  { transform: scale(1); opacity: 0.7; }
+			100% { transform: scale(1.6); opacity: 0; }
+		}
+		.fx-text {
+			position: absolute;
+			pointer-events: none;
+			font-weight: bold;
+			text-shadow: 0 0 8px currentColor;
+			animation: fx-text-rise 0.9s ease-out forwards;
+			white-space: nowrap;
+		}
+		@keyframes fx-text-rise {
+			0%   { transform: translate(-50%, 0) scale(0.8); opacity: 1; }
+			30%  { transform: translate(-50%, -18px) scale(1.1); opacity: 1; }
+			100% { transform: translate(-50%, -55px) scale(0.9); opacity: 0; }
+		}
+		.fx-screen-flash {
+			position: fixed;
+			top:0; left:0; width:100%; height:100%;
+			pointer-events: none;
+			animation: fx-flash 0.25s ease-out forwards;
+		}
+		@keyframes fx-flash {
+			0%   { opacity: 0.22; }
+			100% { opacity: 0; }
+		}
+		.fx-shake { animation: fx-shake-anim 0.3s ease-out; }
+		@keyframes fx-shake-anim {
+			0%,100% { transform: translate(0); }
+			20%    { transform: translate(-4px, 2px); }
+			40%    { transform: translate(4px, -2px); }
+			60%    { transform: translate(-3px, 1px); }
+			80%    { transform: translate(3px, -1px); }
+		}
+		.battle-unit-box { transition: box-shadow 0.2s; }
+		.fx-hit-glow-red  { box-shadow: 0 0 18px 6px rgba(248,113,113,0.7) !important; }
+		.fx-hit-glow-blue { box-shadow: 0 0 18px 6px rgba(96,165,250,0.7) !important; }
+		.fx-hit-glow-gold { box-shadow: 0 0 22px 8px rgba(251,191,36,0.85) !important; }
+		.fx-hit-glow-green { box-shadow: 0 0 18px 6px rgba(74,222,128,0.7) !important; }
+		.fx-hit-glow-purple { box-shadow: 0 0 18px 6px rgba(167,139,250,0.7) !important; }
+
+		@keyframes _toastIn {
+			from { opacity:0; transform:translateX(-50%) translateY(-8px); }
+			to   { opacity:1; transform:translateX(-50%) translateY(0); }
 		}
 		</style>
 	</head>
 	<body>
+		<div id="fx-layer"></div>
 		<div id="game-wrapper">
 			<header>
 				<div class="header-left">
@@ -459,7 +667,7 @@ header .btn-icon {
 							</div>
 						</div>
 					</div>
-					<button class="btn-icon" onclick="openSettingsModal()" title="設定">⚙</button>
+					<button class="btn-icon" onclick="openSettingsModal()" title="設定" style="font-size:1.15rem;">⚙️</button>
 				</div>
 			</header>
 
@@ -471,6 +679,7 @@ header .btn-icon {
 							<button id="town-dungeon-btn" class="btn-action btn-green" onclick="enterDungeon()">ダンジョン探索</button>
 							<button id="town-shop-btn" class="btn-action btn-blue" onclick="openShopMenu()">ショップ</button>
 							<button class="btn-action btn-purple" onclick="openGuild()">ギルド</button>
+							<button id="town-smith-btn" class="btn-action" style="background:linear-gradient(135deg,#3a2200,#7a4800);border:1px solid #c0760a;color:#f9a825;display:none;" onclick="openSmithModal()">🔨 鍛冶屋</button>
 						</div>
 					</div>
 
@@ -480,7 +689,7 @@ header .btn-icon {
 						</div>
 						<div id="event-display" style="margin: 16px 0; height: 56px; min-height: 56px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 1.05rem; padding: 0 10px; overflow: hidden; flex-shrink: 0; width:100%; max-width:320px;">不気味な静寂...</div>
 						<div style="display:flex; flex-direction:column; gap:10px; width:100%; max-width:320px; margin: 0 auto;">
-							<button id="btn-explore" class="btn-action btn-green" onclick="explore()">探索を続ける</button>
+							<button id="btn-explore" class="btn-action btn-green" onclick="fxExplore();explore()">探索を続ける</button>
 			
 							<button id="btn-retreat" class="btn-action btn-red" onclick="retreat()">街に戻る</button>
 							<button id="btn-next-floor" class="btn-action btn-blue hidden" onclick="nextFloor()">階段を下りる</button>
@@ -500,14 +709,46 @@ header .btn-icon {
 				</div>
 
 				<aside>
-					<div style="font-size: 0.8rem; font-weight:bold; color: var(--accent-blue); margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom:5px;">🛡️ PARTY STATUS</div>
+					<div style="font-size: 0.8rem; font-weight:bold; color: var(--accent-blue); margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom:5px;">⚔️ パーティ</div>
 					<div id="party-list"></div>
 				</aside>
 			</div>
 
-			<div id="log-area"></div>
+			<div id="log-area" onclick="openLogModal()" title="クリックでログを拡大表示">
+				<span id="log-expand-hint">📋 クリックで全ログ表示</span>
+			</div>
+			<!-- ログ拡大モーダル -->
+			<div id="log-modal-overlay" onclick="if(event.target===this)closeLogModal()">
+				<div id="log-modal-box">
+					<div id="log-modal-header">
+						<span style="color:#aaa; font-size:0.9rem; font-weight:bold;">📋 バトルログ</span>
+						<button onclick="closeLogModal()" style="background:transparent;border:1px solid #444;border-radius:6px;color:#aaa;padding:3px 10px;cursor:pointer;font-size:0.8rem;">✕ 閉じる</button>
+					</div>
+					<div id="log-modal-content"></div>
+				</div>
+			</div>
 			<div id="modal-layer" class="modal-overlay hidden">
 				<div class="modal" id="modal-content"></div>
+			</div>
+			<!-- エンチャントポップアップ（game-wrapper内に配置） -->
+			<div id="enchant-popup-overlay" onclick="if(event.target===this)closeEnchantPopup()">
+				<div id="enchant-popup-box">
+					<div class="enchant-popup-particles" id="enchant-particles"></div>
+					<div id="enchant-popup-icon"></div>
+					<div id="enchant-popup-title" style="margin-bottom:4px;"></div>
+					<div id="enchant-popup-sub"></div>
+					<div id="enchant-popup-detail"></div>
+					<div id="enchant-popup-cost" style="margin-top:14px;"></div>
+					<button onclick="closeEnchantPopup()" style="
+						margin-top:18px;padding:11px 36px;border-radius:10px;
+						font-size:0.95rem;font-weight:bold;cursor:pointer;
+						border:1px solid #444;background:#1a1a1a;color:#888;
+						width:100%;transition:background 0.15s,color 0.15s;"
+						onmouseenter="this.style.background='#2a2a2a';this.style.color='#fff'"
+						onmouseleave="this.style.background='#1a1a1a';this.style.color='#888'">
+					閉じる
+					</button>
+				</div>
 			</div>
 		</div>
 
@@ -646,30 +887,82 @@ header .btn-icon {
 			const t = audioCtx.currentTime;
 			
 			if(scene === 'town') {
-				const freqs = [261.63, 329.63, 392.00]; // C E G
-				freqs.forEach(f => {
-					const osc = audioCtx.createOscillator();
-					const gain = audioCtx.createGain();
-					osc.type = 'sine';
-					osc.frequency.value = f;
-					
-					const lfo = audioCtx.createOscillator();
-					lfo.type = 'sine';
-					lfo.frequency.value = 0.2;
-					const lfoGain = audioCtx.createGain();
-					lfoGain.gain.value = 0.1;
-					lfo.connect(lfoGain);
-					lfoGain.connect(gain.gain);
-					
-					gain.gain.setValueAtTime(0.01, t);
-					gain.gain.linearRampToValueAtTime(0.15, t + 2);
-					
-					osc.connect(gain);
-					gain.connect(masterGain);
-					osc.start();
-					lfo.start();
-					bgmNodes.push({osc, gain, lfo});
-				});
+				// ── マイクラ風 落ち着いた町BGM ──
+				// C major ペンタトニック: C4 D4 E4 G4 A4 C5 G3
+				// ピアノ風音色 = sine + 薄いtriangle倍音
+				// 音楽盒風メロディを setInterval でゆっくり鳴らす
+				const NOTE = {
+					G3:196.00, C4:261.63, D4:293.66, E4:329.63,
+					G4:392.00, A4:440.00, C5:523.25, E5:659.25, G5:783.99
+				}
+				// メロディシーケンス（0=休符）
+				const melody = [
+					'E4','G4', 0,   'A4','G4', 0,   'E4', 0,
+					'C4','D4','E4', 0,   'D4','C4', 0,    0,
+					'G3','C4','E4','G4', 0,   'E4','D4', 0,
+					'C4', 0,   'D4', 0,   'E4','G4','A4', 0,
+					'G4','E4', 0,   'C5', 0,  'A4','G4', 0,
+					'E4','G4','A4', 0,   'G4','E4','C4', 0,
+				]
+				// ベースパッド（持続和音: C major）
+				const padFreqs = [65.41, 130.81, 164.81] // C2 C3 E3
+				padFreqs.forEach((f, pi) => {
+					const osc  = audioCtx.createOscillator()
+					const gain = audioCtx.createGain()
+					const filt = audioCtx.createBiquadFilter()
+					filt.type = 'lowpass'
+					filt.frequency.value = 400
+					osc.type = 'triangle'
+					osc.frequency.value = f
+					gain.gain.setValueAtTime(0.001, t)
+					gain.gain.linearRampToValueAtTime(pi === 0 ? 0.07 : 0.04, t + 3)
+					osc.connect(filt); filt.connect(gain); gain.connect(masterGain)
+					osc.start()
+					bgmNodes.push({ osc, gain })
+				})
+				// 揺らぎLFO（自然な息感）
+				const lfoOsc  = audioCtx.createOscillator()
+				const lfoGain = audioCtx.createGain()
+				lfoOsc.type = 'sine'
+				lfoOsc.frequency.value = 0.08
+				lfoGain.gain.value = 0.018
+				lfoOsc.connect(lfoGain)
+				lfoOsc.start()
+				bgmNodes.push({ osc: lfoOsc, gain: lfoGain })
+
+				// ピアノ風単音を鳴らすヘルパー
+				function playPianoNote(freq, vol) {
+					if (isMuted || !audioCtx) return
+					const now = audioCtx.currentTime
+					// 基音 (sine)
+					const o1 = audioCtx.createOscillator()
+					const g1 = audioCtx.createGain()
+					o1.type = 'sine'
+					o1.frequency.value = freq
+					g1.gain.setValueAtTime(vol, now)
+					g1.gain.exponentialRampToValueAtTime(vol * 0.3, now + 0.4)
+					g1.gain.exponentialRampToValueAtTime(0.0001, now + 1.8)
+					o1.connect(g1); g1.connect(masterGain)
+					o1.start(now); o1.stop(now + 1.9)
+					// 倍音 (triangle) でピアノ感
+					const o2 = audioCtx.createOscillator()
+					const g2 = audioCtx.createGain()
+					o2.type = 'triangle'
+					o2.frequency.value = freq * 2
+					g2.gain.setValueAtTime(vol * 0.18, now)
+					g2.gain.exponentialRampToValueAtTime(0.0001, now + 0.8)
+					o2.connect(g2); g2.connect(masterGain)
+					o2.start(now); o2.stop(now + 0.9)
+				}
+
+				let mStep = 0
+				const BPM_INTERVAL = 480 // ms per 16th note（ゆったり = 約31BPM相当）
+				bgmInterval = setInterval(() => {
+					if (isMuted) return
+					const note = melody[mStep % melody.length]
+					if (note && NOTE[note]) playPianoNote(NOTE[note], 0.13)
+					mStep++
+				}, BPM_INTERVAL)
 			} else if (scene === 'dungeon') {
 				const freqs = [65.41, 73.42]; // C2, D2
 				freqs.forEach(f => {
@@ -1278,113 +1571,171 @@ const JOB_DATA = {
 			45: { name: '深淵の創造神ルキファリス', hp:  90000, maxHp:  90000, mp: 500, atk: 2900, def: 560, mdef: 540, agi:  75, gold: 700000, exp: 2500000, isBoss: true, row: 'front', range: 'long' },
 			50: { name: '原初神アルケーネシア',     hp: 150000, maxHp: 150000, mp: 500, atk: 4500, def: 750, mdef: 750, agi:  90, gold:1500000, exp: 6000000, isBoss: true, row: 'front', range: 'long' },
 		}
+		// ═══════════════════════════════════════════════════════════════
+		// エンチャントマスターデータ
+		// ═══════════════════════════════════════════════════════════════
+		const ENCHANT_DATA = {
+			weapon: [
+				{ id:'vampire', name:'吸血', icon:'🩸', desc:'与ダメの〇%をHP回復（上限:最大HP20%）',
+				  levels:[{lv:1,val:0.05,name:'吸血Ⅰ'},{lv:2,val:0.10,name:'吸血Ⅱ'},{lv:3,val:0.15,name:'吸血Ⅲ'}] },
+				{ id:'pierce',  name:'貫通', icon:'🔱', desc:'敵の防御力を〇%無視',
+				  levels:[{lv:1,val:0.15,name:'貫通Ⅰ'},{lv:2,val:0.30,name:'貫通Ⅱ'},{lv:3,val:0.50,name:'貫通Ⅲ'}] },
+				{ id:'lethal',  name:'致命', icon:'⚡', desc:'会心倍率を加算（基本1.6倍）',
+				  levels:[{lv:1,val:0.3,name:'致命Ⅰ'},{lv:2,val:0.6,name:'致命Ⅱ'},{lv:3,val:1.0,name:'致命Ⅲ'}] },
+				{ id:'double',  name:'追撃', icon:'⚔️', desc:'〇%の確率で通常攻撃が2回発生',
+				  levels:[{lv:1,val:0.10,name:'追撃Ⅰ'},{lv:2,val:0.20,name:'追撃Ⅱ'},{lv:3,val:0.30,name:'追撃Ⅲ'}] },
+				{ id:'giant',   name:'巨殺', icon:'🐉', desc:'敵HP＞自分HPの場合ダメージ〇%UP',
+				  levels:[{lv:1,val:0.10,name:'巨殺Ⅰ'},{lv:2,val:0.20,name:'巨殺Ⅱ'},{lv:3,val:0.35,name:'巨殺Ⅲ'}] },
+			],
+			armor: [
+				{ id:'resist',   name:'耐性', icon:'🛡️', desc:'最終被ダメージを〇%カット',
+				  levels:[{lv:1,val:0.05,name:'耐性Ⅰ'},{lv:2,val:0.10,name:'耐性Ⅱ'},{lv:3,val:0.15,name:'耐性Ⅲ'}] },
+				{ id:'reflect',  name:'反射', icon:'💢', desc:'〇%の確率で被ダメの30%を反射',
+				  levels:[{lv:1,val:0.20,name:'反射Ⅰ'},{lv:2,val:0.40,name:'反射Ⅱ'},{lv:3,val:0.60,name:'反射Ⅲ'}] },
+				{ id:'regen',    name:'再生', icon:'💚', desc:'毎ターン開始時、最大HPの〇%回復',
+				  levels:[{lv:1,val:0.02,name:'再生Ⅰ'},{lv:2,val:0.04,name:'再生Ⅱ'},{lv:3,val:0.07,name:'再生Ⅲ'}] },
+				{ id:'barrier',  name:'防壁', icon:'🔰', desc:'戦闘開始時、最大HP〇%分のシールドを付与',
+				  levels:[{lv:1,val:0.10,name:'防壁Ⅰ'},{lv:2,val:0.20,name:'防壁Ⅱ'},{lv:3,val:0.30,name:'防壁Ⅲ'}] },
+				{ id:'tenacity', name:'不屈', icon:'💪', desc:'即死ダメージ時、〇%の確率でHP1で耐える',
+				  levels:[{lv:1,val:0.10,name:'不屈Ⅰ'},{lv:2,val:0.25,name:'不屈Ⅱ'},{lv:3,val:0.50,name:'不屈Ⅲ'}] },
+			],
+		}
+
+		function rollEnchant(itemType) {
+			const r = Math.random()
+			let level
+			if      (r < 0.10) level = 0
+			else if (r < 0.60) level = 1
+			else if (r < 0.90) level = 2
+			else               level = 3
+			if (level === 0) return null
+			const cat = (itemType === 'weapon') ? 'weapon' : 'armor'
+			const pool = ENCHANT_DATA[cat]
+			const chosen = pool[Math.floor(Math.random() * pool.length)]
+			const levelData = chosen.levels[level - 1]
+			return { id: chosen.id, level, val: levelData.val, name: levelData.name, icon: chosen.icon }
+		}
+
+		function getEnchantCost(tier) {
+			if (!tier || tier <= 2) return 1000
+			if (tier <= 4) return 5000
+			if (tier <= 6) return 20000
+			return 100000
+		}
+
+		function getItemDisplayName(item) {
+			if (!item) return '---'
+			const base = item.rarityLabel ? `[${item.rarityLabel}] ${item.n}` : item.n
+			if (item.enchant) return `【${item.enchant.name}】${base}`
+			return base
+		}
 		const SHOP_ITEMS = {
 			weapon: [
 				// --- Tier 1 (1〜10F) ---
-				{ id: 'w1_1', tier: 1, n: '遺された錆剣', p: 200, s: { str: 10 }, m: 1.0, d: '攻+10', dType: 'physical', range: 'short' },
-				{ id: 'w1_2', tier: 1, n: '新緑の小杖', p: 300, s: { matk: 12, mp: 20 }, m: 1.2, d: '特攻+12 / MP+20', dType: 'magic', range: 'long' },
-				{ id: 'w1_3', tier: 1, n: '探窟家の双刃', p: 800, s: { str: 15, agi: 10 }, m: 0.8, d: '2回攻撃 / 攻+15 / 速+10', dType: 'physical', hits: 2, range: 'short' },
-				{ id: 'w1_4', tier: 1, n: '処刑人の断斧', p: 1000, s: { str: 25, agi: -5 }, m: 1.4, d: '攻+25 / 速-5', dType: 'physical', range: 'short' },
-				{ id: 'w1_5', tier: 1, n: '狩人の短弓', p: 600, s: { str: 8, agi: 8 }, m: 0.9, d: '攻+8 / 速+8 / 遠距離', dType: 'physical', ranged: true, range: 'long' },
-				{ id: 'w1_6', tier: 1, n: '毒塗りの吹き矢', p: 750, s: { str: 6, agi: 12 }, m: 0.8, d: '攻+6 / 速+12 / 毒付与(30%) / 後列向き', dType: 'physical', ranged: true, range: 'long', effect: { type: 'poison', chance: 0.3 } },
+				{ id: 'w1_1', weaponType: '剣', tier: 1, n: '遺された錆剣', p: 200, s: { str: 10 }, m: 1.0, d: '攻+10', dType: 'physical', range: 'short' },
+				{ id: 'w1_2', weaponType: '杖', tier: 1, n: '新緑の小杖', p: 300, s: { matk: 12, mp: 20 }, m: 1.2, d: '特攻+12 / MP+20', dType: 'magic', range: 'long' },
+				{ id: 'w1_3', weaponType: '短剣', tier: 1, n: '探窟家の双刃', p: 800, s: { str: 15, agi: 10 }, m: 0.8, d: '2回攻撃 / 攻+15 / 速+10', dType: 'physical', hits: 2, range: 'short' },
+				{ id: 'w1_4', weaponType: '斧', tier: 1, n: '処刑人の断斧', p: 1000, s: { str: 25, agi: -5 }, m: 1.4, d: '攻+25 / 速-5', dType: 'physical', range: 'short' },
+				{ id: 'w1_5', weaponType: '弓', tier: 1, n: '狩人の短弓', p: 600, s: { str: 8, agi: 8 }, m: 0.9, d: '攻+8 / 速+8 / 遠距離', dType: 'physical', ranged: true, range: 'long' },
+				{ id: 'w1_6', weaponType: '弓', tier: 1, n: '毒塗りの吹き矢', p: 750, s: { str: 6, agi: 12 }, m: 0.8, d: '攻+6 / 速+12 / 毒付与(30%) / 後列向き', dType: 'physical', ranged: true, range: 'long', effect: { type: 'poison', chance: 0.3 } },
 				// --- Tier 2 (11〜20F) ---
-				{ id: 'w2_1', tier: 2, n: '深層鉱の戦剣', p: 3000, s: { str: 60 }, m: 1.1, d: '攻+60', dType: 'physical', range: 'short' },
-				{ id: 'w2_2', tier: 2, n: '赤熱の魔道杖', p: 3500, s: { matk: 75, mp: 50 }, m: 1.3, d: '特攻+75 / MP+50', dType: 'magic', range: 'long' },
-				{ id: 'w2_3', tier: 2, n: '白銀の連撃剣', p: 5500, s: { str: 45, agi: 20 }, m: 0.85, d: '2回攻撃 / 攻+45 / 速+20', dType: 'physical', hits: 2, range: 'short' },
-				{ id: 'w2_4', tier: 2, n: '重鉄の大剣', p: 6000, s: { str: 90, vit: 20, agi: -10 }, m: 1.5, d: '攻+90 / 防+20 / 速-10', dType: 'physical', range: 'short' },
-				{ id: 'w2_5', tier: 2, n: '深淵の猟弓', p: 7000, s: { str: 50, agi: 25, cri: 0.04 }, m: 1.0, d: '攻+50 / 速+25 / 会心+4% / 遠距離', dType: 'physical', ranged: true, range: 'long' },
-				{ id: 'w2_6', tier: 2, n: '霜の魔弓', p: 8000, s: { matk: 55, agi: 20 }, m: 0.95, d: '特攻+55 / 速+20 / 凍結付与(20%) / 後列向き', dType: 'magic', ranged: true, range: 'long', effect: { type: 'freeze', chance: 0.2 } },
-				{ id: 'w2_7', tier: 2, n: '出血のクロスボウ', p: 7500, s: { str: 48, agi: 15 }, m: 0.9, d: '攻+48 / 速+15 / 出血付与(35%) / 後列向き', dType: 'physical', ranged: true, range: 'long', effect: { type: 'bleed', chance: 0.35 } },
+				{ id: 'w2_1', weaponType: '剣', tier: 2, n: '深層鉱の戦剣', p: 3000, s: { str: 60 }, m: 1.1, d: '攻+60', dType: 'physical', range: 'short' },
+				{ id: 'w2_2', weaponType: '杖', tier: 2, n: '赤熱の魔道杖', p: 3500, s: { matk: 75, mp: 50 }, m: 1.3, d: '特攻+75 / MP+50', dType: 'magic', range: 'long' },
+				{ id: 'w2_3', weaponType: '剣', tier: 2, n: '白銀の連撃剣', p: 5500, s: { str: 45, agi: 20 }, m: 0.85, d: '2回攻撃 / 攻+45 / 速+20', dType: 'physical', hits: 2, range: 'short' },
+				{ id: 'w2_4', weaponType: '大剣', tier: 2, n: '重鉄の大剣', p: 6000, s: { str: 90, vit: 20, agi: -10 }, m: 1.5, d: '攻+90 / 防+20 / 速-10', dType: 'physical', range: 'short' },
+				{ id: 'w2_5', weaponType: '弓', tier: 2, n: '深淵の猟弓', p: 7000, s: { str: 50, agi: 25, cri: 0.04 }, m: 1.0, d: '攻+50 / 速+25 / 会心+4% / 遠距離', dType: 'physical', ranged: true, range: 'long' },
+				{ id: 'w2_6', weaponType: '弓', tier: 2, n: '霜の魔弓', p: 8000, s: { matk: 55, agi: 20 }, m: 0.95, d: '特攻+55 / 速+20 / 凍結付与(20%) / 後列向き', dType: 'magic', ranged: true, range: 'long', effect: { type: 'freeze', chance: 0.2 } },
+				{ id: 'w2_7', weaponType: 'クロスボウ', tier: 2, n: '出血のクロスボウ', p: 7500, s: { str: 48, agi: 15 }, m: 0.9, d: '攻+48 / 速+15 / 出血付与(35%) / 後列向き', dType: 'physical', ranged: true, range: 'long', effect: { type: 'bleed', chance: 0.35 } },
 				// --- Tier 3 (21〜30F) ---
-				{ id: 'w3_1', tier: 3, n: '幻鋼ミスリル刃', p: 15000, s: { str: 220, cri: 0.05 }, m: 1.2, d: '攻+220 / 会心+5%', dType: 'physical', range: 'short' },
-				{ id: 'w3_2', tier: 3, n: 'アーク・タワーの杖', p: 18000, s: { matk: 280, mp: 150 }, m: 1.4, d: '特攻+280 / MP+150', dType: 'magic', range: 'long' },
-				{ id: 'w3_3', tier: 3, n: '暗殺者の血刃', p: 25000, s: { str: 180, luk: 50 }, m: 0.7, d: '3回攻撃 / 攻+180 / 運+50', dType: 'physical', hits: 3, range: 'short' },
-				{ id: 'w3_4', tier: 3, n: '地裂の戦鎚', p: 28000, s: { str: 350, vit: 50, agi: -20 }, m: 1.6, d: '攻+350 / 防+50 / 速-20', dType: 'physical', range: 'short' },
-				{ id: 'w3_5', tier: 3, n: '精霊の長弓', p: 30000, s: { str: 200, matk: 80, agi: 60 }, m: 1.1, d: '攻+200 / 特攻+80 / 速+60 / 遠距離', dType: 'physical', ranged: true, range: 'long' },
-				{ id: 'w3_6', tier: 3, n: '冥府の毒爪弩', p: 32000, s: { str: 160, agi: 50, luk: 30 }, m: 0.85, d: '攻+160 / 速+50 / 毒付与(50%) / 後列向き', dType: 'physical', ranged: true, range: 'long', effect: { type: 'poison', chance: 0.5 } },
-				{ id: 'w3_7', tier: 3, n: '深淵の呪術書', p: 35000, s: { matk: 320, mp: 120 }, m: 1.25, d: '特攻+320 / MP+120 / 気絶付与(15%) / 後列向き', dType: 'magic', range: 'long', effect: { type: 'stun', chance: 0.15 } },
+				{ id: 'w3_1', weaponType: 'レイピア', tier: 3, n: '幻鋼ミスリル刃', p: 15000, s: { str: 220, cri: 0.05 }, m: 1.2, d: '攻+220 / 会心+5%', dType: 'physical', range: 'short' },
+				{ id: 'w3_2', weaponType: '杖', tier: 3, n: 'アーク・タワーの杖', p: 18000, s: { matk: 280, mp: 150 }, m: 1.4, d: '特攻+280 / MP+150', dType: 'magic', range: 'long' },
+				{ id: 'w3_3', weaponType: '短剣', tier: 3, n: '暗殺者の血刃', p: 25000, s: { str: 180, luk: 50 }, m: 0.7, d: '3回攻撃 / 攻+180 / 運+50', dType: 'physical', hits: 3, range: 'short' },
+				{ id: 'w3_4', weaponType: '鈍器', tier: 3, n: '地裂の戦鎚', p: 28000, s: { str: 350, vit: 50, agi: -20 }, m: 1.6, d: '攻+350 / 防+50 / 速-20', dType: 'physical', range: 'short' },
+				{ id: 'w3_5', weaponType: '弓', tier: 3, n: '精霊の長弓', p: 30000, s: { str: 200, matk: 80, agi: 60 }, m: 1.1, d: '攻+200 / 特攻+80 / 速+60 / 遠距離', dType: 'physical', ranged: true, range: 'long' },
+				{ id: 'w3_6', weaponType: 'クロスボウ', tier: 3, n: '冥府の毒爪弩', p: 32000, s: { str: 160, agi: 50, luk: 30 }, m: 0.85, d: '攻+160 / 速+50 / 毒付与(50%) / 後列向き', dType: 'physical', ranged: true, range: 'long', effect: { type: 'poison', chance: 0.5 } },
+				{ id: 'w3_7', weaponType: '魔導書', tier: 3, n: '深淵の呪術書', p: 35000, s: { matk: 320, mp: 120 }, m: 1.25, d: '特攻+320 / MP+120 / 気絶付与(15%) / 後列向き', dType: 'magic', range: 'long', effect: { type: 'stun', chance: 0.15 } },
 				// --- Tier 4 (31〜40F) ---
-				{ id: 'w4_1', tier: 4, n: '古代機神の光剣', p: 80000, s: { str: 850, agi: 50 }, m: 1.2, d: '攻+850 / 速+50', dType: 'physical', range: 'short' },
-				{ id: 'w4_2', tier: 4, n: '星詠みの賢杖', p: 95000, s: { matk: 1100, mp: 400 }, m: 1.5, d: '特攻+1100 / MP+400', dType: 'magic', range: 'long' },
-				{ id: 'w4_3', tier: 4, n: '九頭龍の穿牙', p: 120000, s: { str: 600, cri: 0.1 }, m: 0.75, d: '3回攻撃 / 攻+600 / 会心+10%', dType: 'physical', hits: 3, range: 'short' },
-				{ id: 'w4_4', tier: 4, n: '巨神滅しの竜斧', p: 140000, s: { str: 1400, vit: 150, agi: -40 }, m: 1.7, d: '攻+1400 / 防+150', dType: 'physical', range: 'short' },
-				{ id: 'w4_5', tier: 4, n: '天帝の神弓', p: 160000, s: { str: 900, agi: 200, cri: 0.08 }, m: 1.15, d: '攻+900 / 速+200 / 会心+8% / 遠距離', dType: 'physical', ranged: true, range: 'long' },
-				{ id: 'w4_6', tier: 4, n: '奈落の冷気砲', p: 170000, s: { matk: 1000, agi: 80 }, m: 1.1, d: '特攻+1000 / 速+80 / 凍結(25%) / 後列向き', dType: 'magic', ranged: true, range: 'long', effect: { type: 'freeze', chance: 0.25 } },
-				{ id: 'w4_7', tier: 4, n: '業炎の長射砲', p: 180000, s: { str: 950, matk: 200, agi: 60 }, m: 1.0, d: '攻+950 / 特攻+200 / 後列向き 2連射', dType: 'physical', ranged: true, range: 'long', hits: 2 },
+				{ id: 'w4_1', weaponType: '魔剣', tier: 4, n: '古代機神の光剣', p: 80000, s: { str: 850, agi: 50 }, m: 1.2, d: '攻+850 / 速+50', dType: 'physical', range: 'short' },
+				{ id: 'w4_2', weaponType: '杖', tier: 4, n: '星詠みの賢杖', p: 95000, s: { matk: 1100, mp: 400 }, m: 1.5, d: '特攻+1100 / MP+400', dType: 'magic', range: 'long' },
+				{ id: 'w4_3', weaponType: '槍', tier: 4, n: '九頭龍の穿牙', p: 120000, s: { str: 600, cri: 0.1 }, m: 0.75, d: '3回攻撃 / 攻+600 / 会心+10%', dType: 'physical', hits: 3, range: 'short' },
+				{ id: 'w4_4', weaponType: '斧', tier: 4, n: '巨神滅しの竜斧', p: 140000, s: { str: 1400, vit: 150, agi: -40 }, m: 1.7, d: '攻+1400 / 防+150', dType: 'physical', range: 'short' },
+				{ id: 'w4_5', weaponType: '弓', tier: 4, n: '天帝の神弓', p: 160000, s: { str: 900, agi: 200, cri: 0.08 }, m: 1.15, d: '攻+900 / 速+200 / 会心+8% / 遠距離', dType: 'physical', ranged: true, range: 'long' },
+				{ id: 'w4_6', weaponType: '弓', tier: 4, n: '奈落の冷気砲', p: 170000, s: { matk: 1000, agi: 80 }, m: 1.1, d: '特攻+1000 / 速+80 / 凍結(25%) / 後列向き', dType: 'magic', ranged: true, range: 'long', effect: { type: 'freeze', chance: 0.25 } },
+				{ id: 'w4_7', weaponType: 'クロスボウ', tier: 4, n: '業炎の長射砲', p: 180000, s: { str: 950, matk: 200, agi: 60 }, m: 1.0, d: '攻+950 / 特攻+200 / 後列向き 2連射', dType: 'physical', ranged: true, range: 'long', hits: 2 },
 				// --- Tier 5 (41〜50F) ---
-				{ id: 'w5_1', tier: 5, n: '【神話】アビス・ブレイカー', p: 500000, s: { str: 3200, all: 100 }, m: 1.3, d: '攻+3200 / 究極の物理剣', dType: 'physical', range: 'short' },
-				{ id: 'w5_2', tier: 5, n: '【神話】深淵竜の魔帝杖', p: 550000, s: { matk: 4000, mp: 1000 }, m: 1.6, d: '特攻+4000 / MP+1000', dType: 'magic', range: 'long' },
-				{ id: 'w5_3', tier: 5, n: '【神話】千刃神・阿修羅', p: 800000, s: { str: 2500, agi: 300, cri: 0.15 }, m: 0.8, d: '4回攻撃 / 攻+2500', dType: 'physical', hits: 4, range: 'short' },
-				{ id: 'w5_4', tier: 5, n: '【神話】絶対零度の魔弓矢', p: 750000, s: { matk: 3500, agi: 300, cri: 0.12 }, m: 1.2, d: '特攻+3500 / 速+300 / 凍結(40%) / 後列向き', dType: 'magic', ranged: true, range: 'long', effect: { type: 'freeze', chance: 0.4 } },
-				{ id: 'w5_5', tier: 5, n: '【神話】奈落の毒竜砲', p: 700000, s: { str: 2800, agi: 250 }, m: 1.0, d: '攻+2800 / 2連射 / 毒付与(60%) / 後列向き', dType: 'physical', ranged: true, range: 'long', hits: 2, effect: { type: 'poison', chance: 0.6 } },
+				{ id: 'w5_1', weaponType: '剣', tier: 5, n: '【神話】アビス・ブレイカー', p: 500000, s: { str: 3200, all: 100 }, m: 1.3, d: '攻+3200 / 究極の物理剣', dType: 'physical', range: 'short' },
+				{ id: 'w5_2', weaponType: '杖', tier: 5, n: '【神話】深淵竜の魔帝杖', p: 550000, s: { matk: 4000, mp: 1000 }, m: 1.6, d: '特攻+4000 / MP+1000', dType: 'magic', range: 'long' },
+				{ id: 'w5_3', weaponType: '短剣', tier: 5, n: '【神話】千刃神・阿修羅', p: 800000, s: { str: 2500, agi: 300, cri: 0.15 }, m: 0.8, d: '4回攻撃 / 攻+2500', dType: 'physical', hits: 4, range: 'short' },
+				{ id: 'w5_4', weaponType: '弓', tier: 5, n: '【神話】絶対零度の魔弓矢', p: 750000, s: { matk: 3500, agi: 300, cri: 0.12 }, m: 1.2, d: '特攻+3500 / 速+300 / 凍結(40%) / 後列向き', dType: 'magic', ranged: true, range: 'long', effect: { type: 'freeze', chance: 0.4 } },
+				{ id: 'w5_5', weaponType: 'クロスボウ', tier: 5, n: '【神話】奈落の毒竜砲', p: 700000, s: { str: 2800, agi: 250 }, m: 1.0, d: '攻+2800 / 2連射 / 毒付与(60%) / 後列向き', dType: 'physical', ranged: true, range: 'long', hits: 2, effect: { type: 'poison', chance: 0.6 } },
 				// --- Tier 6 (21〜30F) ---
-				{ id: 'w6_1', tier: 6, n: '深淵鋼の覇剣', p: 200000, s: { str: 1200, cri: 0.08 }, m: 1.3, d: '攻+1200 / 会心+8%', dType: 'physical', range: 'short' },
-				{ id: 'w6_2', tier: 6, n: '虚無詠唱の杖', p: 240000, s: { matk: 1600, mp: 600 }, m: 1.5, d: '特攻+1600 / MP+600', dType: 'magic', range: 'long' },
-				{ id: 'w6_3', tier: 6, n: '魔将の双刃', p: 320000, s: { str: 900, agi: 120, cri: 0.12 }, m: 0.78, d: '3回攻撃 / 攻+900 / 会心+12%', dType: 'physical', hits: 3, range: 'short' },
-				{ id: 'w6_4', tier: 6, n: '滅竜の巨大鎚', p: 380000, s: { str: 2000, vit: 300, agi: -30 }, m: 1.8, d: '攻+2000 / 防+300 / 速-30', dType: 'physical', range: 'short' },
-				{ id: 'w6_5', tier: 6, n: '奈落の毒矢連弩', p: 350000, s: { str: 1100, agi: 180, luk: 80 }, m: 0.82, d: '3連射 / 攻+1100 / 毒(50%) / 後列向き', dType: 'physical', ranged: true, range: 'long', hits: 3, effect: { type: 'poison', chance: 0.5 } },
-				{ id: 'w6_6', tier: 6, n: '深淵魔道砲', p: 400000, s: { matk: 1800, mp: 400 }, m: 1.4, d: '特攻+1800 / MP+400 / 気絶(20%) / 後列向き', dType: 'magic', ranged: true, range: 'long', effect: { type: 'stun', chance: 0.2 } },
+				{ id: 'w6_1', weaponType: '大剣', tier: 6, n: '深淵鋼の覇剣', p: 200000, s: { str: 1200, cri: 0.08 }, m: 1.3, d: '攻+1200 / 会心+8%', dType: 'physical', range: 'short' },
+				{ id: 'w6_2', weaponType: '杖', tier: 6, n: '虚無詠唱の杖', p: 240000, s: { matk: 1600, mp: 600 }, m: 1.5, d: '特攻+1600 / MP+600', dType: 'magic', range: 'long' },
+				{ id: 'w6_3', weaponType: '短剣', tier: 6, n: '魔将の双刃', p: 320000, s: { str: 900, agi: 120, cri: 0.12 }, m: 0.78, d: '3回攻撃 / 攻+900 / 会心+12%', dType: 'physical', hits: 3, range: 'short' },
+				{ id: 'w6_4', weaponType: '鈍器', tier: 6, n: '滅竜の巨大鎚', p: 380000, s: { str: 2000, vit: 300, agi: -30 }, m: 1.8, d: '攻+2000 / 防+300 / 速-30', dType: 'physical', range: 'short' },
+				{ id: 'w6_5', weaponType: 'クロスボウ', tier: 6, n: '奈落の毒矢連弩', p: 350000, s: { str: 1100, agi: 180, luk: 80 }, m: 0.82, d: '3連射 / 攻+1100 / 毒(50%) / 後列向き', dType: 'physical', ranged: true, range: 'long', hits: 3, effect: { type: 'poison', chance: 0.5 } },
+				{ id: 'w6_6', weaponType: '魔導書', tier: 6, n: '深淵魔道砲', p: 400000, s: { matk: 1800, mp: 400 }, m: 1.4, d: '特攻+1800 / MP+400 / 気絶(20%) / 後列向き', dType: 'magic', ranged: true, range: 'long', effect: { type: 'stun', chance: 0.2 } },
 				// --- Tier 7 (31〜40F) ---
-				{ id: 'w7_1', tier: 7, n: '奈落覇王の刃', p: 650000, s: { str: 3500, cri: 0.10 }, m: 1.35, d: '攻+3500 / 会心+10%', dType: 'physical', range: 'short' },
-				{ id: 'w7_2', tier: 7, n: '星砕きの魔槍', p: 700000, s: { str: 3000, agi: 180, cri: 0.15 }, m: 0.80, d: '3回攻撃 / 攻+3000 / 速+180', dType: 'physical', hits: 3, range: 'short' },
-				{ id: 'w7_3', tier: 7, n: '冥府の霊術杖', p: 750000, s: { matk: 4500, mp: 1200 }, m: 1.6, d: '特攻+4500 / MP+1200', dType: 'magic', range: 'long' },
-				{ id: 'w7_4', tier: 7, n: '終末の大破壊鎚', p: 850000, s: { str: 5500, vit: 500, agi: -50 }, m: 2.0, d: '攻+5500 / 防+500 / 速-50', dType: 'physical', range: 'short' },
-				{ id: 'w7_5', tier: 7, n: '終焉の氷爆弓', p: 900000, s: { matk: 4000, agi: 300, cri: 0.12 }, m: 1.1, d: '特攻+4000 / 凍結(35%) / 後列向き', dType: 'magic', ranged: true, range: 'long', effect: { type: 'freeze', chance: 0.35 } },
-				{ id: 'w7_6', tier: 7, n: '深淵血斬砲', p: 950000, s: { str: 3800, agi: 200 }, m: 0.85, d: '2連射 / 攻+3800 / 出血(55%) / 後列向き', dType: 'physical', ranged: true, range: 'long', hits: 2, effect: { type: 'bleed', chance: 0.55 } },
+				{ id: 'w7_1', weaponType: '剣', tier: 7, n: '奈落覇王の刃', p: 650000, s: { str: 3500, cri: 0.10 }, m: 1.35, d: '攻+3500 / 会心+10%', dType: 'physical', range: 'short' },
+				{ id: 'w7_2', weaponType: '槍', tier: 7, n: '星砕きの魔槍', p: 700000, s: { str: 3000, agi: 180, cri: 0.15 }, m: 0.80, d: '3回攻撃 / 攻+3000 / 速+180', dType: 'physical', hits: 3, range: 'short' },
+				{ id: 'w7_3', weaponType: '杖', tier: 7, n: '冥府の霊術杖', p: 750000, s: { matk: 4500, mp: 1200 }, m: 1.6, d: '特攻+4500 / MP+1200', dType: 'magic', range: 'long' },
+				{ id: 'w7_4', weaponType: '鈍器', tier: 7, n: '終末の大破壊鎚', p: 850000, s: { str: 5500, vit: 500, agi: -50 }, m: 2.0, d: '攻+5500 / 防+500 / 速-50', dType: 'physical', range: 'short' },
+				{ id: 'w7_5', weaponType: '弓', tier: 7, n: '終焉の氷爆弓', p: 900000, s: { matk: 4000, agi: 300, cri: 0.12 }, m: 1.1, d: '特攻+4000 / 凍結(35%) / 後列向き', dType: 'magic', ranged: true, range: 'long', effect: { type: 'freeze', chance: 0.35 } },
+				{ id: 'w7_6', weaponType: 'クロスボウ', tier: 7, n: '深淵血斬砲', p: 950000, s: { str: 3800, agi: 200 }, m: 0.85, d: '2連射 / 攻+3800 / 出血(55%) / 後列向き', dType: 'physical', ranged: true, range: 'long', hits: 2, effect: { type: 'bleed', chance: 0.55 } },
 				// --- Tier 8 (41〜50F) ---
-				{ id: 'w8_1', tier: 8, n: '【創世】神断剣クリエイティオ', p: 1500000, s: { str: 8000, cri: 0.15 }, m: 1.4, d: '攻+8000 / 会心+15%', dType: 'physical', range: 'short' },
-				{ id: 'w8_2', tier: 8, n: '【創世】原初の魔導書', p: 1800000, s: { matk: 10000, mp: 2000 }, m: 1.7, d: '特攻+10000 / MP+2000', dType: 'magic', range: 'long' },
-				{ id: 'w8_3', tier: 8, n: '【創世】虚空四刃・原初', p: 2200000, s: { str: 6000, agi: 400, cri: 0.20 }, m: 0.82, d: '4回攻撃 / 攻+6000 / 会心+20%', dType: 'physical', hits: 4, range: 'short' },
-				{ id: 'w8_4', tier: 8, n: '【創世】原初毒竜の幻弩', p: 2500000, s: { str: 7500, agi: 500, cri: 0.18 }, m: 0.85, d: '3連射 / 攻+7500 / 毒(70%) / 後列向き', dType: 'physical', ranged: true, range: 'long', hits: 3, effect: { type: 'poison', chance: 0.7 } },
-				{ id: 'w8_5', tier: 8, n: '【創世】絶滅の虚無砲', p: 2800000, s: { matk: 12000, agi: 300 }, m: 1.6, d: '特攻+12000 / 凍結(50%) / 気絶(30%) / 後列向き', dType: 'magic', ranged: true, range: 'long', effect: { type: 'freeze', chance: 0.5 } },
+				{ id: 'w8_1', weaponType: '魔剣', tier: 8, n: '【創世】神断剣クリエイティオ', p: 1500000, s: { str: 8000, cri: 0.15 }, m: 1.4, d: '攻+8000 / 会心+15%', dType: 'physical', range: 'short' },
+				{ id: 'w8_2', weaponType: '魔導書', tier: 8, n: '【創世】原初の魔導書', p: 1800000, s: { matk: 10000, mp: 2000 }, m: 1.7, d: '特攻+10000 / MP+2000', dType: 'magic', range: 'long' },
+				{ id: 'w8_3', weaponType: '短剣', tier: 8, n: '【創世】虚空四刃・原初', p: 2200000, s: { str: 6000, agi: 400, cri: 0.20 }, m: 0.82, d: '4回攻撃 / 攻+6000 / 会心+20%', dType: 'physical', hits: 4, range: 'short' },
+				{ id: 'w8_4', weaponType: 'クロスボウ', tier: 8, n: '【創世】原初毒竜の幻弩', p: 2500000, s: { str: 7500, agi: 500, cri: 0.18 }, m: 0.85, d: '3連射 / 攻+7500 / 毒(70%) / 後列向き', dType: 'physical', ranged: true, range: 'long', hits: 3, effect: { type: 'poison', chance: 0.7 } },
+				{ id: 'w8_5', weaponType: '杖', tier: 8, n: '【創世】絶滅の虚無砲', p: 2800000, s: { matk: 12000, agi: 300 }, m: 1.6, d: '特攻+12000 / 凍結(50%) / 気絶(30%) / 後列向き', dType: 'magic', ranged: true, range: 'long', effect: { type: 'freeze', chance: 0.5 } },
 			],
 			armor: [
 				// --- Tier 1 & 2 ---
-				{ id: 'a1_1', tier: 1, n: '探索者の革鎧', p: 300, s: { vit: 15 }, d: '防+15', dType: 'physical' },
-				{ id: 'a1_2', tier: 1, n: '見習い魔道士の服', p: 400, s: { mdef: 20, mp: 20 }, d: '魔防+20 / MP+20', dType: 'magic' },
-				{ id: 'a2_1', tier: 2, n: '黒鉄の重鎧', p: 4000, s: { vit: 80, agi: -5 }, d: '防+80 / 速-5', dType: 'physical' },
-				{ id: 'a2_2', tier: 2, n: '精霊の絹衣', p: 4500, s: { mdef: 100, mp: 80, matk: 15 }, d: '魔防+100 / MP+80 / 特攻+15', dType: 'magic' },
+				{ id: 'a1_1', armorType: '軽鎧', tier: 1, n: '探索者の革鎧', p: 300, s: { vit: 15 }, d: '防+15', dType: 'physical' },
+				{ id: 'a1_2', armorType: '法衣', tier: 1, n: '見習い魔道士の服', p: 400, s: { mdef: 20, mp: 20 }, d: '魔防+20 / MP+20', dType: 'magic' },
+				{ id: 'a2_1', armorType: '重鎧', tier: 2, n: '黒鉄の重鎧', p: 4000, s: { vit: 80, agi: -5 }, d: '防+80 / 速-5', dType: 'physical' },
+				{ id: 'a2_2', armorType: '法衣', tier: 2, n: '精霊の絹衣', p: 4500, s: { mdef: 100, mp: 80, matk: 15 }, d: '魔防+100 / MP+80 / 特攻+15', dType: 'magic' },
 				// --- Tier 3 & 4 ---
-				{ id: 'a3_1', tier: 3, n: 'ミスリル・メイル', p: 18000, s: { vit: 300, str: 30 }, d: '防+300 / 攻+30', dType: 'physical' },
-				{ id: 'a3_2', tier: 3, n: '賢者の霊装', p: 20000, s: { mdef: 350, mp: 250, matk: 60 }, d: '魔防+350 / MP+250 / 特攻+60', dType: 'magic' },
-				{ id: 'a4_1', tier: 4, n: '古代竜の逆鱗鎧', p: 90000, s: { vit: 1200, str: 150 }, d: '防+1200 / 攻+150', dType: 'physical' },
-				{ id: 'a4_2', tier: 4, n: '星光の神聖衣', p: 95000, s: { mdef: 1400, mp: 600, matk: 250 }, d: '魔防+1400 / 特攻+250', dType: 'magic' },
+				{ id: 'a3_1', armorType: '重鎧', tier: 3, n: 'ミスリル・メイル', p: 18000, s: { vit: 300, str: 30 }, d: '防+300 / 攻+30', dType: 'physical' },
+				{ id: 'a3_2', armorType: '法衣', tier: 3, n: '賢者の霊装', p: 20000, s: { mdef: 350, mp: 250, matk: 60 }, d: '魔防+350 / MP+250 / 特攻+60', dType: 'magic' },
+				{ id: 'a4_1', armorType: '重鎧', tier: 4, n: '古代竜の逆鱗鎧', p: 90000, s: { vit: 1200, str: 150 }, d: '防+1200 / 攻+150', dType: 'physical' },
+				{ id: 'a4_2', armorType: '法衣', tier: 4, n: '星光の神聖衣', p: 95000, s: { mdef: 1400, mp: 600, matk: 250 }, d: '魔防+1400 / 特攻+250', dType: 'magic' },
 				// --- Tier 5 ---
-				{ id: 'a5_1', tier: 5, n: '【神話】イージスの絶対盾', p: 600000, s: { vit: 4500, mdef: 1500, maxHp: 2000 }, d: '防+4500 / 物理無双の鎧', dType: 'physical' },
-				{ id: 'a5_2', tier: 5, n: '【神話】深淵の真理衣', p: 600000, s: { mdef: 4500, vit: 1500, matk: 800 }, d: '魔防+4500 / 魔法無双の衣', dType: 'magic' },
+				{ id: 'a5_1', armorType: '重鎧', tier: 5, n: '【神話】イージスの絶対盾', p: 600000, s: { vit: 4500, mdef: 1500, maxHp: 2000 }, d: '防+4500 / 物理無双の鎧', dType: 'physical' },
+				{ id: 'a5_2', armorType: '法衣', tier: 5, n: '【神話】深淵の真理衣', p: 600000, s: { mdef: 4500, vit: 1500, matk: 800 }, d: '魔防+4500 / 魔法無双の衣', dType: 'magic' },
 				// --- Tier 6 (21~30F) ---
-				{ id: 'a6_1', tier: 6, n: '深淵魔将の黒鎧', p: 220000, s: { vit: 1800, str: 200 }, d: '防+1800 / 攻+200', dType: 'physical' },
-				{ id: 'a6_2', tier: 6, n: '虚無の霊装', p: 240000, s: { mdef: 2000, mp: 800, matk: 350 }, d: '魔防+2000 / MP+800 / 特攻+350', dType: 'magic' },
+				{ id: 'a6_1', armorType: '魔導鎧', tier: 6, n: '深淵魔将の黒鎧', p: 220000, s: { vit: 1800, str: 200 }, d: '防+1800 / 攻+200', dType: 'physical' },
+				{ id: 'a6_2', armorType: '法衣', tier: 6, n: '虚無の霊装', p: 240000, s: { mdef: 2000, mp: 800, matk: 350 }, d: '魔防+2000 / MP+800 / 特攻+350', dType: 'magic' },
 				// --- Tier 7 (31〜40F) ---
-				{ id: 'a7_1', tier: 7, n: '奈落覇王の覇鎧', p: 700000, s: { vit: 5000, str: 600 }, d: '防+5000 / 攻+600', dType: 'physical' },
-				{ id: 'a7_2', tier: 7, n: '星砕きの霊衣', p: 750000, s: { mdef: 5500, mp: 1500, matk: 800 }, d: '魔防+5500 / MP+1500 / 特攻+800', dType: 'magic' },
+				{ id: 'a7_1', armorType: '重鎧', tier: 7, n: '奈落覇王の覇鎧', p: 700000, s: { vit: 5000, str: 600 }, d: '防+5000 / 攻+600', dType: 'physical' },
+				{ id: 'a7_2', armorType: '法衣', tier: 7, n: '星砕きの霊衣', p: 750000, s: { mdef: 5500, mp: 1500, matk: 800 }, d: '魔防+5500 / MP+1500 / 特攻+800', dType: 'magic' },
 				// --- Tier 8 (41〜50F) ---
-				{ id: 'a8_1', tier: 8, n: '【創世】原初鋼の絶対鎧', p: 1600000, s: { vit: 12000, maxHp: 5000, str: 1200 }, d: '防+12000 / HP+5000 / 攻+1200', dType: 'physical' },
-				{ id: 'a8_2', tier: 8, n: '【創世】虚無の霊皇衣', p: 1800000, s: { mdef: 14000, mp: 3000, matk: 2000 }, d: '魔防+14000 / MP+3000 / 特攻+2000', dType: 'magic' },
+				{ id: 'a8_1', armorType: '重鎧', tier: 8, n: '【創世】原初鋼の絶対鎧', p: 1600000, s: { vit: 12000, maxHp: 5000, str: 1200 }, d: '防+12000 / HP+5000 / 攻+1200', dType: 'physical' },
+				{ id: 'a8_2', armorType: '法衣', tier: 8, n: '【創世】虚無の霊皇衣', p: 1800000, s: { mdef: 14000, mp: 3000, matk: 2000 }, d: '魔防+14000 / MP+3000 / 特攻+2000', dType: 'magic' },
 			],
 			acc: [
 				// アクセサリーの tier は進行度に応じた価格制限用です
-				{ id: 'ac1', tier: 1, n: '戦士の指輪', p: 1000, s: { str: 15, vit: 15 }, d: '攻+15 / 防+15' },
-				{ id: 'ac2', tier: 1, n: '盗賊の指輪', p: 1000, s: { agi: 20, luk: 20 }, d: '速+20 / 運+20' },
-				{ id: 'ac3', tier: 2, n: '狂戦士の指輪', p: 5000, s: { strPct: 10 }, d: '物理攻撃力 10%UP' },
-				{ id: 'ac4', tier: 2, n: '大賢者の指輪', p: 5000, s: { matkPct: 10 }, d: '特殊攻撃力 10%UP' },
-				{ id: 'ac5', tier: 3, n: '守護神の指輪', p: 20000, s: { vitPct: 15, mdefPct: 15 }, d: '全耐性 15%UP' },
-				{ id: 'ac6', tier: 4, n: '致命の首飾り', p: 80000, s: { cri: 0.15, strPct: 5 }, d: '会心+15% / 物理攻撃 5%UP' },
-				{ id: 'ac7', tier: 5, n: '【神宝】アビス・リング', p: 500000, s: { strPct: 20, matkPct: 20, vitPct: 20, mdefPct: 20 }, d: '全能力 20%UP' },
-				{ id: 'ac10', tier: 1, n: '小さなポーチ', p: 2000, s: { cap: 10 }, d: 'カバン容量+10' },
-				{ id: 'ac11', tier: 3, n: '探窟家のバックパック', p: 25000, s: { cap: 30 }, d: 'カバン容量+30' },
-				{ id: 'ac12', tier: 5, n: '四次元ポケット', p: 300000, s: { cap: 100 }, d: 'カバン容量+100' },
+				{ id: 'ac1', accType: '指輪', tier: 1, n: '戦士の指輪', p: 1000, s: { str: 15, vit: 15 }, d: '攻+15 / 防+15' },
+				{ id: 'ac2', accType: '指輪', tier: 1, n: '盗賊の指輪', p: 1000, s: { agi: 20, luk: 20 }, d: '速+20 / 運+20' },
+				{ id: 'ac3', accType: '指輪', tier: 2, n: '狂戦士の指輪', p: 5000, s: { strPct: 10 }, d: '物理攻撃力 10%UP' },
+				{ id: 'ac4', accType: '指輪', tier: 2, n: '大賢者の指輪', p: 5000, s: { matkPct: 10 }, d: '特殊攻撃力 10%UP' },
+				{ id: 'ac5', accType: '指輪', tier: 3, n: '守護神の指輪', p: 20000, s: { vitPct: 15, mdefPct: 15 }, d: '全耐性 15%UP' },
+				{ id: 'ac6', accType: '首飾り', tier: 4, n: '致命の首飾り', p: 80000, s: { cri: 0.15, strPct: 5 }, d: '会心+15% / 物理攻撃 5%UP' },
+				{ id: 'ac7', accType: '指輪', tier: 5, n: '【神宝】アビス・リング', p: 500000, s: { strPct: 20, matkPct: 20, vitPct: 20, mdefPct: 20 }, d: '全能力 20%UP' },
+				{ id: 'ac10', accType: 'ポーチ', tier: 1, n: '小さなポーチ', p: 2000, s: { cap: 10 }, d: 'カバン容量+10' },
+				{ id: 'ac11', accType: 'バッグ', tier: 3, n: '探窟家のバックパック', p: 25000, s: { cap: 30 }, d: 'カバン容量+30' },
+				{ id: 'ac12', accType: 'バッグ', tier: 5, n: '四次元ポケット', p: 300000, s: { cap: 100 }, d: 'カバン容量+100' },
 				// --- Tier 6 (21~30F) ---
-				{ id: 'ac13', tier: 6, n: '深淵魔将の護符', p: 180000, s: { strPct: 12, vitPct: 12 }, d: '物攻+12% / 物耐+12%' },
-				{ id: 'ac14', tier: 6, n: '虚無の宝珠', p: 280000, s: { matkPct: 15, mdefPct: 15, cri: 0.1 }, d: '特攻+15% / 特耐+15% / 会心+10%' },
+				{ id: 'ac13', accType: '護符', tier: 6, n: '深淵魔将の護符', p: 180000, s: { strPct: 12, vitPct: 12 }, d: '物攻+12% / 物耐+12%' },
+				{ id: 'ac14', accType: '宝珠', tier: 6, n: '虚無の宝珠', p: 280000, s: { matkPct: 15, mdefPct: 15, cri: 0.1 }, d: '特攻+15% / 特耐+15% / 会心+10%' },
 				// --- Tier 7 (31〜40F) ---
-				{ id: 'ac15', tier: 7, n: '奈落皇帝の証', p: 600000, s: { strPct: 20, vitPct: 20 }, d: '物攻+20% / 物耐+20%' },
-				{ id: 'ac16', tier: 7, n: '星砕きの霊珠', p: 720000, s: { matkPct: 22, mdefPct: 22, cri: 0.12 }, d: '特攻+22% / 特耐+22% / 会心+12%' },
-				{ id: 'ac17', tier: 7, n: '冥府の万能指輪', p: 800000, s: { strPct: 15, matkPct: 15, vitPct: 10, mdefPct: 10 }, d: '全攻撃+15% / 全防御+10%' },
+				{ id: 'ac15', accType: '勲章', tier: 7, n: '奈落皇帝の証', p: 600000, s: { strPct: 20, vitPct: 20 }, d: '物攻+20% / 物耐+20%' },
+				{ id: 'ac16', accType: '宝珠', tier: 7, n: '星砕きの霊珠', p: 720000, s: { matkPct: 22, mdefPct: 22, cri: 0.12 }, d: '特攻+22% / 特耐+22% / 会心+12%' },
+				{ id: 'ac17', accType: '指輪', tier: 7, n: '冥府の万能指輪', p: 800000, s: { strPct: 15, matkPct: 15, vitPct: 10, mdefPct: 10 }, d: '全攻撃+15% / 全防御+10%' },
 				// --- Tier 8 (41〜50F) ---
-				{ id: 'ac18', tier: 8, n: '【創世】原初の覇王冠', p: 1500000, s: { strPct: 30, vitPct: 30, cri: 0.15 }, d: '物攻+30% / 物耐+30% / 会心+15%' },
-				{ id: 'ac19', tier: 8, n: '【創世】虚無神の霊冠', p: 1800000, s: { matkPct: 35, mdefPct: 35, cri: 0.10 }, d: '特攻+35% / 特耐+35% / 会心+10%' },
-				{ id: 'ac20', tier: 8, n: '【創世】全知全能の指輪', p: 2500000, s: { strPct: 20, matkPct: 20, vitPct: 20, mdefPct: 20 }, d: '全攻撃+20% / 全防御+20%' },
+				{ id: 'ac18', accType: '冠', tier: 8, n: '【創世】原初の覇王冠', p: 1500000, s: { strPct: 30, vitPct: 30, cri: 0.15 }, d: '物攻+30% / 物耐+30% / 会心+15%' },
+				{ id: 'ac19', accType: '冠', tier: 8, n: '【創世】虚無神の霊冠', p: 1800000, s: { matkPct: 35, mdefPct: 35, cri: 0.10 }, d: '特攻+35% / 特耐+35% / 会心+10%' },
+				{ id: 'ac20', accType: '指輪', tier: 8, n: '【創世】全知全能の指輪', p: 2500000, s: { strPct: 20, matkPct: 20, vitPct: 20, mdefPct: 20 }, d: '全攻撃+20% / 全防御+20%' },
 			],
 			item: [
 				{ id: 'i1', tier: 1, n: '深淵の雫(小)', p: 50, d: 'HPを最大値の30%回復', e: { hpPct: 0.3 } },
@@ -1398,6 +1749,49 @@ const JOB_DATA = {
 		let battle = { active: false, isProcessing: false, enemies: [], turn: 'player', activeUnitIndex: 0, buffs: [], enemyDebuffs: [], targeting: null, pendingSkill: null, remainingHits: 0, shields: [], guardIdx: -1, enemyDots: [], partyRegens: [], enemyStatus: [], mpCostDown: [] }
 		let autoFarm = { active: false, floor: 1, kills: 0, gold: 0, exp: 0, timerId: null, hpThreshold: 0.25, useSkills: true, speed: 'normal' }
 
+		// ショップ購入専用レアリティ（コモン/アンコモン/レアのみ、レジェンダリーなし）
+		function applyShopRarity(item) {
+			if (item.type === 'item') return item
+			const r = Math.random()
+			let rarity, subCount = 0
+			const fl = gameState.maxFloor
+			if (fl <= 10) {
+				if (r < 0.80) { rarity = { label: 'コモン',     color: '#ffffff', mul: 1.0 }; subCount = 0 }
+				else           { rarity = { label: 'アンコモン', color: '#4caf50', mul: 1.15 }; subCount = 1 }
+			} else if (fl <= 20) {
+				if (r < 0.55) { rarity = { label: 'コモン',     color: '#ffffff', mul: 1.0 }; subCount = 0 }
+				else if (r < 0.85) { rarity = { label: 'アンコモン', color: '#4caf50', mul: 1.15 }; subCount = 1 }
+				else           { rarity = { label: 'レア',       color: '#2196f3', mul: 1.4 }; subCount = 2 }
+			} else {
+				if (r < 0.45) { rarity = { label: 'コモン',     color: '#ffffff', mul: 1.0 }; subCount = 0 }
+				else if (r < 0.75) { rarity = { label: 'アンコモン', color: '#4caf50', mul: 1.15 }; subCount = 1 }
+				else           { rarity = { label: 'レア',       color: '#2196f3', mul: 1.4 }; subCount = 2 }
+			}
+			item.rarityLabel = rarity.label
+			item.rarityColor = rarity.color
+			if (item.s) {
+				for (let k in item.s) {
+					if (typeof item.s[k] === 'number' && k !== 'cap' && k !== 'cri') {
+						item.s[k] = Math.floor(item.s[k] * rarity.mul)
+					}
+				}
+			}
+			item.subEffects = []
+			const SUB_POOL = [
+				{ n: 'HP+', k: 'maxHp', min: 5, max: 40 },
+				{ n: 'MP+', k: 'maxMp', min: 3, max: 20 },
+				{ n: 'ATK+', k: 'str', min: 2, max: 15 },
+				{ n: 'MATK+', k: 'matk', min: 2, max: 15 },
+				{ n: 'DEF+', k: 'vit', min: 2, max: 10 },
+				{ n: 'AGI+', k: 'agi', min: 1, max: 8 },
+			]
+			for (let i = 0; i < subCount; i++) {
+				const sub = SUB_POOL[Math.floor(Math.random() * SUB_POOL.length)]
+				const val = sub.min + Math.floor(Math.random() * (sub.max - sub.min + 1))
+				if (!item.subEffects.find(e => e.k === sub.k)) item.subEffects.push({ n: sub.n, k: sub.k, v: val })
+			}
+			return item
+		}
 		function applyRarity(item) {
 			if (item.type === 'item') return item;
 			const currentFloor = gameState.inDungeon ? gameState.floor : 50; 
@@ -1578,6 +1972,23 @@ const JOB_DATA = {
 					}
 				})
 			fs.cri = Math.min(fs.cri, 0.5)
+			// ── エンチャント属性をfsに付加（バトル用） ──
+			const _wEnch = p.equip && p.equip.weapon && p.equip.weapon.enchant ? p.equip.weapon.enchant : null
+			const _aEnch = p.equip && p.equip.armor  && p.equip.armor.enchant  ? p.equip.armor.enchant  : null
+			if (_wEnch) {
+				if (_wEnch.id === 'pierce')  fs._enchantPierce  = _wEnch.val
+				if (_wEnch.id === 'lethal')  fs._enchantLethal  = _wEnch.val
+				if (_wEnch.id === 'vampire') fs._enchantVampire = _wEnch.val
+				if (_wEnch.id === 'double')  fs._enchantDouble  = _wEnch.val
+				if (_wEnch.id === 'giant')   fs._enchantGiant   = _wEnch.val
+			}
+			if (_aEnch) {
+				if (_aEnch.id === 'resist')   fs._enchantResist   = _aEnch.val
+				if (_aEnch.id === 'reflect')  fs._enchantReflect  = _aEnch.val
+				if (_aEnch.id === 'regen')    fs._enchantRegen    = _aEnch.val
+				if (_aEnch.id === 'barrier')  fs._enchantBarrier  = _aEnch.val
+				if (_aEnch.id === 'tenacity') fs._enchantTenacity = _aEnch.val
+			}
 			return fs
 		}
 
@@ -1610,7 +2021,19 @@ const JOB_DATA = {
 			return { base, lvBonus, accBonus, expand, total: base + lvBonus + accBonus + expand }
 		}
 
-		function calcTacticalDamage(attackerStats, defenderDef, defenderMDef, lv, isEnemy = false, dType = 'physical') {
+		// ═══ 回避率計算 ═══════════════════════════════════════════════
+		// 回避率(%) = 5 + (防御側agi - 攻撃側agi)×0.2 + (防御側luk - 攻撃側luk)×0.1
+		// 上限35%、下限0%
+		function calcEvasion(atkAgi, atkLuk, defAgi, defLuk) {
+			const rate = 5 + (defAgi - atkAgi) * 0.2 + (defLuk - atkLuk) * 0.1
+			return Math.min(35, Math.max(0, rate)) / 100
+		}
+		// 回避判定 → true:回避成功
+		function rollEvasion(atkAgi, atkLuk, defAgi, defLuk) {
+			return Math.random() < calcEvasion(atkAgi, atkLuk, defAgi, defLuk)
+		}
+
+				function calcTacticalDamage(attackerStats, defenderDef, defenderMDef, lv, isEnemy = false, dType = 'physical') {
 			let currentDef = dType === 'physical' ? defenderDef : defenderMDef
 			if (!isEnemy) {
 				battle.enemyDebuffs.forEach(d => {
@@ -1620,13 +2043,19 @@ const JOB_DATA = {
 						currentDef = d.val >= 1 ? currentDef - d.val : Math.floor(currentDef * (1 - d.val));
 					}
 				})
+				// 【貫通エンチャント】防御力を〇%無視
+				if (attackerStats._enchantPierce) {
+					currentDef = Math.floor(currentDef * (1 - attackerStats._enchantPierce))
+				}
 			}
 			currentDef = Math.max(0, currentDef)
 			let atkStat = dType === 'magic' ? attackerStats.matk : attackerStats.str
 			let atk = atkStat * attackerStats.multiplier
 			let baseDamage = atk * (100 / (100 + currentDef))
 			let isCrit = Math.random() < attackerStats.cri
-			let damage = isCrit ? baseDamage * 1.6 : baseDamage
+			// 【致命エンチャント】会心倍率加算
+			const critMult = 1.6 + (attackerStats._enchantLethal || 0)
+			let damage = isCrit ? baseDamage * critMult : baseDamage
 			let finalDamage = Math.floor(damage * (0.9 + Math.random() * 0.2))
 			return { val: Math.max(lv * 1, finalDamage), crit: isCrit }
 		}
@@ -1853,8 +2282,17 @@ const JOB_DATA = {
 			battle.activeUnitIndex = 0
 			battle.turnCycle = 0
 			battle.remainingHits = 0
-			gameState.party.forEach(p => {
+			gameState.party.forEach((p, pIdx) => {
 				p.skillCooldowns = {}
+				// 防壁エンチャント: 戦闘開始時シールド付与
+				const _bFs = getFinalStats(p)
+				if (_bFs._enchantBarrier && p.hp > 0) {
+					const _shieldAmt = Math.floor(_bFs.maxHp * _bFs._enchantBarrier)
+					const _existShield = battle.shields.find(s => s.pIdx === pIdx)
+					if (_existShield) { _existShield.val += _shieldAmt }
+					else battle.shields.push({ pIdx, val: _shieldAmt })
+					addLog(`🔰 ${p.name}の防壁が発動！ ${_shieldAmt} シールドを付与！`, 'log-sys')
+				}
 			})
 			if (BOSS_DATA[gameState.floor] && (!gameState.bossDefeated.includes(gameState.floor) || forceBoss)) {
 				const bossData = BOSS_DATA[gameState.floor]
@@ -1864,7 +2302,8 @@ const JOB_DATA = {
 				addLog('ボス出現！', 'log-red')
 				if (autoFarm.active) { stopAutoFarm('ボスフロアに到達'); return }
 			} else {
-				let count = Math.min(3, Math.floor(Math.random() * Math.min(3, gameState.floor)) + 1)
+				const _maxEnemies = gameState.floor >= 30 ? 5 : gameState.floor >= 20 ? 4 : 3
+				let count = Math.min(_maxEnemies, Math.floor(Math.random() * Math.min(_maxEnemies, gameState.floor)) + 1)
 				let available = MONSTERS.filter(m => m.minFloor <= gameState.floor && gameState.floor <= m.maxFloor)
 				if (available.length === 0) available = MONSTERS
 				for (let i = 0; i < count; i++) {
@@ -1892,6 +2331,7 @@ const JOB_DATA = {
 			// 前衛/後衛の状況をログに表示
 			const _fN = gameState.party.filter(p=>p.row==='front'&&p.hp>0).map(p=>p.name).join('・')
 			const _bN = gameState.party.filter(p=>p.row==='back' &&p.hp>0).map(p=>p.name).join('・')
+			fxBattleStart()
 			if (_fN) addLog(`⚔️ 前衛: ${_fN}`, 'log-sys')
 			if (_bN) addLog(`🏹 後衛: ${_bN}（前衛が全滅するまで守られる）`, 'log-sys')
 			setTurn('player')
@@ -1961,6 +2401,28 @@ const JOB_DATA = {
 			return s && (s.target === 'all' || s.target === 'aoe' || s.target === 'all_enemy')
 		}
 
+		// スキルの射程を返す
+		// range:'melee' = 物理単体（後衛ペナルティあり）
+		// range:'ranged' = 魔法単体（後衛でも届く）
+		// range:'any' = 全体・バフ・回復など（射程無限）
+		function getSkillRange(s) {
+			if (!s || s.range) return s ? s.range : 'any'
+			if (s.type === 'passive') return 'any'
+			if (s.target === 'all' || s.eTarget === 'all') return 'any'
+			if (['heal','buff','regen','shield','guard','mpcost','revive','debuff','poison','bleed','stun','freeze'].includes(s.type)) return 'any'
+			if (s.type === 'atk') return s.dType === 'magic' ? 'ranged' : 'melee'
+			return 'any'
+		}
+
+		// 後衛からスキルを使うときにペナルティがかかるか
+		function isSkillBackPenalty(p, s) {
+			if (p.row !== 'back') return false
+			const rng = getSkillRange(s)
+			if (rng !== 'melee') return false   // any/ranged はペナルティなし
+			if (isRangedWeapon(p)) return false  // 弓装備なら近接スキルも届く
+			return true
+		}
+
 				function playerAttack() {
 			if (battle.isProcessing || battle.turn !== 'player') return
 			if (battle.targeting !== null) return
@@ -2002,7 +2464,10 @@ const JOB_DATA = {
 			}
 			playSE('attack');
 			const _damageMult = getEnemyDamageMult(target.id, dType)
-			const res = calcTacticalDamage(getFinalStats(p), target.def, target.mdef, p.lv, false, dType)
+			// ── 回避判定（敵が回避できるか）──
+			const _pFs0 = getFinalStats(p)
+			const _evasionRoll = rollEvasion(_pFs0.agi, _pFs0.luk, target.agi || 10, target.luk || 5)
+			const res = calcTacticalDamage(_pFs0, target.def, target.mdef, p.lv, false, dType)
 			res.val = Math.floor(res.val * _damageMult)
 			// 後衛からshort射程武器での攻撃はダメージ-20%（射程ペナルティ）
 			const _isBackPenalty = (p.row === 'back' && getWeaponRange(p) === 'short')
@@ -2010,10 +2475,24 @@ const JOB_DATA = {
 			const _rowNote = _isBackPenalty ? ' <span style=\"font-size:0.72em;color:#aaa;\">(後衛-20%)</span>' : ''
 			// 武器のonHitエフェクト処理（後で setTimeout 内で適用）
 			const _weapEff = p.equip && p.equip.weapon && p.equip.weapon.effect ? p.equip.weapon.effect : null
-			const _rangeNote = getWeaponRange(p) === 'long'
-			? `<span style="font-size:0.7em;color:#60a5fa;border:1px solid #3a5a8a;border-radius:3px;padding:0 3px;margin-left:2px;">遠距離</span>`
-			: `<span style="font-size:0.7em;color:#fb923c;border:1px solid #8a4a1a;border-radius:3px;padding:0 3px;margin-left:2px;">近接</span>`
-		addLog(`${p.name}の攻撃：${res.val}ダメージ ${res.crit ? '★会心' : ''}${_rowNote}${_rangeNote} <span style="font-size:0.75em; color:${dType==='magic'?'#a78bfa':'#fb923c'}; border:1px solid ${dType==='magic'?'#7c5cbf':'#c2622a'}; border-radius:3px; padding:0 3px;">${dType==='magic'?'特殊':'物理'}</span>`, res.crit ? 'log-crit' : 'log-p-atk')
+		const _wRangeLog = getWeaponRange(p) === 'long'
+			? `<span style="font-size:0.68em;padding:0 3px;background:rgba(96,165,250,0.12);border:1px solid #3a5a8a;border-radius:3px;color:#60a5fa;margin-left:2px;">🏹遠距離</span>`
+			: `<span style="font-size:0.68em;padding:0 3px;background:rgba(251,146,60,0.12);border:1px solid #8a4a1a;border-radius:3px;color:#fb923c;margin-left:2px;">⚔️近接</span>`
+		const _atkVerb = getAttackVerb(p.name, target.name, p.equip && p.equip.weapon, dType, res.crit)
+		if (_evasionRoll) {
+			// 回避成功
+			const _eCard = getEnemyCardEl(target)
+			if (_eCard) { fxText(...Object.values(getElCenter(_eCard)).slice(0,2).concat([0]), '💨 MISS', '#60a5fa', '0.85rem') }
+			addLog(`${p.name}の攻撃 → <b style="color:#60a5fa;">💨 ${target.name}に回避された！</b>`, 'log-sys')
+		} else {
+		addLog(`${_atkVerb}！ <b>${res.val}</b>ダメージ ${res.crit ? '★<b>会心</b>' : ''}${_rowNote}${_wRangeLog} <span style="font-size:0.75em; color:${dType==='magic'?'#a78bfa':'#fb923c'}; border:1px solid ${dType==='magic'?'#7c5cbf':'#c2622a'}; border-radius:3px; padding:0 3px;">${dType==='magic'?'特殊':'物理'}</span>`, res.crit ? 'log-crit' : 'log-p-atk')
+		// パーティクルエフェクト
+		;(() => {
+			const _tgtCard = getEnemyCardEl(target)
+			if (getWeaponRange(p) === 'long' && dType !== 'magic') fxArrowAttack(_tgtCard, res.val, res.crit)
+			else if (dType === 'magic') fxMagicAttack(_tgtCard, res.val, res.crit)
+			else fxPhysicalAttack(_tgtCard, res.val, res.crit)
+		})()
 			setTimeout(() => {
 				target.hp = Math.max(0, target.hp - res.val)
 				// 復讐する：反射
@@ -2025,30 +2504,61 @@ const JOB_DATA = {
 						addLog(`💢 ${target.name}がダメージを反射！ ${reflectTarget.name}に${reflectDmg}！`, 'log-e-atk')
 					}
 				}
-				// 呪われし：攻撃時毒付与
+				// 呪われし：攻撃時毒付与（スタック方式）
 				if (target._poisonOnHit && target.hp > 0) {
-					const ex = (battle.enemyDots||[]).find(d=>d.eId===target.id&&d.type==='poison')
-					if (!ex) battle.enemyDots.push({ eId: target.id, type: 'poison', turns: 3 })
+					const _pStacks2 = (battle.enemyDots||[]).filter(d=>d.eId===target.id&&d.type==='poison')
+					if (_pStacks2.length < 3) battle.enemyDots.push({ eId: target.id, type: 'poison', turns: 3 })
 					addLog(`☠ 反呪！ ${target.name}に毒を付与！`, 'log-e-atk')
 				}
 				// 武器のonHitエフェクト
-				if (_weapEff && target.hp > 0 && Math.random() < _weapEff.chance) {
+				// ── 武器エンチャント効果 ──
+			const _pFs2 = getFinalStats(p)
+			// 吸血
+			if (_pFs2._enchantVampire && res.val > 0) {
+				const _vampAmt = Math.min(Math.floor(res.val * _pFs2._enchantVampire), Math.floor(_pFs2.maxHp * 0.20))
+				if (_vampAmt > 0 && p.hp > 0) {
+					p.hp = Math.min(_pFs2.maxHp, p.hp + _vampAmt)
+					addLog(`🩸 吸血：${p.name} が ${_vampAmt} HP を吸収！`, 'log-sys')
+					const _pCrd = getPartyCardEl(gameState.party.indexOf(p))
+					if (_pCrd) { const {x,y}=getElCenter(_pCrd); fxText(x, y-10, `+${_vampAmt}`, '#f87171', '0.9rem') }
+				}
+			}
+			// 巨殺
+			if (_pFs2._enchantGiant && target.hp > 0) {
+				const _myHp = p.hp
+				if (target.hp > _myHp) {
+					const _bonusDmg = Math.floor(res.val * _pFs2._enchantGiant)
+					if (_bonusDmg > 0) {
+						target.hp = Math.max(0, target.hp - _bonusDmg)
+						addLog(`🐉 巨殺：追加 ${_bonusDmg} ダメージ！`, 'log-p-atk')
+					}
+				}
+			}
+						if (_weapEff && target.hp > 0 && Math.random() < _weapEff.chance) {
 					if (_weapEff.type === 'poison') {
-						const _ex = (battle.enemyDots||[]).find(d=>d.eId===target.id&&d.type==='poison')
-						if (!_ex) battle.enemyDots.push({ eId: target.id, type: 'poison', turns: 3 })
-						addLog(`☠ 武器効果：${target.name}に毒付与！`, 'log-sys')
+						const _pStacks = (battle.enemyDots||[]).filter(d=>d.eId===target.id&&d.type==='poison')
+						if (_pStacks.length < 3) battle.enemyDots.push({ eId: target.id, type: 'poison', turns: 3 })
+						else { const _w = _pStacks.reduce((a,b)=>a.turns<b.turns?a:b); _w.turns=3 }
+						addLog(`☠ 武器効果：${target.name}に毒付与！（${Math.min(3,_pStacks.length+1)}スタック）`, 'log-sys')
 					} else if (_weapEff.type === 'bleed') {
-						const _ex = (battle.enemyDots||[]).find(d=>d.eId===target.id&&d.type==='bleed')
-						if (!_ex) battle.enemyDots.push({ eId: target.id, type: 'bleed', turns: 3 })
+						const _bEx = (battle.enemyDots||[]).find(d=>d.eId===target.id&&d.type==='bleed')
+						if (_bEx) { _bEx.turns = Math.max(_bEx.turns, 5) }
+						else battle.enemyDots.push({ eId: target.id, type: 'bleed', turns: 5, stack: 1 })
 						addLog(`🩸 武器効果：${target.name}に出血付与！`, 'log-sys')
 					} else if (_weapEff.type === 'stun') {
-						const _ex = (battle.enemyStatus||[]).find(s=>s.eId===target.id&&s.type==='stun')
-						if (!_ex) battle.enemyStatus.push({ eId: target.id, type: 'stun', turns: 1 })
-						addLog(`⚡ 武器効果：${target.name}が気絶！`, 'log-sys')
+						if (target.isBoss) { addLog(`👑 ${target.name}は気絶耐性を持つ！`, 'log-sys') }
+						else {
+							const _ex = (battle.enemyStatus||[]).find(s=>s.eId===target.id&&s.type==='stun')
+							if (!_ex) battle.enemyStatus.push({ eId: target.id, type: 'stun', turns: 1 })
+							addLog(`⚡ 武器効果：${target.name}が気絶！`, 'log-sys')
+						}
 					} else if (_weapEff.type === 'freeze') {
-						const _ex = (battle.enemyStatus||[]).find(s=>s.eId===target.id&&s.type==='freeze')
-						if (!_ex) battle.enemyStatus.push({ eId: target.id, type: 'freeze', turns: 1 })
-						addLog(`❄ 武器効果：${target.name}が凍結！`, 'log-sys')
+						if (target.isBoss) { addLog(`👑 ${target.name}は凍結耐性を持つ！`, 'log-sys') }
+						else {
+							const _ex = (battle.enemyStatus||[]).find(s=>s.eId===target.id&&s.type==='freeze')
+							if (!_ex) battle.enemyStatus.push({ eId: target.id, type: 'freeze', turns: 1 })
+							addLog(`❄ 武器効果：${target.name}が凍結！`, 'log-sys')
+						}
 					}
 				}
 				updateBattleUI()
@@ -2068,11 +2578,34 @@ const JOB_DATA = {
 					battle.remainingHits = 0;
 					if (battle.enemies.every(e => e.hp <= 0)) winBattle()
 					else {
+						// 追撃エンチャント
+						const _fsDouble = getFinalStats(p)
+						const _aliveE = battle.enemies.filter(e => e.hp > 0)
+						if (_fsDouble._enchantDouble && _aliveE.length > 0 && Math.random() < _fsDouble._enchantDouble) {
+							const _dblTgt = _aliveE[0]
+							const _res2 = calcTacticalDamage(getFinalStats(p), _dblTgt.def, _dblTgt.mdef, p.lv, false, dType)
+							addLog(`⚔️ 追撃発動！ <b>${_res2.val}</b> ダメージ！`, 'log-p-atk')
+							const _tgtCrd2 = getEnemyCardEl(_dblTgt)
+							if (_tgtCrd2) fxPhysicalAttack(_tgtCrd2, _res2.val, false)
+							_dblTgt.hp = Math.max(0, _dblTgt.hp - _res2.val)
+							updateBattleUI()
+							if (battle.enemies.every(e => e.hp <= 0)) { winBattle(); return }
+						}
 						battle.isProcessing = false
 						nextTurn()
 					}
 				}
 			}, 200)
+		} // end else (evasionRoll=false)
+
+		if (_evasionRoll) {
+			// 回避時：次のターンへ
+			setTimeout(() => {
+				battle.remainingHits = 0
+				battle.isProcessing = false
+				nextTurn()
+			}, 200)
+		}
 		}
 
 		function useBattleSkill(s, lv) {
@@ -2088,6 +2621,12 @@ const JOB_DATA = {
 				const aliveEnemies = battle.enemies.filter(e => e.hp > 0)
 				if (aliveEnemies.length === 0) return
 				if (aliveEnemies.length > 1) {
+					// 後衛+近接スキルはターゲット選択なし・先頭自動
+					if (isSkillBackPenalty(p, s)) {
+						document.getElementById('battle-skill-menu').classList.add('hidden')
+						executeSkill(s, aliveEnemies[0], lv)
+						return
+					}
 					battle.targeting = 'skill'
 					battle.pendingSkill = s
 					battle.pendingSkillLv = lv
@@ -2167,7 +2706,10 @@ const JOB_DATA = {
 				playSE('heal');
 			}
 
-			addLog(`${p.name}のスキル：${s.n}`, 'log-sys')
+			const _skVerbTarget = (s.target === 'single' || s.eTarget === 'single') && battle.enemies.length > 0
+				? (battle.pendingSkill ? null : battle.enemies.find(e=>e.hp>0)) : null
+			// スキルverbは非攻撃系の場合即表示、攻撃系はダメージ後に追記するため先にverb表示
+			addLog(getSkillVerb(p.name, _skVerbTarget, s) + '！', 'log-sys')
 			setTimeout(() => {
 				if (s.type === 'atk') {
 					const aliveEnemies = battle.enemies.filter(e => e.hp > 0)
@@ -2181,17 +2723,34 @@ const JOB_DATA = {
 					const fs = getFinalStats(p)
 					const skillDType = s.dType || 'physical'
 					const atkStat = skillDType === 'magic' ? fs.matk : fs.str
-					targets.forEach(t => {
+					// 後衛+近接スキルのペナルティ
+					const _skPenalty = isSkillBackPenalty(p, s) ? 0.8 : 1.0
+					const _skNote = _skPenalty < 1.0 ? ' <span style=\"font-size:0.72em;color:#aaa;\">(後衛-20%)</span>' : ''
+					targets.forEach((t, _ti) => {
 						const _sm = getEnemyDamageMult(t.id, skillDType)
+						// 単体スキルのみ回避判定（全体攻撃は回避なし）
+						const _evSkP = s.target === 'single' && rollEvasion(fs.agi, fs.luk, t.agi||10, t.luk||5)
+						if (_evSkP) {
+							const _eCard2 = getEnemyCardEl(t)
+							if (_eCard2) { fxText(...Object.values(getElCenter(_eCard2)).slice(0,2).concat([0]), '💨 MISS', '#60a5fa', '0.85rem') }
+							addLog(`${p.name}の${s.n} → <b style="color:#60a5fa;">💨 ${t.name}に回避された！</b>`, 'log-sys')
+							return
+						}
 						const res = calcTacticalDamage({ ...fs, str: atkStat * s.pow, matk: atkStat * s.pow }, t.def, t.mdef, p.lv, false, skillDType)
-						res.val = Math.floor(res.val * _sm)
+						res.val = Math.floor(res.val * _sm * _skPenalty)
 						t.hp = Math.max(0, t.hp - res.val)
 						// 復讐する：反射
 						if (t._reflectChance && t.hp > 0 && Math.random() < t._reflectChance) {
 							const rd = Math.floor(res.val * t._reflectPct)
 							if (p.hp > 0) { applyDamageToPartyMember(p, rd, 'log-e-atk'); addLog(`💢 ${t.name}がダメージを反射！ ${p.name}に${rd}！`, 'log-e-atk') }
 						}
-						addLog(`${t.name}に ${res.val}ダメージ <span style="font-size:0.75em; color:${skillDType==='magic'?'#a78bfa':'#fb923c'}; border:1px solid ${skillDType==='magic'?'#7c5cbf':'#c2622a'}; border-radius:3px; padding:0 3px;">${skillDType==='magic'?'特殊':'物理'}</span>`, 'log-p-atk')
+						addLog(`${t.name}に <b>${res.val}</b>ダメージ${_skNote} <span style="font-size:0.75em; color:${skillDType==='magic'?'#a78bfa':'#fb923c'}; border:1px solid ${skillDType==='magic'?'#7c5cbf':'#c2622a'}; border-radius:3px; padding:0 3px;">${skillDType==='magic'?'特殊':'物理'}</span>`, 'log-p-atk')
+						// スキルパーティクル
+						;(() => {
+							const _tCard = getEnemyCardEl(t)
+							if (targets.length > 1) setTimeout(() => fxSkillEffect(_tCard, 'atk', skillDType, res.val, res.crit), _ti * 100)
+							else fxSkillEffect(_tCard, 'atk', skillDType, res.val, res.crit)
+						})()
 					})
 					} else if (s.type === 'heal') {
 					const targets = s.target === 'all' ? gameState.party : [explicitTarget || p];
@@ -2208,7 +2767,14 @@ const JOB_DATA = {
 						}
 					});
 					const targetName = targets.length > 1 ? '味方全体' : targets[0].name;
-					addLog(`${p.name}の祈り！ ${targetName}を ${healAmt} 回復！`, 'log-sys')
+					addLog(`${targetName}のHPが <b>${healAmt}</b> 回復した！`, 'log-sys')
+					// 回復パーティクル
+					targets.forEach((tc, ti) => {
+						if (tc.hp <= 0) return
+						const _pIdx2 = gameState.party.indexOf(tc)
+						const _pCard = getPartyCardEl(_pIdx2)
+						setTimeout(() => fxHeal(_pCard, healAmt), ti * 80)
+					})
 				} else if (s.type === 'debuff') {
 					battle.enemyDebuffs.push({ stat: s.stat, val: s.val })
 					addLog('敵を弱体化！', 'log-e-atk')
@@ -2216,8 +2782,10 @@ const JOB_DATA = {
 					const targets = s.target === 'all' ? gameState.party.map((_, i) => i) : [gameState.party.indexOf(p)]
 					targets.forEach(idx => {
 						battle.buffs.push({ pIdx: idx, stat: s.stat, val: s.val })
+						const _bc = getPartyCardEl(idx)
+						setTimeout(() => fxSkillEffect(_bc, 'buff', '', 0, false), idx * 60)
 					})
-					addLog('能力を強化！', 'log-sys')
+					addLog('✨ 能力が強化された！', 'log-sys')
 				} else if (s.type === 'shield') {
 					const fs = getFinalStats(p)
 					const shieldAmt = Math.floor(fs.maxHp * s.val)
@@ -2238,6 +2806,11 @@ const JOB_DATA = {
 				// ── 再生バフ ──
 				} else if (s.type === 'regen') {
 					const targets = s.target === 'all' ? gameState.party.filter(m=>m.hp>0).map((_,i)=>gameState.party.indexOf(gameState.party.filter(m=>m.hp>0)[i])) : [gameState.party.indexOf(p)]
+					// 再生バフの緑エフェクト
+					targets.forEach((idx, ti) => {
+						const _rc = getPartyCardEl(idx)
+						if (_rc) setTimeout(() => fxSkillEffect(_rc, 'regen', '', 0, false), ti * 80)
+					})
 					targets.forEach(idx => {
 						const ex = (battle.partyRegens||[]).find(r => r.pIdx===idx)
 						if (ex) { ex.turns = Math.max(ex.turns, s.turns); ex.val = Math.max(ex.val, s.val) }
@@ -2256,49 +2829,61 @@ const JOB_DATA = {
 					const tname = s.target==='all'?'味方全体':(explicitTarget||p).name
 					addLog(`${p.name}のMP軽減付与！ ${tname}の次のスキルMPコスト${Math.floor(s.val*100)}%減！`, 'log-sys')
 
-				// ── 毒 ──
+				// ── 毒（最大3スタック・各3ターン）──
 				} else if (s.type === 'poison') {
 					const aliveE = battle.enemies.filter(e=>e.hp>0)
 					const ets = s.eTarget==='all' ? aliveE : (explicitTarget ? [explicitTarget] : [aliveE[0]])
 					ets.forEach(e => {
-						const ex = (battle.enemyDots||[]).find(d=>d.eId===e.id&&d.type==='poison')
-						if (ex) ex.turns = Math.max(ex.turns, s.turns)
-						else battle.enemyDots.push({ eId: e.id, type: 'poison', turns: s.turns })
+						const existing = (battle.enemyDots||[]).filter(d=>d.eId===e.id&&d.type==='poison')
+						if (existing.length < 3) {
+							battle.enemyDots.push({ eId: e.id, type: 'poison', turns: 3 })
+						} else {
+							// 残りターンが少ない方を更新
+							const weakest = existing.reduce((a,b) => a.turns < b.turns ? a : b)
+							weakest.turns = 3
+						}
 					})
-					addLog(`${p.name}が毒を付与！ ${s.turns}ターン間、毎ターンHP最大HP×3%＆MP最大MP×3%を蝕む！`, 'log-e-atk')
+					const stackCount = ets.length === 1 ? (battle.enemyDots||[]).filter(d=>d.eId===ets[0].id&&d.type==='poison').length : '?'
+					addLog(`${p.name}が毒を付与！ 最大HP×5%/ターン（現在${stackCount}スタック）`, 'log-e-atk')
 
-				// ── 出血 ──
+				// ── 出血（ターン経過でダメージ増加 2→4→6→8→10%）──
 				} else if (s.type === 'bleed') {
 					const aliveE = battle.enemies.filter(e=>e.hp>0)
 					const ets = s.eTarget==='all' ? aliveE : (explicitTarget ? [explicitTarget] : [aliveE[0]])
 					ets.forEach(e => {
 						const ex = (battle.enemyDots||[]).find(d=>d.eId===e.id&&d.type==='bleed')
-						if (ex) ex.turns = Math.max(ex.turns, s.turns)
-						else battle.enemyDots.push({ eId: e.id, type: 'bleed', turns: s.turns })
+						if (ex) { ex.turns = Math.max(ex.turns, 5); } // 継続中はターン延長
+						else battle.enemyDots.push({ eId: e.id, type: 'bleed', turns: 5, stack: 1 })
 					})
-					addLog(`${p.name}が出血を付与！ ${s.turns}ターン間、毎ターン最大HP×5%を出血させる！`, 'log-e-atk')
+					addLog(`${p.name}が出血を付与！ ダメージ増加型（2→4→6→8→10%/ターン）`, 'log-e-atk')
 
-				// ── 気絶 (stun) ──
+				// ── 気絶 (stun)：ボスは耐性あり ──
 				} else if (s.type === 'stun') {
 					const aliveE = battle.enemies.filter(e=>e.hp>0)
 					const ets = s.eTarget==='all' ? aliveE : (explicitTarget ? [explicitTarget] : [aliveE[0]])
+					let stunApplied = 0
 					ets.forEach(e => {
+						if (e.isBoss) { addLog(`👑 ${e.name}はボスクラスの耐性で気絶を無効化！`, 'log-sys'); return }
 						const ex = (battle.enemyStatus||[]).find(d=>d.eId===e.id&&d.type==='stun')
 						if (ex) ex.turns = Math.max(ex.turns, s.turns)
 						else battle.enemyStatus.push({ eId: e.id, type: 'stun', turns: s.turns })
+						stunApplied++
 					})
-					addLog(`${p.name}が気絶を付与！ ${s.turns}ターン行動不能＆物理ダメージ+30%！`, 'log-e-atk')
+					if (stunApplied > 0) addLog(`${p.name}が気絶を付与！ ${s.turns}ターン行動不能＆物理ダメージ+30%！`, 'log-e-atk')
 
-				// ── フリーズ (freeze) ──
+				// ── フリーズ (freeze)：ボスは耐性あり ──
 				} else if (s.type === 'freeze') {
 					const aliveE = battle.enemies.filter(e=>e.hp>0)
 					const ets = s.eTarget==='all' ? aliveE : (explicitTarget ? [explicitTarget] : [aliveE[0]])
+					let freezeApplied = 0
 					ets.forEach(e => {
+						if (e.isBoss) { addLog(`👑 ${e.name}はボスクラスの耐性で凍結を無効化！`, 'log-sys'); return }
 						const ex = (battle.enemyStatus||[]).find(d=>d.eId===e.id&&d.type==='freeze')
 						if (ex) ex.turns = Math.max(ex.turns, s.turns)
 						else battle.enemyStatus.push({ eId: e.id, type: 'freeze', turns: s.turns })
+						freezeApplied++
 					})
-					addLog(`${p.name}がフリーズを付与！ ${s.turns}ターン行動不能＆特殊ダメージ+30%！`, 'log-e-atk')
+					if (freezeApplied > 0) addLog(`${p.name}がフリーズを付与！ ${s.turns}ターン行動不能＆特殊ダメージ+30%！`, 'log-e-atk')
 				}
 				updateBattleUI()
 				if (battle.enemies.every(e => e.hp <= 0)) winBattle()
@@ -2357,21 +2942,26 @@ const JOB_DATA = {
 			if (!battle.active) return
 			let anyEffect = false
 			for (const e of battle.enemies.filter(en => en.hp > 0)) {
-				// DoT（毒・出血）
-				const dots = (battle.enemyDots||[]).filter(d => d.eId === e.id)
-				for (const d of dots) {
-					if (d.type === 'poison') {
-						const hpDmg = Math.floor(e.maxHp * 0.03)
-						const mpDmg = Math.floor((e.maxMp||50) * 0.03)
-						e.hp = Math.max(1, e.hp - hpDmg)
-						e.mp = Math.max(0, (e.mp||0) - mpDmg)
-						addLog(`☠ 毒が <b>${e.name}</b> に ${hpDmg} ダメージ！（MP-${mpDmg}）`, 'log-e-atk')
-					} else if (d.type === 'bleed') {
-						const dmg = Math.floor(e.maxHp * 0.05)
-						e.hp = Math.max(1, e.hp - dmg)
-						addLog(`🩸 出血が <b>${e.name}</b> に ${dmg} ダメージ！`, 'log-e-atk')
-					}
+				// ── 毒（スタック別に処理、各スタック最大3ターン×最大3スタック）──
+				const poisonDots = (battle.enemyDots||[]).filter(d => d.eId === e.id && d.type === 'poison')
+				for (const d of poisonDots) {
+					const hpDmg = Math.floor(e.maxHp * 0.05)
+					e.hp = Math.max(1, e.hp - hpDmg)
+					addLog(`☠ 毒が <b>${e.name}</b> に ${hpDmg} ダメージ！（スタック${poisonDots.indexOf(d)+1}）`, 'log-e-atk')
 					d.turns--
+					anyEffect = true
+				}
+				// ── 出血（1スタック：턴 경과마다 増加 2→4→6→8→10%）──
+				const bleedDot = (battle.enemyDots||[]).find(d => d.eId === e.id && d.type === 'bleed')
+				if (bleedDot) {
+					// bleedDot.stack: 経過ターン数(1～5)でダメージ率決定
+					if (!bleedDot.stack) bleedDot.stack = 1
+					const bleedPct = Math.min(0.10, bleedDot.stack * 0.02)
+					const bleedDmg = Math.floor(e.maxHp * bleedPct)
+					e.hp = Math.max(1, e.hp - bleedDmg)
+					addLog(`🩸 出血が <b>${e.name}</b> に ${bleedDmg} ダメージ！（${Math.floor(bleedPct*100)}%）`, 'log-e-atk')
+					bleedDot.stack = Math.min(5, bleedDot.stack + 1)
+					bleedDot.turns--
 					anyEffect = true
 				}
 			}
@@ -2409,6 +2999,16 @@ const JOB_DATA = {
 					r.turns--
 					healed = true
 				}
+				// 再生エンチャント（防具）
+				const _rFs = getFinalStats(p)
+				if (_rFs._enchantRegen) {
+					const _rAmt = Math.floor(_rFs.maxHp * _rFs._enchantRegen)
+					if (_rAmt > 0) {
+						p.hp = Math.min(_rFs.maxHp, p.hp + _rAmt)
+						addLog(`💚 再生エンチャント：${p.name} が ${_rAmt} 回復！`, 'log-sys')
+						healed = true
+					}
+				}
 			}
 			battle.partyRegens = (battle.partyRegens||[]).filter(r => r.turns > 0)
 			if (healed) updateBattleUI()
@@ -2431,6 +3031,42 @@ const JOB_DATA = {
 
 		// シールド・ガードを考慮してパーティメンバーにダメージを与える共通関数
 		function applyDamageToPartyMember(targetP, dmgVal, logTag) {
+			// ── 防具エンチャント: 耐性（ダメージカット） ──
+			const _aFs = getFinalStats(targetP)
+			if (_aFs._enchantResist && dmgVal > 0) {
+				const _cut = Math.floor(dmgVal * _aFs._enchantResist)
+				dmgVal = Math.max(1, dmgVal - _cut)
+			}
+			// ── 防具エンチャント: 不屈（即死耐久） ──
+			if (_aFs._enchantTenacity && targetP.hp > 0 && dmgVal >= targetP.hp) {
+				if (Math.random() < _aFs._enchantTenacity) {
+					addLog(`💪 不屈発動！ ${targetP.name} がHP1で耐えた！`, 'log-sys')
+					targetP.hp = 1
+					const _pCrd = getPartyCardEl(gameState.party.indexOf(targetP))
+					if (_pCrd) { fxCardGlow(_pCrd, 'fx-hit-glow-red', 500) }
+					updateBattleUI()
+					return
+				}
+			}
+			// ── 防具エンチャント: 反射 ──
+			if (_aFs._enchantReflect && Math.random() < _aFs._enchantReflect) {
+				const _refDmg = Math.floor(dmgVal * 0.30)
+				if (_refDmg > 0 && battle.enemies.length > 0) {
+					const _refTarget = battle.enemies.find(e => e.hp > 0)
+					if (_refTarget) {
+						_refTarget.hp = Math.max(0, _refTarget.hp - _refDmg)
+						addLog(`💢 反射！ ${_refDmg} ダメージを跳ね返した！`, 'log-p-atk')
+						const _eTgt = getEnemyCardEl(_refTarget)
+						if (_eTgt) fxPhysicalAttack(_eTgt, _refDmg, false)
+					}
+				}
+			}
+			// 被ダメパーティクル
+			;(() => {
+				const _pIdx = gameState.party.indexOf(targetP)
+				const _pCard = getPartyCardEl(_pIdx)
+				if (_pCard) { fxCardShake(_pCard); fxCardGlow(_pCard, 'fx-hit-glow-red', 350); const {x,y}=getElCenter(_pCard); fxText(x, y-10, `-${dmgVal}`, '#f87171', '1rem') }
+			})()
 			const tIdx = gameState.party.indexOf(targetP)
 			let remaining = dmgVal
 			// ガード：別のキャラがすべて肩代わり
@@ -2587,7 +3223,9 @@ const JOB_DATA = {
 					const dGS = getFinalStats(targetP)
 					const resGS = calcTacticalDamage({ str: e.atk, matk: 0, cri: 0.08, multiplier: 1.0 }, dGS.vit, dGS.mdef, 1, true, 'physical')
 					applyDamageToPartyMember(targetP, resGS.val, 'log-e-atk')
-					addLog(`${e.name}の攻撃：${targetP.name}に${resGS.val}ダメージ` + ` <span style=\"font-size:0.75em; color:#fb923c; border:1px solid #c2622a; border-radius:3px; padding:0 3px;\">物理</span>`, 'log-e-atk')
+					const _eWn = e.skills ? '' : ''
+					const _eVerbs = [`${e.name}は${targetP.name}に牙を向けた`, `${e.name}の爪が${targetP.name}を裂いた`, `${e.name}は${targetP.name}に体当たりした`, `${e.name}は${targetP.name}を攻撃した`]
+					addLog(`${_eVerbs[Math.floor(Math.random()*_eVerbs.length)]}！ <b>${resGS.val}</b>ダメージ` + ` <span style=\"font-size:0.75em; color:#fb923c; border:1px solid #c2622a; border-radius:3px; padding:0 3px;\">物理</span>`, 'log-e-atk')
 
 				} else if (isValnaxPattern) {
 					// HP50%以下で形態変化（1回のみ）
@@ -2891,9 +3529,17 @@ const JOB_DATA = {
 					// 通常攻撃
 					playSE('enemy_attack');
 					const dAK = getFinalStats(targetP)
+					// 回避判定（プレイヤー側が回避できるか）
+					const _evAK = rollEvasion(e.agi || 10, e.luk || 5, dAK.agi, dAK.luk)
+					if (_evAK) {
+						const _pCrd = getPartyCardEl(gameState.party.indexOf(targetP))
+						if (_pCrd) { const {x,y}=getElCenter(_pCrd); fxText(x, y-14, '💨 回避', '#60a5fa', '0.85rem') }
+						addLog(`💨 ${targetP.name}は${e.name}の攻撃を<b style="color:#60a5fa;">回避</b>した！`, 'log-sys')
+					} else {
 					const resAK = calcTacticalDamage({ str: e.atk, matk: 0, cri: 0.20, multiplier: 1.0 }, dAK.vit, dAK.mdef, 1, true, 'physical')
 					applyDamageToPartyMember(targetP, resAK.val, 'log-e-atk')
 					addLog(`${e.name}の攻撃：${targetP.name}に${resAK.val}ダメージ` + ` <span style=\"font-size:0.75em; color:#fb923c; border:1px solid #c2622a; border-radius:3px; padding:0 3px;\">物理</span>`, 'log-e-atk')
+					} // end evasion check
 
 				} else {
 					// ── 通常モンスターのスキル判定 ──
@@ -2951,9 +3597,17 @@ const JOB_DATA = {
 								} else {
 									const dType = usedSkill.type === 'magic' ? 'magic' : 'physical'
 									const ds = getFinalStats(tgSk)
+									// 回避判定（単体スキルのみ）
+									const _evSk = rollEvasion(e.agi||10, e.luk||5, ds.agi, ds.luk)
+									if (_evSk) {
+										const _skPCrd = getPartyCardEl(gameState.party.indexOf(tgSk))
+										if (_skPCrd) { const {x,y}=getElCenter(_skPCrd); fxText(x, y-14, '💨 回避', '#60a5fa', '0.85rem') }
+										addLog(`💨 ${tgSk.name}は${e.name}の${usedSkill.name}を<b style="color:#60a5fa;">回避</b>！`, 'log-sys')
+									} else {
 									const res = calcTacticalDamage({str: dType==='physical'?Math.floor(e.atk*usedSkill.mult):0, matk: dType==='magic'?Math.floor(e.atk*usedSkill.mult):0, cri:0.05,multiplier:1.0}, ds.vit, ds.mdef, 1, true, dType)
 									applyDamageToPartyMember(tgSk, res.val, 'log-e-atk')
 									addLog(`✨ ${e.name}の${usedSkill.msg||usedSkill.name} → ${tgSk.name}に${res.val}ダメージ <span style="font-size:0.75em; color:${dType==='magic'?'#a78bfa':'#fb923c'}; border:1px solid ${dType==='magic'?'#7c5cbf':'#c2622a'}; border-radius:3px; padding:0 3px;">${dType==='magic'?'特殊':'物理'}</span>`, 'log-e-atk')
+									} // end skill evasion
 								}
 							}
 							updateBattleUI()
@@ -3332,17 +3986,47 @@ function winBattle() {
 				p.exp += x
 				while (p.exp >= p.nextExp) levelUp(p)
 			})
-			addLog(`勝利！ ${g}G / ${x}EXP 獲得。`, 'log-sys')
-			// 秘宝を抱く：レジェンド装備確定ドロップ
+			addLog(`⚔️ 勝利！ ${g}G / ${x}EXP 獲得。`, 'log-gold')
+			fxVictory()
+			// 秘宝を抱く：最高到達Tierのレジェンダリー確定ドロップ
 			battle.enemies.forEach(e => {
 				if (e._legendDrop && gameState.inventory.length < getMaxCapacity()) {
 					const types = ['weapon','armor','acc']
 					const t = types[Math.floor(Math.random()*types.length)]
-					const pool = SHOP_ITEMS[t].filter(i => i.tier >= 7)
+					// 最高到達フロアに対応したショップの最高Tier
+					const shopMaxTier = Math.min(8, Math.floor((gameState.maxFloor - 1) / 10) + 1)
+					let pool = SHOP_ITEMS[t].filter(i => i.tier === shopMaxTier)
+					if (pool.length === 0) pool = SHOP_ITEMS[t].filter(i => i.tier <= shopMaxTier)
 					if (pool.length > 0) {
-						const item = applyRarity({ ...pool[Math.floor(Math.random()*pool.length)], type: t, locked: false })
-						gameState.inventory.push(item)
-						addLog(`✨✨ ${e.name}から伝説の秘宝 [${item.n}] を入手！`, 'log-gold')
+						const base = { ...pool[Math.floor(Math.random()*pool.length)], type: t, locked: false }
+						// レジェンダリー確定ドロップ
+						base.rarityLabel = 'レジェンダリー'
+						base.rarityColor = '#ff9800'
+						// サブ効果を4つ付与
+						const SUB_POOL = [
+							{ n: 'HP+', k: 'maxHp', min: 20, max: 80 }, { n: 'MP+', k: 'maxMp', min: 10, max: 40 },
+							{ n: 'ATK+', k: 'str', min: 10, max: 50 }, { n: 'MATK+', k: 'matk', min: 10, max: 50 },
+							{ n: 'DEF+', k: 'vit', min: 8, max: 30 }, { n: 'AGI+', k: 'agi', min: 5, max: 20 },
+							{ n: 'LUK+', k: 'luk', min: 5, max: 15 },
+						]
+						base.subEffects = []
+						const used = new Set()
+						while (base.subEffects.length < 4) {
+							const sub = SUB_POOL[Math.floor(Math.random()*SUB_POOL.length)]
+							if (used.has(sub.k)) continue
+							used.add(sub.k)
+							base.subEffects.push({ n: sub.n, k: sub.k, v: sub.min + Math.floor(Math.random()*(sub.max-sub.min+1)) })
+						}
+						// ステータスをレジェンダリー倍率(2.5倍)で強化
+						if (base.s) {
+							for (let k in base.s) {
+								if (typeof base.s[k] === 'number' && k !== 'cap' && k !== 'cri') {
+									base.s[k] = Math.floor(base.s[k] * 2.5)
+								}
+							}
+						}
+						gameState.inventory.push(base)
+						addLog(`✨✨ ${e.name}から伝説の秘宝 【Tier${shopMaxTier} レジェンダリー ${base.n}】 を入手！`, 'log-gold')
 					}
 				}
 			})
@@ -3480,7 +4164,8 @@ function winBattle() {
 				let maxSlots = 1
 				if (gameState.party.length > 0) {
 					const leader = gameState.party[0]
-					if (leader.lv >= 20) maxSlots = 3
+					if (leader.lv >= 30) maxSlots = 4
+					else if (leader.lv >= 20) maxSlots = 3
 					else if (leader.lv >= 10) maxSlots = 2
 				}
 				if (gameState.party.length >= maxSlots) {
@@ -3586,18 +4271,45 @@ function winBattle() {
 
 			const c = document.getElementById('modal-content')
 
+			const _detWc={'剣':'#e8a080','大剣':'#e86060','魔剣':'#c060e8','短剣':'#e8c060','レイピア':'#e0d080','槍':'#80b8e8','斧':'#e88050','鈍器':'#a8a8a0','宝珠':'#b080e8','弓':'#80e890','クロスボウ':'#60b8d8','杖':'#9090f0','魔導書':'#b090e8'}
+			const _detAc={'重鎧':'#e87060','軽鎧':'#80e880','法衣':'#9090f8','魔導鎧':'#c060f0'}
+			const _detXc={'指輪':'#f0c050','首飾り':'#f0a050','ポーチ':'#80c080','バッグ':'#60a860','護符':'#c0a840','宝珠':'#c080f0','勲章':'#f08050','冠':'#f0d040'}
 			const createItemRow = (label, item) => {
-				const name = item ? (item.rarityLabel ? `[${item.rarityLabel}] ${item.n}` : item.n) : '---'
+				const name = item ? getItemDisplayName(item) : '---'
 				const desc = item ? item.d : ''
 				const color = item ? (item.rarityColor || 'var(--text-main)') : '#666'
 				let subText = '';
 				if(item && item.subEffects && item.subEffects.length > 0) {
 					subText = `<div style="font-size:0.75rem; color:var(--accent-blue); margin-top:2px;">◆サブ: ${item.subEffects.map(e => e.n + '+' + (e.k === 'cri' ? (e.v*100)+'%' : e.v)).join(' / ')}</div>`;
 				}
+				// 武器・防具・装飾タイプバッジ
+				let typeBadgeHtml = ''
+				if (item) {
+					const _k = item.weaponType||item.armorType||item.accType
+					const _m = item.weaponType?_detWc:item.armorType?_detAc:_detXc
+					if (_k) { const c=_m[_k]||'#aaa'; typeBadgeHtml=`<span style="font-size:0.6rem;padding:1px 5px;background:${c}22;border:1px solid ${c}88;border-radius:3px;color:${c};margin-left:4px;">${_k}</span>` }
+					// 物理 / 特殊バッジ（武器のみ）
+					if (item.type === 'weapon') {
+						const isMagicWeapon = item.dType === 'magic'
+						typeBadgeHtml += isMagicWeapon
+							? '<span style="font-size:0.6rem;padding:1px 5px;background:rgba(167,139,250,0.15);border:1px solid #7c5cbf88;border-radius:3px;color:#a78bfa;margin-left:3px;">✦ 特殊</span>'
+							: '<span style="font-size:0.6rem;padding:1px 5px;background:rgba(251,146,60,0.12);border:1px solid #c2622a88;border-radius:3px;color:#fb923c;margin-left:3px;">⚔ 物理</span>'
+					}
+					// 近接 / 遠距離バッジ（武器のみ）
+					if (item.type === 'weapon') {
+						typeBadgeHtml += item.range === 'long'
+							? '<span style="font-size:0.6rem;padding:1px 5px;background:rgba(96,165,250,0.12);border:1px solid #60a5fa80;border-radius:3px;color:#60a5fa;margin-left:3px;">🏹 遠距離</span>'
+							: '<span style="font-size:0.6rem;padding:1px 5px;background:rgba(248,113,113,0.12);border:1px solid #f8717180;border-radius:3px;color:#f87171;margin-left:3px;">🗡 近接</span>'
+					}
+					// エンチャントバッジ
+					if (item.enchant) {
+						typeBadgeHtml += `<span style="font-size:0.6rem;padding:1px 5px;background:rgba(249,168,37,0.15);border:1px solid #c0760a88;border-radius:3px;color:#f9a825;margin-left:3px;">${item.enchant.icon||'✨'} ${item.enchant.name}</span>`
+					}
+				}
 				return `
 					<div style="margin-bottom:12px; border-bottom:1px solid #222; padding-bottom:8px;">
 						<div style="font-size:0.85rem; color:var(--accent-blue); margin-bottom:2px;">${label}</div>
-						<div style="font-weight:bold; color:${color};">${name}</div>
+						<div style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;"><span style="font-weight:bold; color:${color};">${name}</span>${typeBadgeHtml}</div>
 						<div style="font-size:0.8rem; color:#aaa;">${desc}</div>
 						${subText}
 					</div>
@@ -3730,21 +4442,35 @@ function winBattle() {
 				_tutClearHighlight()
 				tutHook('inventory_closed')
 			}
-			const _ml2 = document.getElementById('modal-layer')
-			if (_ml2) { _ml2.style.position = ''; _ml2.style.zIndex = '' }
 			tutHook('close_shop')
 			document.getElementById('modal-layer').classList.add('hidden')
 			battle.targeting = null; // ターゲット選択中に閉じられた場合のリセット
 			updateBattleUI();
 		}
 		function openModalWrapper() {
-			// チュートリアル中はfixedで最前面表示
 			const _ml = document.getElementById('modal-layer')
-			_ml.style.position = 'fixed'
-			_ml.style.zIndex = '9500'
 			_ml.classList.remove('hidden')
 		}
-		function showMsg(msg) {
+		// 上部トースト通知（モーダルを邪魔しない軽量通知）
+		function showToast(msg, color = '#4ade80', duration = 2000) {
+			const existing = document.getElementById('_toast_el')
+			if (existing) existing.remove()
+			const el = document.createElement('div')
+			el.id = '_toast_el'
+			el.style.cssText = `position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:99999;
+				background:#111;border:1px solid ${color};border-radius:8px;
+				padding:8px 18px;color:${color};font-size:0.88rem;font-weight:bold;
+				box-shadow:0 4px 20px rgba(0,0,0,0.8);pointer-events:none;
+				animation:_toastIn 0.2s ease;white-space:nowrap;`
+			el.textContent = msg
+			document.body.appendChild(el)
+			setTimeout(() => {
+				el.style.transition = 'opacity 0.3s'
+				el.style.opacity = '0'
+				setTimeout(() => el.remove(), 350)
+			}, duration)
+		}
+				function showMsg(msg) {
 			addLog(msg, 'log-sys')
 			const layer = document.getElementById('modal-layer')
 			const content = document.getElementById('modal-content')
@@ -3755,7 +4481,7 @@ function winBattle() {
 			const c = document.getElementById('modal-content')
 			const muteLabel = () => window._isMuted ? '🔇 OFF' : '🔊 ON'
 			c.innerHTML = `
-				<h2 style="margin-bottom:16px;">⚙ 設定</h2>
+				<h2 style="margin-bottom:16px;">⚙️ 設定</h2>
 				<div style="display:flex; flex-direction:column; gap:10px; max-width:320px; margin:0 auto;">
 
 					<div style="background:#111; border:1px solid #333; border-radius:8px; padding:12px;">
@@ -3776,15 +4502,55 @@ function winBattle() {
 						<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
 							<button class="btn-icon" style="padding:10px;" onclick="closeModal(); openHelpModal();">❓ ヘルプ</button>
 							<button class="btn-icon" style="padding:10px;" onclick="closeModal(); openInfoModal();">ℹ️ ゲーム情報</button>
+							<button class="btn-icon" style="padding:10px; grid-column:1/-1; background:linear-gradient(135deg,#0d1a2e,#1a2a3e); border-color:#2a4a6e; color:#7ad;" onclick="openPatchNotesModal();">📋 パッチノート / 更新履歴</button>
 						</div>
 					</div>
 
-					<button onclick="closeModal()" class="btn-action btn-blue" style="margin-top:4px;">閉じる</button>
-				</div>`
+					<div style="background:#111; border:1px solid #3a1a1a; border-radius:8px; padding:12px;">
+					<div style="font-size:0.75rem; color:#888; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">危険ゾーン</div>
+					<button class="btn-action btn-red" style="width:100%; opacity:0.8;" onclick="resetGame_confirm1()">🗑️ ゲームをリセット</button>
+				</div>
+
+				<button onclick="closeModal()" class="btn-action btn-blue" style="margin-top:4px;">閉じる</button>
+			</div>`
 			openModalWrapper()
 		}
 
-				function openInfoModal() {
+			function resetGame_confirm1() {
+			const c = document.getElementById('modal-content')
+			c.innerHTML = `
+				<h2 style="color:#f87171; margin-bottom:12px;">⚠️ リセット確認 (1/2)</h2>
+				<div style="background:#1a0a0a; border:1px solid #5a1a1a; border-radius:8px; padding:16px; margin-bottom:16px;">
+					<p style="color:#fca5a5; font-size:0.9rem; margin:0 0 8px;">この操作は<b>取り消せません</b>。</p>
+					<p style="color:#aaa; font-size:0.85rem; margin:0;">セーブデータ・パーティ・所持品・ゴールドがすべて消去されます。</p>
+				</div>
+				<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+					<button onclick="closeModal(); openSettingsModal();" class="btn-action btn-blue">キャンセル</button>
+					<button onclick="resetGame_confirm2()" class="btn-action btn-red">次へ →</button>
+				</div>`
+			openModalWrapper()
+		}
+		function resetGame_confirm2() {
+			const c = document.getElementById('modal-content')
+			c.innerHTML = `
+				<h2 style="color:#f87171; margin-bottom:12px;">🚨 最終確認 (2/2)</h2>
+				<div style="background:#1a0000; border:2px solid #f87171; border-radius:8px; padding:16px; margin-bottom:16px;">
+					<p style="color:#fca5a5; font-size:0.95rem; font-weight:bold; margin:0 0 8px;">本当にすべてのデータを削除しますか？</p>
+					<p style="color:#888; font-size:0.82rem; margin:0;">この操作は絶対に元に戻せません。</p>
+				</div>
+				<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+					<button onclick="closeModal(); openSettingsModal();" class="btn-action btn-blue" style="font-size:0.9rem;">やめる</button>
+					<button onclick="resetGame_execute()" class="btn-action btn-red" style="font-size:0.9rem; font-weight:bold;">🗑️ 全削除する</button>
+				</div>`
+		}
+		function resetGame_execute() {
+			try { localStorage.removeItem('abyssRediveSave') } catch(e) {}
+			closeModal()
+			addLog('⚠️ ゲームデータをリセットしました。ページを再読み込みします...', 'log-sys')
+			setTimeout(() => location.reload(), 1200)
+		}
+
+					function openInfoModal() {
 			const c = document.getElementById('modal-content')
 			c.innerHTML = `
 				<!-- ヘッダーロゴ -->
@@ -3800,7 +4566,7 @@ function winBattle() {
 						<span style="color:#555;">制作者</span>
 						<span style="color:#eee; font-weight:bold;">ねぎらーめん</span>
 						<span style="color:#555;">バージョン</span>
-						<span style="color:#aaa;">v1.511</span>
+						<span style="color:#aaa;">ver2.30</span>
 						<span style="color:#555;">ジャンル</span>
 						<span style="color:#aaa;">テキストRPG / ハック＆スラッシュ</span>
 						<span style="color:#555;">推奨環境</span>
@@ -3834,33 +4600,6 @@ function winBattle() {
 					</div>
 				</div>
 
-				<!-- 更新ログ -->
-				<div style="background:#0d0d0d; border:1px solid #222; border-radius:10px; padding:14px 16px; margin-bottom:14px;">
-					<p style="font-size:0.78rem; color:#555; margin:0 0 10px; letter-spacing:1px;">CHANGELOG</p>
-					<div style="display:flex; flex-direction:column; gap:6px; font-size:0.8rem; max-height:130px; overflow-y:auto; padding-right:2px;">
-						<div style="display:flex; gap:8px;">
-							<span style="color:#555; white-space:nowrap; flex-shrink:0;">v1.511</span>
-							<span style="color:#ccc;">チュートリアル追加 / ヘルプ拡充 / ショップTier表示 / インフォ画面追加</span>
-						</div>
-						<div style="display:flex; gap:8px;">
-							<span style="color:#555; white-space:nowrap; flex-shrink:0;">v1.510</span>
-							<span style="color:#aaa;">カバン機能改善（フィルター・ソート・Lv連動容量）</span>
-						</div>
-						<div style="display:flex; gap:8px;">
-							<span style="color:#555; white-space:nowrap; flex-shrink:0;">v1.509</span>
-							<span style="color:#aaa;">全6職スキルをLv50まで拡張（全18マイルストーン）</span>
-						</div>
-						<div style="display:flex; gap:8px;">
-							<span style="color:#555; white-space:nowrap; flex-shrink:0;">v1.508</span>
-							<span style="color:#aaa;">11F〜50Fのモンスター・ボス追加 / フロア選択システム実装</span>
-						</div>
-						<div style="display:flex; gap:8px;">
-							<span style="color:#555; white-space:nowrap; flex-shrink:0;">v1.500</span>
-							<span style="color:#777;">初期リリース</span>
-						</div>
-					</div>
-				</div>
-
 				<!-- フッター -->
 				<p style="text-align:center; font-size:0.72rem; color:#333; margin:0 0 12px;">
 					© ねぎらーめん — このゲームはフリーで公開されています
@@ -3870,6 +4609,441 @@ function winBattle() {
 			`
 			openModalWrapper()
 		}
+
+		// ═══════════════════════════════════════════════════════════════
+		// 鍛冶屋モーダル
+		// ═══════════════════════════════════════════════════════════════
+		function openSmithModal(filterType = 'all') {
+			if (!gameState.bossDefeated.includes(20)) { showMsg('20Fボス撃破後に解放されます。'); return }
+			const c = document.getElementById('modal-content')
+
+			const tierLabel = tier => {
+				if (!tier) return ''
+				const stars = '★'.repeat(Math.min(tier,8)) + '☆'.repeat(Math.max(0,8-tier))
+				const colors = ['','#aaa','#7dc','#4af','#c8f','#fa4','#f80','#f44','#f0f']
+				return `<span style="font-size:0.68rem;color:${colors[tier]||'#fff'};letter-spacing:1px;">Tier${tier} ${stars}</span>`
+			}
+
+			// エンチャント可能なアイテムのみ（武器・防具）
+			const smithable = gameState.inventory
+				.map((item, idx) => ({ item, idx }))
+				.filter(({ item }) => item.type === 'weapon' || item.type === 'armor')
+				.filter(({ item }) => filterType === 'all' || item.type === filterType)
+
+			const tabs = [
+				{ key:'all', label:'全て', icon:'⚒️' },
+				{ key:'weapon', label:'武器', icon:'⚔️' },
+				{ key:'armor', label:'防具', icon:'🛡️' },
+			]
+			const counts = { all: gameState.inventory.filter(i=>i.type==='weapon'||i.type==='armor').length }
+			tabs.slice(1).forEach(t=>{ counts[t.key]=gameState.inventory.filter(i=>i.type===t.key).length })
+			const tabHtml = `<div style="display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap;">
+				${tabs.map(t=>{
+					const active = filterType===t.key
+					return `<button onclick="openSmithModal('${t.key}')"
+						style="display:flex;align-items:center;gap:4px;padding:5px 10px;font-size:0.8rem;
+						border-radius:20px;border:1px solid ${active?'#c0760a':'#333'};
+						background:${active?'rgba(192,118,10,0.2)':'#111'};
+						color:${active?'#f9a825':'#777'};cursor:pointer;">
+						${t.icon} ${t.label}
+						<span style="background:${active?'#c0760a':'#222'};color:#fff;border-radius:10px;
+							padding:0 5px;font-size:0.68rem;">${counts[t.key]??0}</span>
+					</button>`
+				}).join('')}
+			</div>`
+
+			const resultHtml = '' // 結果はポップアップで表示
+
+			c.innerHTML = `
+				<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;
+					border-bottom:2px solid #5a3a00;padding-bottom:10px;">
+					<h2 style="margin:0;color:#f9a825;">🔨 鍛冶屋</h2>
+					<span style="color:var(--gold);font-weight:bold;">${gameState.gold.toLocaleString()}G</span>
+				</div>
+				<div style="font-size:0.78rem;color:#888;margin-bottom:10px;background:#1a1200;border-radius:6px;
+					padding:8px 10px;border-left:3px solid #c0760a;">
+					⚒️ 武器・防具に<b style="color:#f9a825;">エンチャント</b>を付与／リロールできます。
+					すでにエンチャントがある場合は<b style="color:#f87171;">上書き</b>されます。
+				</div>
+				${resultHtml}
+				${tabHtml}
+				<div style="max-height:45vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:3px;">
+					${smithable.length === 0
+						? '<p style="text-align:center;color:#555;padding:20px;">エンチャント可能な装備がありません</p>'
+						: smithable.map(({item, idx}) => {
+							const cost = getEnchantCost(item.tier)
+							const canAfford = gameState.gold >= cost
+							const displayName = getItemDisplayName(item)
+							const nameColor = item.rarityColor || '#eee'
+							const enchantBadge = item.enchant
+								? `<span style="font-size:0.65rem;padding:1px 6px;background:rgba(249,168,37,0.15);
+									border:1px solid #c0760a;border-radius:3px;color:#f9a825;margin-left:3px;">
+									${item.enchant.icon||'✨'} ${item.enchant.name}</span>`
+								: '<span style="font-size:0.65rem;color:#444;margin-left:3px;">エンチャントなし</span>'
+							return `<div style="padding:10px;border:1px solid #2a2a2a;background:#0f0f0f;border-radius:8px;">
+								<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+									<div style="flex:1;min-width:0;">
+										<div style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;margin-bottom:2px;">
+											<b style="color:${nameColor};font-size:0.88rem;">${displayName}</b>${enchantBadge}
+										</div>
+										<div style="margin-bottom:2px;">${tierLabel(item.tier)}</div>
+										<div style="font-size:0.75rem;color:#666;">${item.d}</div>
+									</div>
+									<div style="flex-shrink:0;text-align:center;min-width:72px;">
+										<div style="font-size:0.7rem;color:${canAfford?'var(--gold)':'#555'};margin-bottom:4px;">${cost.toLocaleString()}G</div>
+										<button onclick="executeEnchant(${idx},'${filterType}')"
+											style="padding:7px 10px;font-size:0.8rem;font-weight:bold;width:100%;
+											border-radius:6px;cursor:${canAfford?'pointer':'not-allowed'};
+											background:${canAfford?'linear-gradient(135deg,#5a3300,#c0760a)':'#1a1a1a'};
+											border:1px solid ${canAfford?'#f9a825':'#333'};
+											color:${canAfford?'#fff':'#444'};"
+											${canAfford?'':' disabled'}>
+											${item.enchant?'🔄 リロール':'✨ 付与'}
+										</button>
+									</div>
+								</div>
+							</div>`
+						}).join('')
+					}
+				</div>
+				<!-- エンチャント一覧 -->
+				<details style="margin-top:12px;">
+					<summary style="font-size:0.8rem;color:#888;cursor:pointer;padding:5px 0;">
+						📖 エンチャント効果一覧
+					</summary>
+					<div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+						${[...ENCHANT_DATA.weapon,...ENCHANT_DATA.armor].map(e=>`
+							<div style="padding:6px 8px;background:#0d0d0d;border:1px solid #222;border-radius:6px;">
+								<div style="font-size:0.72rem;font-weight:bold;color:#c8a060;">${e.icon} ${e.name}</div>
+								<div style="font-size:0.65rem;color:#666;margin-top:2px;">${e.desc}</div>
+								<div style="font-size:0.62rem;color:#555;margin-top:2px;">
+									${e.levels.map(l=>`<span style="margin-right:4px;">${l.name}</span>`).join('')}
+								</div>
+							</div>`).join('')}
+						</div>
+				</details>
+				<button onclick="closeModal()" class="btn-action btn-red" style="width:100%;margin-top:12px;padding:10px;">閉じる</button>
+			`
+			openModalWrapper()
+		}
+
+
+		// ═══════════════════════════════════════════════════════════════
+		// エンチャントポップアップ演出
+		// ═══════════════════════════════════════════════════════════════
+		function showEnchantPopup({ success, result, itemName, prevEnchant, cost }) {
+			const overlay = document.getElementById('enchant-popup-overlay')
+			const box     = document.getElementById('enchant-popup-box')
+			const icon    = document.getElementById('enchant-popup-icon')
+			const title   = document.getElementById('enchant-popup-title')
+			const sub     = document.getElementById('enchant-popup-sub')
+			const detail  = document.getElementById('enchant-popup-detail')
+			const costEl  = document.getElementById('enchant-popup-cost')
+			const parts   = document.getElementById('enchant-particles')
+			if (!overlay) return
+
+			// 前の状態をリセット
+			box.className = ''
+			box.classList.remove('enchant-appear','enchant-shake')
+			parts.innerHTML = ''
+			icon.innerHTML = title.innerHTML = sub.innerHTML = detail.innerHTML = costEl.textContent = ''
+
+			if (success && result) {
+				// ─── 成功 ───────────────────────────────────────────────
+				const lvColors = { 1:'#a0a0a0', 2:'#60a5fa', 3:'#f0c060' }
+				const lvColor  = lvColors[result.level] || '#f9a825'
+				const lvLabels = { 1:'NORMAL', 2:'✦ RARE ✦', 3:'★ LEGENDARY ★' }
+				const lvLabel  = lvLabels[result.level] || ''
+
+				box.classList.add('success')
+				void box.offsetWidth // reflow
+				box.classList.add('enchant-appear')
+
+				icon.innerHTML = `<div style="font-size:3.2rem;line-height:1.1;animation:enchantPulse 1.4s ease infinite;color:${lvColor};">${result.icon||'✨'}</div>`
+
+				title.innerHTML = `<div style="font-size:1.35rem;font-weight:bold;letter-spacing:1px;color:${lvColor};margin-bottom:4px;">【 ${result.name} 】</div>
+					<div style="font-size:0.68rem;padding:3px 14px;display:inline-block;border-radius:20px;background:${lvColor}22;border:1px solid ${lvColor}88;color:${lvColor};letter-spacing:3px;">${lvLabel}</div>`
+
+				// リロール矢印 or 新規付与
+				const arrowHtml = prevEnchant
+					? `<div style="font-size:0.82rem;color:#666;margin-bottom:6px;">
+						<span style="text-decoration:line-through;color:#444;">${prevEnchant.icon||''} ${prevEnchant.name}</span>
+						<span style="margin:0 8px;color:#555;">→</span>
+						<span style="color:${lvColor};">${result.icon||''} ${result.name}</span>
+					  </div>`
+					: `<div style="font-size:0.8rem;color:#888;margin-bottom:6px;">新規付与</div>`
+
+				sub.innerHTML = `<div style="margin-top:10px;">${arrowHtml}
+					<div style="font-size:0.82rem;color:#b0b0b0;">
+						<span style="color:#666;">対象：</span><b style="color:#ddd;">${itemName}</b>
+					</div></div>`
+
+				// エフェクト説明（val%に置換）
+				const allEnch = [...(ENCHANT_DATA.weapon||[]),...(ENCHANT_DATA.armor||[])]
+				const meta    = allEnch.find(e => e.id === result.id)
+				if (meta) {
+					const pct = Math.round(result.val * 100)
+					const descText = meta.desc.replace('〇', `${pct}`)
+					detail.innerHTML = `<div style="background:rgba(255,255,255,0.04);border:1px solid ${lvColor}33;
+						border-radius:10px;padding:10px 14px;font-size:0.8rem;color:#b0b0b0;line-height:1.6;margin-top:12px;">
+						${meta.icon} <b style="color:${lvColor};">${result.name}</b><br>
+						<span style="color:#888;">${descText}</span>
+					</div>`
+				}
+
+				// パーティクル生成
+				const pCount  = result.level === 3 ? 20 : result.level === 2 ? 10 : 5
+				const pEmojis = result.level === 3 ? ['★','✦','🌟','⭐','💫'] : ['✨','💫','⚡']
+				for (let i = 0; i < pCount; i++) {
+					const p = document.createElement('div')
+					p.style.cssText = [
+						'position:absolute',
+						`left:${5+Math.random()*90}%`,
+						`bottom:${Math.random()*60+10}%`,
+						`font-size:${0.6+Math.random()*1.2}rem`,
+						`animation:enchantFloat ${1.0+Math.random()*1.8}s ease ${Math.random()*0.9}s both`,
+						'pointer-events:none',
+						`color:${lvColor}`,
+					].join(';')
+					p.textContent = pEmojis[Math.floor(Math.random()*pEmojis.length)]
+					parts.appendChild(p)
+				}
+
+				playSE(result.level === 3 ? 'critical' : 'win')
+
+			} else {
+				// ─── 失敗 ───────────────────────────────────────────────
+				box.classList.add('failure')
+				void box.offsetWidth
+				setTimeout(() => { box.classList.add('enchant-shake'); setTimeout(()=>box.classList.remove('enchant-shake'),450) }, 80)
+
+				icon.innerHTML  = '<div style="font-size:3.2rem;line-height:1.1;color:#444;">💨</div>'
+				title.innerHTML = '<div style="font-size:1.2rem;font-weight:bold;color:#555;letter-spacing:1px;">エンチャント失敗</div>'
+
+				const lostText = prevEnchant
+					? `<div style="margin-top:10px;font-size:0.8rem;background:rgba(255,255,255,0.03);border:1px solid #222;border-radius:8px;padding:8px 12px;color:#555;">
+						${prevEnchant.icon||'✨'} <span style="text-decoration:line-through;">${prevEnchant.name}</span><br>
+						<span style="color:#3a3a3a;font-size:0.72rem;">既存エンチャントが消失しました</span>
+					  </div>`
+					: ''
+
+				sub.innerHTML    = `<div style="margin-top:8px;color:#4a4a4a;font-size:0.85rem;">魔力が霧散してしまった…</div>`
+				detail.innerHTML = lostText
+			}
+
+			costEl.innerHTML = `<span style="color:#555;">${cost.toLocaleString()} G 消費</span>`
+			overlay.classList.add('active')
+		}
+
+		function closeEnchantPopup() {
+			const overlay = document.getElementById('enchant-popup-overlay')
+			if (overlay) overlay.classList.remove('active')
+		}
+
+		function executeEnchant(inventoryIdx, filterType = 'all') {
+			const item = gameState.inventory[inventoryIdx]
+			if (!item) return
+			const cost = getEnchantCost(item.tier)
+			if (gameState.gold < cost) { showMsg('ゴールドが不足しています。'); return }
+
+			const prevEnchant = item.enchant ? { ...item.enchant } : null
+			const itemName = item.n
+			gameState.gold -= cost
+			const result = rollEnchant(item.type)
+
+			if (result) {
+				item.enchant = result
+				const verb = prevEnchant ? 'リロール' : '付与'
+				addLog(`🔨 鍛冶屋：${itemName} に [${result.name}] を${verb}！ (${cost.toLocaleString()}G消費)`, 'log-gold')
+				save_game(); updateUI()
+				openSmithModal(filterType)
+				// モーダル描画完了後にポップアップ表示
+				setTimeout(() => showEnchantPopup({ success: true, result, itemName, prevEnchant, cost }), 50)
+			} else {
+				delete item.enchant
+				addLog(`🔨 鍛冶屋：エンチャント失敗… (${cost.toLocaleString()}G消費)`, 'log-sys')
+				save_game(); updateUI()
+				openSmithModal(filterType)
+				setTimeout(() => showEnchantPopup({ success: false, result: null, itemName, prevEnchant, cost }), 50)
+			}
+		}
+
+
+		// ─── パッチノート ───────────────────────────────────────────────
+		const PATCH_NOTES = [
+			{
+				ver: 'Ver 2.30', date: '2026', label: '最新', color: '#e060ff',
+				sections: [
+					{ title: '演出・ビジュアルエフェクト強化', items: [
+						'パーティクルシステム全面実装 — 物理攻撃（スラッシュ）・魔法（魔法陣バースト）・弓（矢エフェクト）・回復（緑キラキラ）・状態異常（毒/出血/凍結/気絶）すべてに専用エフェクト',
+						'会心一撃時に金色フラッシュ＋大ダメージ数値ポップ',
+						'被ダメ時にキャラカードが赤く光って揺れる（プレイヤー・モンスター共通）',
+						'戦闘開始時に赤→金の爆発エフェクト',
+						'勝利時に5色の花火パーティクル',
+						'探索ボタン押下時にダンジョン塵パーティクル',
+						'アイテム使用時に回復色エフェクト',
+						'バフ/デバフ/シールド/ガードスキルに対応色のエフェクト追加'
+					]},
+					{ title: 'ログ文章の改善', items: [
+						'通常攻撃ログを武器種別フレーバーテキストに変更 — 剣:「斬りつけた」「刃が裂いた」 / 斧:「叩きつけた」「豪腕が強打」 / 槍:「突き立てた」「穿った」 / 短剣:「隙を突いた」 / 弓:「矢を放った」「一矢が貫いた」 / 魔法:「魔法を放った」「呪文が直撃」',
+						'スキル発動ログを「〇〇は〇〇に★スキル名★を唱えた/叩きこんだ/使った」形式に統一',
+						'アイテム使用ログを「〇〇は★アイテム名★を飲んだ。HPがXX回復した！」形式に',
+						'攻撃ログに⚔近接 / 🏹遠距離バッジを追加',
+						'ダメージ数値を太字で強調表示'
+					]},
+					{ title: 'UIシステム改善', items: [
+						'バトル画面のキャラカードをモンスター・プレイヤーで統一デザインに（中央揃え・前衛赤/後衛青バッジ）',
+						'カード配置を前衛が前・後衛が後ろに統一（前衛3人でも横一列に並ぶ）',
+						'ショップ武器リストに⚔近接 / 🏹遠距離バッジを追加',
+						'ログエリアをクリックすると全ログをモーダルで大画面表示'
+					]},
+					{ title: 'エンチャントシステム', items: [
+						'武器・防具・装飾品へのエンチャント機能実装',
+						'エンチャント付与時の専用演出追加',
+						'カバン・倉庫・ショップ全画面にエンチャントバッジ表示'
+					]},
+					{ title: 'ルーン強化', items: [
+						'新ルーン効果追加：固定ダメージ加算',
+						'新ルーン効果追加：MP消耗率軽減'
+					]},
+					{ title: '回避システム実装', items: [
+						'回避率計算式を実装：基礎5% + (防御AGI - 攻撃AGI)×0.2% + (防御LUK - 攻撃LUK)×0.1%',
+						'回避発動時にログへ「かわした！」表示'
+					]},
+					{ title: 'バグ修正・安定性向上', items: [
+						'カバンをロード後に開けない問題を修正（モーダルがoverflow:hiddenに遮断される根本原因を解消）',
+						'カバン内のエンチャントバッジ表示でJSエラーが発生しアイテムリストが表示されない問題を修正',
+						'ギルド倉庫に預けた際にカバンの表示がすぐ更新されない問題を修正',
+						'倉庫預け時に上部トースト通知（「🏦 倉庫に預けました：アイテム名」）を追加',
+						'データロード後に後衛キャラのカードが表示されない問題を修正'
+					]}
+				]
+			},
+			{
+				ver: 'Ver 2.28', date: '2026', label: '', color: '#f0c060',
+				sections: [
+					{ title: '売却システム改善', items: ['一括売却をチェックボックス選択方式に変更','「✅ 全選択」「☐ 全解除」ボタンで素早く操作可能','選択中の件数・合計Gをリアルタイム表示','🔒ロック中のアイテムは自動で選択不可'] },
+					{ title: '装備タイプシステム追加', items: ['武器タイプを全49武器に付与（剣・大剣・魔剣・短剣・レイピア・槍・斧・鈍器・宝珠・弓・クロスボウ・杖・魔導書）','防具タイプを全16防具に付与（重鎧・軽鎧・法衣・魔導鎧）','装飾タイプを全18アクセサリーに付与（指輪・首飾り・ポーチ・バッグ・護符・宝珠・勲章・冠）','タイプバッジをショップ・カバン・売却画面・キャラ詳細・倉庫の全画面に表示'] }
+				]
+			},
+			{
+				ver: 'Ver 2.27', date: '2026', label: '', color: '#a0c0f0',
+				sections: [
+					{ title: '一括売却 / ショップ改善', items: ['売却画面に一括売却ボタン追加（ロック除く）','ショップ購入はコモン〜レアのみ（エピック・レジェンダリーはドロップ専用）','到達フロアに応じてレアの出現率が変化'] },
+					{ title: '秘宝を抱く特性改善', items: ['最高到達フロアのショップ最高Tierアイテムをレジェンダリー確定ドロップ','ステータス×2.5倍、サブ効果4つ付与'] },
+					{ title: 'デバフ調整', items: ['毒: 最大HP×5%/ターン、最大3スタック（各3ターン）','出血: ターン経過でダメージ増加 2→4→6→8→10%','凍結・気絶: ボスクラスには無効（耐性あり）'] }
+				]
+			},
+			{
+				ver: 'Ver 2.26', date: '2026', label: '', color: '#a0c0f0',
+				sections: [
+					{ title: 'パーティ・敵数拡張', items: ['最大パーティ人数を4人に拡張（Lv30で4人目雇用可能）','敵出現数をフロアに応じてスケール（30F以降は最大5体）'] },
+					{ title: 'その他', items: ['設定に2段階確認式のゲームリセットボタン追加','倉庫への預け操作後のフィルター・ソート維持修正'] }
+				]
+			},
+			{
+				ver: 'Ver 2.25', date: '2026', label: '', color: '#a0c0f0',
+				sections: [
+					{ title: 'ビジュアルエフェクト改善', items: ['勝利エフェクトを軽量化','バトル開始エフェクトの位置修正','ヒットエフェクトが正しいターゲットに表示されるよう修正','リジェネスキルに緑色の回復エフェクト追加'] }
+				]
+			},
+			{
+				ver: 'Ver 2.2', date: '2026', label: '', color: '#90d090',
+				sections: [
+					{ title: '戦闘・戦略システムの深化', items: ['自動周回機能の実装','前衛・後衛ポジションシステム導入','武器射程の概念追加','シールドシステム（HP別のダメージ軽減ゲージ）','状態異常(DoT)システム刷新'] },
+					{ title: 'モンスター', items: ['エリートモンスター出現（強力・希少ドロップ持ち）','状態異常耐性・シールド破壊の補正最適化'] }
+				]
+			},
+			{
+				ver: 'Ver 2.1', date: '2026', label: '', color: '#90d090',
+				sections: [
+					{ title: 'コンテンツ拡張・UI', items: ['ダンジョン50層まで解放','レアリティ・ティアシステム実装（コモン〜レジェンダリー）','アイテム視認性向上・モバイル端末への最適化'] }
+				]
+			},
+			{
+				ver: 'Ver 1.41', date: '', label: '', color: '#808088',
+				sections: [
+					{ title: 'ジョブ・属性', items: ['新ジョブ追加・名称変更（上位職・特殊職）','物理ダメージ / 特殊ダメージの分離','ルーンの交換・売却機能追加'] }
+				]
+			},
+			{
+				ver: 'Ver 1.3', date: '', label: '', color: '#808088',
+				sections: [
+					{ title: 'パーティ・装備システム', items: ['パーティ個別操作の実装（ターン制バトル）','第3の装備枠「汎用」スロット解放','ルーンシステムの原型実装'] }
+				]
+			},
+			{
+				ver: 'Ver 1.0〜1.2', date: '', label: '初期', color: '#505058',
+				sections: [
+					{ title: 'プロジェクト始動', items: ['テキストベース ハクスラRPGの基本システム（探索・戦闘・ドロップ）','セーブデータ管理・基本パーティ編成システム'] }
+				]
+			},
+		]
+
+		function openPatchNotesModal(activeVer) {
+			activeVer = activeVer || PATCH_NOTES[0].ver
+			const c = document.getElementById('modal-content')
+			const note = PATCH_NOTES.find(p => p.ver === activeVer) || PATCH_NOTES[0]
+
+			const tabsHtml = PATCH_NOTES.map(p => {
+				const isActive = p.ver === activeVer
+				return `<button onclick="openPatchNotesModal('${p.ver.replace(/'/g,"&#39;")}')"
+					style="padding:5px 10px;font-size:0.72rem;border-radius:6px;white-space:nowrap;flex-shrink:0;
+					border:1px solid ${isActive ? p.color : '#2a2a2a'};
+					background:${isActive ? p.color + '28' : '#0d0d0d'};
+					color:${isActive ? p.color : '#444'};cursor:pointer;">
+					${p.label ? `<span style="font-size:0.58rem;padding:0 3px;background:${p.color};color:#111;border-radius:3px;margin-right:3px;vertical-align:middle;">${p.label}</span>` : ''}${p.ver}
+				</button>`
+			}).join('')
+
+			const contentHtml = note.sections.map(sec => `
+				<div style="margin-bottom:14px;">
+					<div style="font-size:0.78rem;font-weight:bold;color:${note.color};
+						border-left:3px solid ${note.color};padding-left:8px;margin-bottom:7px;">${sec.title}</div>
+					<ul style="margin:0;padding:0 0 0 16px;list-style:disc;">
+						${sec.items.map(item => `<li style="font-size:0.82rem;color:#c8c8c8;margin-bottom:4px;line-height:1.45;">${item}</li>`).join('')}
+					</ul>
+				</div>
+			`).join('')
+
+			c.innerHTML = `
+				<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:2px solid #222;padding-bottom:10px;">
+					<h2 style="margin:0;font-size:1.1rem;">📋 パッチノート</h2>
+					<span style="font-size:0.72rem;color:#444;">更新履歴</span>
+				</div>
+
+				<!-- バージョン選択（横スクロール） -->
+				<div style="display:flex;gap:5px;overflow-x:auto;padding-bottom:10px;margin-bottom:12px;
+					scrollbar-width:thin;scrollbar-color:#333 transparent;">
+					${tabsHtml}
+				</div>
+
+				<!-- バージョンヘッダー -->
+				<div style="background:${note.color}18;border:1px solid ${note.color}44;border-radius:8px;
+					padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+					<div style="font-size:2rem;line-height:1;">📦</div>
+					<div>
+						<div style="font-size:1.05rem;font-weight:bold;color:${note.color};">
+							${note.ver}
+							${note.label ? `<span style="font-size:0.62rem;background:${note.color};color:#111;padding:1px 6px;border-radius:3px;margin-left:5px;vertical-align:middle;">${note.label}</span>` : ''}
+						</div>
+						${note.date ? `<div style="font-size:0.7rem;color:#555;margin-top:2px;">${note.date}</div>` : ''}
+					</div>
+				</div>
+
+				<!-- 変更内容 -->
+				<div style="max-height:40vh;overflow-y:auto;padding-right:4px;
+					scrollbar-width:thin;scrollbar-color:#333 transparent;">
+					${contentHtml}
+				</div>
+
+				<button onclick="openSettingsModal()" class="btn-action btn-blue" style="width:100%;margin-top:12px;padding:10px;">
+					← 設定に戻る
+				</button>
+			`
+			openModalWrapper()
+		}
+
 				function openHelpModal() {
 			const c = document.getElementById('modal-content')
 			const helpSections = [
@@ -3926,7 +5100,7 @@ function winBattle() {
 					<b style="color:#eee; font-size:0.88rem;">武器の射程</b>
 					<div style="display:flex; flex-direction:column; gap:6px; margin-top:6px; margin-bottom:10px;">
 						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px 10px; display:flex; align-items:center; gap:8px;">
-							<span style="font-size:0.78rem;padding:2px 8px;background:rgba(251,146,60,0.15);border:1px solid #c2622a;border-radius:4px;color:#fb923c;white-space:nowrap;">近接</span>
+							
 							<p style="color:#aaa; font-size:0.82rem; margin:0;">剣・斧・槌など。後衛から使うとダメージ<b style="color:#f87171;">-20%</b>。前衛で最大火力。</p>
 						</div>
 						<div style="background:#111; border:1px solid #222; border-radius:6px; padding:8px 10px; display:flex; align-items:center; gap:8px;">
@@ -4234,17 +5408,37 @@ function winBattle() {
 			const tierStars  = t => '★'.repeat(Math.min(t,8)) + '☆'.repeat(Math.max(0,8-t))
 			const tierBadge  = t => t ? `<span style="font-size:0.68rem; color:${tierColors[t]||'#fff'}; background:rgba(0,0,0,0.5); border:1px solid ${tierColors[t]||'#555'}; border-radius:4px; padding:1px 5px; letter-spacing:0.5px; white-space:nowrap;">Tier${t} ${tierStars(t)}</span>` : ''
 			const dTypeIcon  = dt => dt === 'magic' ? '<span style="color:#a78bfa; font-size:0.7rem; margin-left:2px;">✦魔法</span>' : dt === 'physical' ? '<span style="color:#fb923c; font-size:0.7rem; margin-left:2px;">✦物理</span>' : ''
+			const rangeIcon  = r => r === 'long'
+				? '<span style="font-size:0.72rem;padding:1px 5px;background:rgba(96,165,250,0.12);border:1px solid #3a5a8a;border-radius:10px;color:#60a5fa;">🏹 遠距離</span>'
+				: '<span style="font-size:0.72rem;padding:1px 5px;background:rgba(251,146,60,0.12);border:1px solid #7a3a10;border-radius:10px;color:#fb923c;">⚔ 近接</span>'
 
+			// タイプバッジヘルパー（ショップ内）
+			const itemTypeBadge = item => {
+				const wc={'剣':'#e8a080','大剣':'#e86060','魔剣':'#c060e8','短剣':'#e8c060','レイピア':'#e0d080','槍':'#80b8e8','斧':'#e88050','鈍器':'#a8a8a0','宝珠':'#b080e8','弓':'#80e890','クロスボウ':'#60b8d8','杖':'#9090f0','魔導書':'#b090e8'}
+				const ac={'重鎧':'#e87060','軽鎧':'#80e880','法衣':'#9090f8','魔導鎧':'#c060f0'}
+				const xc={'指輪':'#f0c050','首飾り':'#f0a050','ポーチ':'#80c080','バッグ':'#60a860','護符':'#c0a840','宝珠':'#c080f0','勲章':'#f08050','冠':'#f0d040'}
+				const key = item.weaponType||item.armorType||item.accType
+				const map = item.weaponType?wc:item.armorType?ac:xc
+				if (!key) return ''
+				const c = map[key]||'#aaa'
+				return `<span style="font-size:0.61rem;padding:1px 5px;background:${c}22;border:1px solid ${c}88;border-radius:3px;color:${c};">${key}</span>`
+			}
 			const itemCards = items.map(i => {
 				const canAfford = gameState.gold >= i.p
-				const topMeta = [tierBadge(i.tier), i.dType ? dTypeIcon(i.dType) : ''].filter(Boolean).join(' ')
+				const typeBdg = itemTypeBadge(i)
+				const topMeta = [
+					tierBadge(i.tier),
+					(cat === 'weapon' && i.dType) ? dTypeIcon(i.dType) : '',
+					cat === 'weapon' ? rangeIcon(i.range || 'short') : '',
+					typeBdg
+				].filter(Boolean).join(' ')
 				return `<div style="background:${canAfford ? '#1a1a1a' : '#111'}; padding:10px 12px; border-radius:8px;
 					border:1px solid ${canAfford ? '#333' : '#1e1e1e'};
 					display:flex; justify-content:space-between; align-items:center; gap:8px;">
 					<div style="flex:1; min-width:0;">
 						${topMeta ? `<div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap; margin-bottom:4px;">${topMeta}</div>` : ''}
 						<b style="font-size:0.92rem; color:${canAfford ? '#eee' : '#555'};">${i.n}</b>
-						<div style="font-size:0.77rem; color:#666; margin-top:2px;">${i.d}${cat !== 'item' ? (i.range==='long' ? ' <span style=\"font-size:0.7rem;padding:0 4px;background:rgba(96,165,250,0.15);border:1px solid #60a5fa;border-radius:3px;color:#60a5fa;\">遠距離</span>' : ' <span style=\"font-size:0.7rem;padding:0 4px;background:rgba(251,146,60,0.15);border:1px solid #c2622a;border-radius:3px;color:#fb923c;\">近接</span>') : ''}</div>
+						<div style="font-size:0.77rem; color:#666; margin-top:2px;">${i.d}</div>
 					</div>
 					<div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0;">
 						<span style="color:${canAfford ? 'var(--gold)' : '#555'}; font-weight:bold; font-size:0.88rem; white-space:nowrap;">${i.p.toLocaleString()}G</span>
@@ -4268,11 +5462,14 @@ function winBattle() {
 				<button onclick="closeModal()" class="btn-action btn-red" style="margin-top:12px; width:100%;">閉じる</button>`
 			openModalWrapper()
 		}
+		// チェック済みインデックスを保持するSet（売却画面ライフタイム）
+		let _sellChecked = new Set()
+
 		function openShopSell(msg = '', filterType = 'all', sortType = 'default') {
 			const c = document.getElementById('modal-content')
 			const successHtml = msg ? `<div style="background:rgba(76,175,80,0.2);border:1px solid #4caf50;color:#fff;padding:8px 12px;border-radius:6px;margin-bottom:10px;font-size:0.9rem;">${msg}</div>` : ''
+			if (msg) _sellChecked = new Set() // 売却後はチェックをリセット
 
-			// Tier表示ヘルパー
 			const tierLabel = tier => {
 				if (!tier) return ''
 				const stars = '★'.repeat(Math.min(tier, 8)) + '☆'.repeat(Math.max(0, 8 - tier))
@@ -4280,7 +5477,6 @@ function winBattle() {
 				return `<span style="font-size:0.72rem; color:${colors[tier]||'#fff'}; letter-spacing:1px;">Tier${tier} ${stars}</span>`
 			}
 
-			// ─── フィルタータブ（カバンと同じ）───
 			const tabs = [
 				{ key: 'all',    label: '全て',   icon: '📦' },
 				{ key: 'weapon', label: '武器',   icon: '⚔️' },
@@ -4291,23 +5487,22 @@ function winBattle() {
 			const sellableAll = gameState.inventory.filter(item => item.type !== 'item')
 			const counts = { all: sellableAll.length }
 			tabs.slice(1).forEach(t => { counts[t.key] = sellableAll.filter(i => i.type === t.key).length })
-			const tabHtml = `<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px;">
+			const tabHtml = `<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px;">
 				${tabs.map(t => {
 					const active = filterType === t.key
 					const cnt = counts[t.key] ?? 0
 					return `<button onclick="openShopSell('','${t.key}','${sortType}')"
-						style="display:flex; align-items:center; gap:4px; padding:5px 10px; font-size:0.8rem;
-						border-radius:20px; border:1px solid ${active ? 'var(--accent-blue)' : '#444'};
-						background:${active ? 'rgba(66,153,225,0.25)' : '#111'};
-						color:${active ? '#fff' : '#aaa'}; cursor:pointer;">
+						style="display:flex;align-items:center;gap:4px;padding:5px 10px;font-size:0.8rem;
+						border-radius:20px;border:1px solid ${active?'var(--accent-blue)':'#444'};
+						background:${active?'rgba(66,153,225,0.25)':'#111'};
+						color:${active?'#fff':'#aaa'};cursor:pointer;">
 						<span>${t.icon}</span><span>${t.label}</span>
-						<span style="background:${active ? 'var(--accent-blue)' : '#333'}; color:#fff;
-							border-radius:10px; padding:0 5px; font-size:0.7rem; min-width:16px; text-align:center;">${cnt}</span>
+						<span style="background:${active?'var(--accent-blue)':'#333'};color:#fff;
+							border-radius:10px;padding:0 5px;font-size:0.7rem;min-width:16px;text-align:center;">${cnt}</span>
 					</button>`
 				}).join('')}
 			</div>`
 
-			// ─── ソート ───
 			const sortOpts = [
 				{ key: 'default', label: '取得順' },
 				{ key: 'tier',    label: 'Tier順' },
@@ -4315,18 +5510,17 @@ function winBattle() {
 				{ key: 'locked',  label: 'ロック優先' },
 			]
 			const sortHtml = `<div style="display:flex; gap:4px; margin-bottom:10px; flex-wrap:wrap;">
-				<span style="font-size:0.75rem; color:#666; align-self:center; margin-right:2px;">並び替え:</span>
+				<span style="font-size:0.75rem;color:#666;align-self:center;margin-right:2px;">並び替え:</span>
 				${sortOpts.map(s => {
 					const active = sortType === s.key
 					return `<button onclick="openShopSell('','${filterType}','${s.key}')"
-						style="padding:3px 9px; font-size:0.75rem; border-radius:12px;
-						border:1px solid ${active ? 'var(--gold)' : '#333'};
-						background:${active ? 'rgba(255,196,0,0.15)' : '#111'};
-						color:${active ? 'var(--gold)' : '#777'}; cursor:pointer;">${s.label}</button>`
+						style="padding:3px 9px;font-size:0.75rem;border-radius:12px;
+						border:1px solid ${active?'var(--gold)':'#333'};
+						background:${active?'rgba(255,196,0,0.15)':'#111'};
+						color:${active?'var(--gold)':'#777'};cursor:pointer;">${s.label}</button>`
 				}).join('')}
 			</div>`
 
-			// ─── 絞り込み＋ソート ───
 			let sellable = filterType === 'all'
 				? sellableAll.map((item) => ({ item, idx: gameState.inventory.indexOf(item) }))
 				: sellableAll.filter(item => item.type === filterType).map(item => ({ item, idx: gameState.inventory.indexOf(item) }))
@@ -4340,57 +5534,157 @@ function winBattle() {
 					<span style="color:var(--gold);font-weight:bold;">${gameState.gold.toLocaleString()}G</span>
 				</div>
 				${successHtml}
-				<div style="font-size:0.78rem;color:#aaa;margin:0 0 10px;background:#1a1a1a;border-radius:6px;padding:8px 10px;border-left:3px solid #f59e0b;">
-					💡 <b style="color:var(--gold)">🔒 鍵マーク</b> でロックすると誤売却を防止できます。
+				<div style="font-size:0.78rem;color:#aaa;margin:0 0 8px;background:#1a1a1a;border-radius:6px;padding:7px 10px;border-left:3px solid #f59e0b;">
+					💡 チェックして <b style="color:#f87171;">選択売却</b>　🔒ロックしたアイテムは選択不可
 				</div>
 				${tabHtml}${sortHtml}
-				<div id="sell-list" style="display:flex;flex-direction:column;gap:8px;max-height:44vh;overflow-y:auto;padding-right:3px;"></div>
-				<button onclick="openShopMenu()" class="btn-action btn-red" style="margin-top:14px;width:100%;">← ショップに戻る</button>`
+				<div style="display:flex;gap:6px;margin-bottom:8px;align-items:center;">
+					<button onclick="_sellSelectAll()" style="padding:5px 10px;font-size:0.78rem;background:#1a2a1a;border:1px solid #4caf50;color:#4caf50;border-radius:6px;cursor:pointer;">✅ 全選択</button>
+					<button onclick="_sellClearAll()" style="padding:5px 10px;font-size:0.78rem;background:#2a1a1a;border:1px solid #888;color:#aaa;border-radius:6px;cursor:pointer;">☐ 全解除</button>
+					<div id="sell-summary" style="flex:1;text-align:right;font-size:0.82rem;color:#aaa;"></div>
+				</div>
+				<div id="sell-list" style="display:flex;flex-direction:column;gap:6px;max-height:38vh;overflow-y:auto;padding-right:3px;"></div>
+				<div style="margin-top:10px;">
+					<button id="sell-checked-btn" onclick="_sellCheckedItems('${filterType}','${sortType}')"
+						style="width:100%;padding:11px;font-size:0.9rem;font-weight:bold;background:linear-gradient(135deg,#7c1a1a,#c0392b);border:1px solid #e74c3c;color:#fff;border-radius:6px;cursor:pointer;opacity:0.4;pointer-events:none;">
+						🗑️ 選択した0件を売却（0G）
+					</button>
+				</div>
+				<button onclick="openShopMenu()" class="btn-action btn-red" style="margin-top:8px;width:100%;">← ショップに戻る</button>`
 			openModalWrapper()
 
+			// ─── アイテムリスト描画 ───
 			const list = document.getElementById('sell-list')
-			if (sellable.length === 0) {
-				list.innerHTML = '<p style="text-align:center;padding:20px;color:#666;">売却できる装備がありません</p>'
-			} else {
+			window._sellCurrentSellable = sellable // スコープ保持
+
+			function _renderSellList() {
+				list.innerHTML = ''
+				if (sellable.length === 0) {
+					list.innerHTML = '<p style="text-align:center;padding:20px;color:#666;">売却できる装備がありません</p>'
+					return
+				}
 				sellable.forEach(({ item, idx }) => {
 					const div = document.createElement('div')
-					div.style.cssText = 'display:flex; flex-direction:column; padding:10px; border:1px solid #333; background:#111; border-radius:8px;'
+					const isChecked = _sellChecked.has(idx)
+					const isLocked = item.locked
 					const sellPrice = Math.max(1, Math.floor((item.p || 100) * 0.4))
-					const lockIcon = item.locked ? '🔒' : '🔓'
-					const lockStyle = item.locked ? 'color:var(--gold); border-color:var(--gold);' : ''
 					const nameColor = item.rarityColor || '#eee'
-					const itemName = item.rarityLabel ? `[${item.rarityLabel}] ${item.n}` : item.n
+					const itemName = getItemDisplayName(item)
 					let subText = ''
 					if (item.subEffects && item.subEffects.length > 0) {
-						subText = `<div style="font-size:0.75rem; color:var(--accent-blue); margin:3px 0;">◆ ${item.subEffects.map(e => e.n + '+' + (e.k === 'cri' ? (e.v*100)+'%' : e.v)).join(' / ')}</div>`
+						subText = `<div style="font-size:0.72rem;color:var(--accent-blue);margin:2px 0;">◆ ${item.subEffects.map(e=>e.n+'+'+(e.k==='cri'?(e.v*100)+'%':e.v)).join(' / ')}</div>`
 					}
-					const tierHtml = item.tier ? `<div style="margin-top:2px;">${tierLabel(item.tier)}</div>` : ''
+					const tierHtml = item.tier ? `<div style="margin-top:1px;">${tierLabel(item.tier)}</div>` : ''
 					const typeIcons = { weapon:'⚔️', armor:'🛡️', acc:'💍', rune:'🔮' }
-					const typeBadge = item.type ? `<span style="font-size:0.68rem; color:#555; margin-right:4px;">${typeIcons[item.type]||''}</span>` : ''
-					const rangeBadge = item.type !== 'item' && item.range
-						? (item.range==='long' ? ' <span style="font-size:0.7rem;padding:0 4px;background:rgba(96,165,250,0.15);border:1px solid #60a5fa;border-radius:3px;color:#60a5fa;">遠距離</span>'
-						                       : ' <span style="font-size:0.7rem;padding:0 4px;background:rgba(251,146,60,0.15);border:1px solid #c2622a;border-radius:3px;color:#fb923c;">近接</span>')
-						: ''
+					const typeBadge = item.type ? `<span style="font-size:0.68rem;color:#555;margin-right:3px;">${typeIcons[item.type]||''}</span>` : ''
+					const wTypeBadge = item.weaponType ? `<span style="font-size:0.65rem;padding:0 3px;background:#1a2030;border:1px solid #334;border-radius:3px;color:#7aa;margin-left:3px;">${item.weaponType}</span>` : ''
+					const aTypeBadge = item.armorType ? `<span style="font-size:0.65rem;padding:0 3px;background:#1a1a20;border:1px solid #334;border-radius:3px;color:#a9a;margin-left:3px;">${item.armorType}</span>` : ''
+					const accTypeBadge = item.accType ? `<span style="font-size:0.65rem;padding:0 3px;background:#201a1a;border:1px solid #443;border-radius:3px;color:#aa9;margin-left:3px;">${item.accType}</span>` : ''
+					const rangeBadge = item.range === 'long' ? '<span style="font-size:0.65rem;padding:0 3px;background:rgba(96,165,250,0.12);border:1px solid #60a5fa;border-radius:3px;color:#60a5fa;margin-left:3px;">🏹遠距離</span>' : ''
+					const lockIcon = isLocked ? '🔒' : '🔓'
+					const lockStyle = isLocked ? 'border-color:var(--gold);color:var(--gold);' : ''
+					div.style.cssText = `display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid ${isChecked?'#e74c3c':'#2a2a2a'};background:${isChecked?'rgba(231,76,60,0.08)':'#0f0f0f'};border-radius:8px;cursor:${isLocked?'default':'pointer'};transition:border-color 0.15s,background 0.15s;`
 					div.innerHTML = `
-						<div style="display:flex; justify-content:space-between; align-items:flex-start;">
-							<div style="flex:1; min-width:0;">
-								<div style="display:flex; align-items:center; gap:3px; flex-wrap:wrap;">
-									${typeBadge}<b style="color:${nameColor}; font-size:0.95rem;">${itemName}</b>
-								</div>
-								${tierHtml}
-								<div style="font-size:0.8rem; color:#aaa; margin-top:2px;">${item.d}${rangeBadge}</div>
-								${subText}
-								<div style="font-size:0.8rem; color:var(--gold); margin-top:4px;">売値: ${sellPrice.toLocaleString()}G</div>
+						<div style="flex-shrink:0;">
+							<input type="checkbox" data-idx="${idx}" ${isChecked?'checked':''} ${isLocked?'disabled':''} style="width:18px;height:18px;accent-color:#e74c3c;cursor:${isLocked?'not-allowed':'pointer'};">
+						</div>
+						<div style="flex:1;min-width:0;" onclick="${isLocked?'':'_toggleSellCheck('+idx+')'}" >
+							<div style="display:flex;align-items:center;gap:3px;flex-wrap:wrap;">
+								${typeBadge}<b style="color:${nameColor};font-size:0.88rem;">${itemName}</b>${wTypeBadge}${aTypeBadge}${accTypeBadge}${rangeBadge}
 							</div>
-							<div style="display:flex; flex-direction:column; gap:6px; margin-left:8px; flex-shrink:0; align-items:stretch; min-width:72px;">
-								<button style="padding:8px 12px;font-size:0.88rem;font-weight:bold;width:100%;background:${item.locked ? '#555' : 'linear-gradient(135deg,#b45309,#d97706)'};border:1px solid ${item.locked ? '#666' : '#f59e0b'};color:#fff;border-radius:6px;cursor:${item.locked ? 'not-allowed' : 'pointer'};opacity:${item.locked ? '0.5' : '1'};" onclick="shopSellItem(${idx})" ${item.locked ? 'disabled title="🔒 ロックを外してから売却"' : ''}>売却</button>
-								<button class="btn-icon" style="background:transparent; border:1px solid #444; ${lockStyle} font-size:0.85rem; padding:4px 7px; width:100%;" onclick="toggleLock(${idx}); openShopSell('','${filterType}','${sortType}')" title="ロック">${lockIcon}</button>
-							</div>
+							${tierHtml}
+							<div style="font-size:0.76rem;color:#888;margin-top:1px;">${item.d}</div>
+							${subText}
+							<div style="font-size:0.76rem;color:${isChecked?'#f87171':'var(--gold)'};margin-top:2px;">${isLocked?'🔒 ロック中':('売値: '+sellPrice.toLocaleString()+'G')}</div>
+						</div>
+						<div style="flex-shrink:0;display:flex;flex-direction:column;gap:4px;align-items:center;">
+							<button class="btn-icon" style="font-size:0.75rem;padding:3px 6px;${lockStyle}" onclick="toggleLock(${idx});openShopSell('','${filterType}','${sortType}')" title="ロック切替">${lockIcon}</button>
 						</div>`
+					div.querySelector('input[type=checkbox]')?.addEventListener('change', e => {
+						_toggleSellCheck(idx); e.stopPropagation()
+					})
 					list.appendChild(div)
 				})
+				_updateSellSummary()
+			}
+			_renderSellList()
+		}
+
+		function _toggleSellCheck(idx) {
+			const item = gameState.inventory[idx]
+			if (!item || item.locked) return
+			if (_sellChecked.has(idx)) _sellChecked.delete(idx)
+			else _sellChecked.add(idx)
+			// チェックボックスUIを更新
+			const cb = document.querySelector(`input[data-idx="${idx}"]`)
+			if (cb) cb.checked = _sellChecked.has(idx)
+			const row = cb?.closest('div[style*="display:flex;align-items:center"]')
+			if (row) {
+				const checked = _sellChecked.has(idx)
+				row.style.borderColor = checked ? '#e74c3c' : '#2a2a2a'
+				row.style.background = checked ? 'rgba(231,76,60,0.08)' : '#0f0f0f'
+				// 売値テキスト更新
+				const priceEl = row.querySelector('[style*="売値"]') || Array.from(row.querySelectorAll('div')).find(d=>d.textContent.includes('売値'))
+				if (priceEl) {
+					const sellPrice = Math.max(1, Math.floor(((gameState.inventory[idx]?.p)||100)*0.4))
+					priceEl.style.color = checked ? '#f87171' : 'var(--gold)'
+				}
+			}
+			_updateSellSummary()
+		}
+
+		function _updateSellSummary() {
+			const validIdxs = [..._sellChecked].filter(i => gameState.inventory[i] && !gameState.inventory[i].locked)
+			const total = validIdxs.reduce((s,i) => s + Math.max(1, Math.floor(((gameState.inventory[i]?.p)||100)*0.4)), 0)
+			const cnt = validIdxs.length
+			const summary = document.getElementById('sell-summary')
+			if (summary) summary.innerHTML = cnt > 0 ? `<span style="color:#f87171;font-weight:bold;">${cnt}件選択中</span> <span style="color:var(--gold);">${total.toLocaleString()}G</span>` : '<span style="color:#555;">未選択</span>'
+			const btn = document.getElementById('sell-checked-btn')
+			if (btn) {
+				btn.textContent = `🗑️ 選択した${cnt}件を売却（${total.toLocaleString()}G）`
+				if (cnt > 0) { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto' }
+				else { btn.style.opacity = '0.35'; btn.style.pointerEvents = 'none' }
 			}
 		}
+
+		function _sellSelectAll() {
+			const sellable = window._sellCurrentSellable || []
+			sellable.forEach(({item, idx}) => { if (!item.locked) _sellChecked.add(idx) })
+			// チェックボックスを全て更新
+			document.querySelectorAll('#sell-list input[type=checkbox]').forEach(cb => {
+				const idx = parseInt(cb.dataset.idx)
+				const item = gameState.inventory[idx]
+				if (item && !item.locked) { cb.checked = true; const row = cb.closest('div[style*="align-items:center"]'); if(row){row.style.borderColor='#e74c3c';row.style.background='rgba(231,76,60,0.08)'} }
+			})
+			_updateSellSummary()
+		}
+
+		function _sellClearAll() {
+			_sellChecked.clear()
+			document.querySelectorAll('#sell-list input[type=checkbox]').forEach(cb => {
+				cb.checked = false; const row = cb.closest('div[style*="align-items:center"]'); if(row){row.style.borderColor='#2a2a2a';row.style.background='#0f0f0f'}
+			})
+			_updateSellSummary()
+		}
+
+		function _sellCheckedItems(filterType, sortType) {
+			const validIdxs = [..._sellChecked].filter(i => gameState.inventory[i] && !gameState.inventory[i].locked)
+			if (validIdxs.length === 0) { showMsg('売却するアイテムが選択されていません。'); return }
+			const sorted = validIdxs.sort((a,b) => b - a) // 後ろから削除
+			let total = 0; let count = 0; const names = []
+			sorted.forEach(idx => {
+				const item = gameState.inventory[idx]
+				if (!item) return
+				const sp = Math.max(1, Math.floor((item.p||100)*0.4))
+				total += sp; count++; names.push(item.n)
+				gameState.inventory.splice(idx, 1)
+			})
+			gameState.gold += total
+			save_game(); updateUI()
+			addLog(`🗑️ ${count}件を売却！ 合計 ${total.toLocaleString()}G 獲得。`, 'log-gold')
+			openShopSell(`✅ ${count}件を売却しました（合計 ${total.toLocaleString()}G）`, filterType, sortType)
+		}
+
 		function shopSellItem(idx) {
 			const item = gameState.inventory[idx]
 			if (!item) return
@@ -4400,6 +5694,17 @@ function winBattle() {
 			gameState.inventory.splice(idx, 1)
 			addLog(`${item.n}を${sellPrice}Gで売却しました。`, 'log-gold')
 			openShopSell(`✅ ${item.n} を ${sellPrice}G で売却しました！`)
+		}
+		function bulkSellItems(filterType = 'all', sortType = 'default') {
+			const targets = gameState.inventory.filter(item => item.type !== 'item' && !item.locked && (filterType === 'all' || item.type === filterType))
+			if (targets.length === 0) { showMsg('売却できるアイテムがありません。'); return }
+			const total = targets.reduce((s, i) => s + Math.max(1, Math.floor((i.p||100)*0.4)), 0)
+			const count = targets.length
+			gameState.inventory = gameState.inventory.filter(item => !targets.includes(item))
+			gameState.gold += total
+			save_game(); updateUI()
+			addLog(`🗑️ ${count}件のアイテムを一括売却！ 合計 ${total.toLocaleString()}G 獲得。`, 'log-gold')
+			openShopSell(`✅ ${count}件を一括売却しました（合計 ${total.toLocaleString()}G）`, filterType, sortType)
 		}
 
 				function buyItem(cat, id) {
@@ -4416,7 +5721,8 @@ function winBattle() {
 			}
 			if (gameState.gold >= itemData.p) {
 				gameState.gold -= itemData.p
-				let newItem = applyRarity({ ...itemData, type: cat, locked: false })
+				// ショップ購入はコモン固定（レア/レジェンダリーはドロップ専用）
+				let newItem = applyShopRarity({ ...itemData, type: cat, locked: false })
 				gameState.inventory.push(newItem)
 				addLog(`${newItem.n}を購入しました。`, 'log-sys')
 				openShopList(cat, true)
@@ -4614,7 +5920,7 @@ function winBattle() {
 					div.style.cssText = 'display:flex; flex-direction:column; padding:10px; border:1px solid #333; background:#111; border-radius:8px;'
 					const lockIcon = item.locked ? '🔒' : '🔓'
 					const lockStyle = item.locked ? 'color:var(--gold); border-color:var(--gold);' : ''
-					const itemName = item.rarityLabel ? `[${item.rarityLabel}] ${item.n}` : item.n
+					const itemName = getItemDisplayName(item)
 					const nameColor = item.rarityColor || '#eee'
 					let subText = ''
 					if (item.subEffects && item.subEffects.length > 0) {
@@ -4622,19 +5928,30 @@ function winBattle() {
 					}
 					const tierHtml = item.tier ? `<div style="margin-top:2px;">${tierLabel(item.tier)}</div>` : ''
 					const depositBtn = inTown && item.type !== 'item'
-						? `<button class="btn-icon" style="background:#2a1a4a; border-color:#6644aa; font-size:0.78rem; padding:5px 8px;" onclick="storeToWarehouse(${idx})">預ける</button>`
+						? `<button class="btn-icon" style="background:#2a1a4a; border-color:#6644aa; font-size:0.78rem; padding:5px 8px;" onclick="storeToWarehouse(${idx},'${filterType}','${sortType}')">預ける</button>`
 						: ''
 					// アイテム種別バッジ
 					const typeIcons = { weapon:'⚔️', armor:'🛡️', acc:'💍', rune:'🔮', item:'🧪' }
 					const typeBadge = item.type ? `<span style="font-size:0.68rem; color:#555; margin-right:4px;">${typeIcons[item.type]||''}</span>` : ''
+					// 武器・防具・装飾タイプバッジ
+					const _invWc={'剣':'#e8a080','大剣':'#e86060','魔剣':'#c060e8','短剣':'#e8c060','レイピア':'#e0d080','槍':'#80b8e8','斧':'#e88050','鈍器':'#a8a8a0','宝珠':'#b080e8','弓':'#80e890','クロスボウ':'#60b8d8','杖':'#9090f0','魔導書':'#b090e8'}
+					const _invAc={'重鎧':'#e87060','軽鎧':'#80e880','法衣':'#9090f8','魔導鎧':'#c060f0'}
+					const _invXc={'指輪':'#f0c050','首飾り':'#f0a050','ポーチ':'#80c080','バッグ':'#60a860','護符':'#c0a840','宝珠':'#c080f0','勲章':'#f08050','冠':'#f0d040'}
+					const _invKey = item.weaponType||item.armorType||item.accType
+					const _invMap = item.weaponType?_invWc:item.armorType?_invAc:_invXc
+					const detailTypeBadge = _invKey ? `<span style="font-size:0.61rem;padding:1px 5px;background:${(_invMap[_invKey]||'#aaa')}22;border:1px solid ${(_invMap[_invKey]||'#aaa')}88;border-radius:3px;color:${(_invMap[_invKey]||'#aaa')};margin-left:3px;">${_invKey}</span>` : ''
+					const rangeBadgeInv = item.type === 'weapon' && item.range==='long' ? '<span style="font-size:0.7rem;padding:0 4px;background:rgba(96,165,250,0.15);border:1px solid #60a5fa;border-radius:3px;color:#60a5fa;margin-left:3px;">🏹遠距離</span>' : ''
+					const enchantBadgeInv = item.enchant
+						? `<span style="font-size:0.6rem;padding:1px 5px;background:rgba(249,168,37,0.15);border:1px solid #c0760a;border-radius:3px;color:#f9a825;margin-left:3px;">${item.enchant.icon||'✨'} ${item.enchant.name}</span>`
+						: ''
 					div.innerHTML = `
 						<div style="display:flex; justify-content:space-between; align-items:flex-start;">
 							<div style="flex:1; min-width:0;">
 								<div style="display:flex; align-items:center; gap:3px; flex-wrap:wrap;">
-									${typeBadge}<b style="color:${nameColor}; font-size:0.95rem;">${itemName}</b>
+									${typeBadge}<b style="color:${nameColor}; font-size:0.95rem;">${itemName}</b>${detailTypeBadge}${rangeBadgeInv}${enchantBadgeInv}
 								</div>
 								${tierHtml}
-								<div style="font-size:0.8rem; color:#aaa; margin-top:2px;">${item.d}${item.type !== 'item' ? (item.range==='long' ? ' <span style=\"font-size:0.7rem;padding:0 4px;background:rgba(96,165,250,0.15);border:1px solid #60a5fa;border-radius:3px;color:#60a5fa;\">遠距離</span>' : ' <span style=\"font-size:0.7rem;padding:0 4px;background:rgba(251,146,60,0.15);border:1px solid #c2622a;border-radius:3px;color:#fb923c;\">近接</span>') : ''}</div>
+								<div style="font-size:0.8rem; color:#aaa; margin-top:2px;">${item.d}</div>
 								${subText}
 							</div>
 							<div style="display:flex; flex-direction:column; gap:6px; margin-left:8px; flex-shrink:0; align-items:stretch; min-width:72px;">
@@ -4736,11 +6053,22 @@ function winBattle() {
 				filtered.forEach(({ item, idx }) => {
 					const div = document.createElement('div')
 					div.style.cssText = 'padding:10px; border:1px solid #334; background:#0d0d1a; border-radius:8px;'
-					const itemName = item.rarityLabel ? `[${item.rarityLabel}] ${item.n}` : item.n
+					const itemName = getItemDisplayName(item)
 					const nameColor = item.rarityColor || '#eee'
 					const tl = tierLabel(item.tier)
 					const tc = tierColor(item.tier)
-					const tierBadge = tl ? `<span style="font-size:0.72rem; padding:1px 5px; border-radius:3px; border:1px solid ${tc}; color:${tc}; margin-left:6px; vertical-align:middle;">${tl}</span>` : ''
+					const tierBadge = tl ? `<span style="font-size:0.72rem; padding:1px 5px; border-radius:3px; border:1px solid ${tc}; color:${tc}; margin-left:4px; vertical-align:middle;">${tl}</span>` : ''
+					const whEnchantBadge = item.enchant
+						? `<span style="font-size:0.6rem;padding:1px 5px;background:rgba(249,168,37,0.15);border:1px solid #c0760a;border-radius:3px;color:#f9a825;margin-left:3px;">${item.enchant.icon||'✨'} ${item.enchant.name}</span>`
+						: ''
+					// タイプバッジ
+					const _whWc={'剣':'#e8a080','大剣':'#e86060','魔剣':'#c060e8','短剣':'#e8c060','レイピア':'#e0d080','槍':'#80b8e8','斧':'#e88050','鈍器':'#a8a8a0','宝珠':'#b080e8','弓':'#80e890','クロスボウ':'#60b8d8','杖':'#9090f0','魔導書':'#b090e8'}
+					const _whAc={'重鎧':'#e87060','軽鎧':'#80e880','法衣':'#9090f8','魔導鎧':'#c060f0'}
+					const _whXc={'指輪':'#f0c050','首飾り':'#f0a050','ポーチ':'#80c080','バッグ':'#60a860','護符':'#c0a840','宝珠':'#c080f0','勲章':'#f08050','冠':'#f0d040'}
+					const _whKey = item.weaponType||item.armorType||item.accType
+					const _whMap = item.weaponType?_whWc:item.armorType?_whAc:_whXc
+					const whTypeBadge = _whKey ? `<span style="font-size:0.6rem;padding:1px 5px;background:${(_whMap[_whKey]||'#aaa')}22;border:1px solid ${(_whMap[_whKey]||'#aaa')}88;border-radius:3px;color:${(_whMap[_whKey]||'#aaa')};margin-left:3px;">${_whKey}</span>` : ''
+					const whRangeBadge = item.range==='long' ? '<span style="font-size:0.6rem;padding:1px 4px;background:rgba(96,165,250,0.1);border:1px solid #60a5fa80;border-radius:3px;color:#60a5fa;margin-left:3px;">🏹</span>' : ''
 					let subText = ''
 					if (item.subEffects && item.subEffects.length > 0) {
 						subText = `<div style="font-size:0.75rem; color:var(--accent-blue); margin:3px 0;">◆ ${item.subEffects.map(e => e.n + '+' + (e.k === 'cri' ? (e.v*100)+'%' : e.v)).join(' / ')}</div>`
@@ -4748,8 +6076,8 @@ function winBattle() {
 					div.innerHTML = `
 						<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
 							<div style="flex:1; min-width:0;">
-								<div style="display:flex; align-items:center; flex-wrap:wrap; gap:4px;">
-									<b style="color:${nameColor}; font-size:0.95rem;">${itemName}</b>${tierBadge}
+								<div style="display:flex; align-items:center; flex-wrap:wrap; gap:3px;">
+									<b style="color:${nameColor}; font-size:0.92rem;">${itemName}</b>${tierBadge}${whTypeBadge}${whRangeBadge}${whEnchantBadge}
 								</div>
 								<small style="color:#aaa; display:block; margin-top:2px;">${item.d}</small>
 								${subText}
@@ -4775,11 +6103,11 @@ function winBattle() {
 			}
 			gameState.guildWarehouse.splice(idx, 1)
 			gameState.inventory.push(item)
-			saveState()
+			save_game()
 			selectTarget(gameState.inventory.length - 1)
 		}
 
-		function storeToWarehouse(idx, filter = 'all') {
+		function storeToWarehouse(idx, filter = 'all', sort = 'default') {
 			const item = gameState.inventory[idx]
 			if (!item) return
 			if (item.type === 'item') { showMsg('消耗品は倉庫に預けられません。'); return }
@@ -4788,10 +6116,13 @@ function winBattle() {
 				playSE('error')
 				return
 			}
+			const _storedName = item.n || 'アイテム'
 			gameState.inventory.splice(idx, 1)
 			gameState.guildWarehouse.push(item)
-			saveState()
-			openInventory(filter)
+			save_game()
+			updateUI()
+			openInventory(filter, sort)
+			showToast('🏦 倉庫に預けました：' + _storedName, '#a78bfa')
 		}
 
 		function withdrawFromWarehouse(idx, filter = 'all') {
@@ -4804,7 +6135,8 @@ function winBattle() {
 			}
 			gameState.guildWarehouse.splice(idx, 1)
 			gameState.inventory.push(item)
-			saveState()
+			save_game()
+			updateUI()
 			openGuildWarehouse(filter)
 		}
 
@@ -4817,7 +6149,7 @@ function winBattle() {
 			}
 			gameState.gold -= cost
 			gameState.bagExpansion = (gameState.bagExpansion ?? 0) + slots
-			saveState()
+			save_game()
 			updateUI()
 			openInventory()
 			addLog(`カバンを${slots}枠拡張しました！ 残金: ${gameState.gold.toLocaleString()}G`, 'log-sys')
@@ -4831,7 +6163,7 @@ function winBattle() {
 			}
 			gameState.gold -= cost
 			gameState.guildWarehouseCap += slots
-			saveState()
+			save_game()
 			updateUI()
 			openGuildWarehouse()
 			addLog(`ギルド倉庫を${slots}枠拡張しました。（残金: ${gameState.gold.toLocaleString()}G）`, 'log-sys')
@@ -4870,7 +6202,23 @@ function winBattle() {
 				const recoverMp = Math.floor(fs.maxMp * item.e.mpPct)
 				p.mp = Math.min(fs.maxMp, p.mp + recoverMp)
 			}
-			addLog(`${p.name}が${item.n}を使用した。`, 'log-sys')
+			// 回復量テキスト生成
+			const _iHp = item.e.hp || (item.e.hpPct ? Math.floor(getFinalStats(p).maxHp * item.e.hpPct) : 0)
+			const _iMp = item.e.mp || (item.e.mpPct ? Math.floor(getFinalStats(p).maxMp * item.e.mpPct) : 0)
+			let _iLog = `${p.name}は${item.n}を飲んだ`
+			if (_iHp > 0 && _iMp > 0) _iLog += `。HPが <b>${_iHp}</b>、MPが <b>${_iMp}</b> 回復した！`
+			else if (_iHp > 0) _iLog += `。HPが <b>${_iHp}</b> 回復した！`
+			else if (_iMp > 0) _iLog += `。MPが <b>${_iMp}</b> 回復した！`
+			else _iLog += '。'
+			addLog(_iLog, 'log-sys')
+			// アイテムパーティクル
+			;(() => {
+				const _pCard = getPartyCardEl(pIdx)
+				if (_pCard) {
+					if (_iHp > 0) fxHeal(_pCard, _iHp)
+					if (_iMp > 0) { const {x:_mpX,y:_mpY}=getElCenter(_pCard); fxBurst(_mpX, _mpY, '#818cf8', 50); fxParticles(_mpX, _mpY, '#a78bfa', 10, 40, 600); fxText(_mpX, _mpY - 10, `+${_iMp}MP`, '#818cf8', '1.1rem') }
+				}
+			})()
 			gameState.inventory.splice(idx, 1)
 			updateUI()
 			closeModal()
@@ -4960,7 +6308,8 @@ function winBattle() {
 			let maxSlots = 1
 			if (gameState.party.length > 0) {
 				const leader = gameState.party[0]
-				if (leader.lv >= 20) maxSlots = 3
+				if (leader.lv >= 30) maxSlots = 4
+				else if (leader.lv >= 20) maxSlots = 3
 				else if (leader.lv >= 10) maxSlots = 2
 			}
 			let isMax = gameState.party.length >= maxSlots
@@ -4979,11 +6328,13 @@ function winBattle() {
                         <button class="btn-icon" style="padding:12px; height:auto;" onclick="confirmHire('Alchemist')"><b style="font-size:1rem;">アルケミスト</b><br><small style="color:var(--text-dim);">妨害/デバフ</small></button>
                     </div>`
 			} else {
-				let msg = 'パーティが満員です。'
+				let msg = 'パーティが満員です（最大4人）。'
 				if (gameState.party.length === 1 && gameState.party[0].lv < 10) {
 					msg = '二人目を雇うにはリーダーのレベルが10以上必要です。'
 				} else if (gameState.party.length === 2 && gameState.party[0].lv < 20) {
 					msg = '三人目を雇うにはリーダーのレベルが20以上必要です。'
+				} else if (gameState.party.length === 3 && gameState.party[0].lv < 30) {
+					msg = '四人目を雇うにはリーダーのレベルが30以上必要です。'
 				}
 				btnHtml = `<p style="text-align:center; padding:20px;">${msg}</p>`
 			}
@@ -5200,6 +6551,7 @@ function winBattle() {
 			// 前衛/後衛の状況をログに表示
 			const _fN = gameState.party.filter(p=>p.row==='front'&&p.hp>0).map(p=>p.name).join('・')
 			const _bN = gameState.party.filter(p=>p.row==='back' &&p.hp>0).map(p=>p.name).join('・')
+			fxBattleStart()
 			if (_fN) addLog(`⚔️ 前衛: ${_fN}`, 'log-sys')
 			if (_bN) addLog(`🏹 後衛: ${_bN}（前衛が全滅するまで守られる）`, 'log-sys')
 			setTurn('player')
@@ -5746,6 +7098,9 @@ function winBattle() {
 		function returnToTown() {
 			playBGM('town');
 			document.getElementById('town-ui').classList.remove('hidden')
+			// 鍛冶屋：20Fボス討伐後に解放
+			const _smithBtn = document.getElementById('town-smith-btn')
+			if (_smithBtn) _smithBtn.style.display = gameState.bossDefeated.includes(20) ? '' : 'none'
 			document.getElementById('dungeon-ui').classList.add('hidden')
 			document.getElementById('battle-view').classList.add('hidden')
 			_afHeaderShow(false)
@@ -5817,7 +7172,19 @@ function winBattle() {
 						const aoe = s.eTarget==='all'?'全体':'単体'
 						skillDesc = `敵${aoe}をフリーズ（${s.turns}T行動不能・特殊ダメ+30%）`
 					}
-					let btnHtml = `<div style="display:flex;justify-content:space-between; align-items:center; gap:8px;"><b style="font-size:0.92rem;">${s.n}</b><span style="color:var(--accent-blue); font-size:0.8rem; white-space:nowrap;">MP${s.cost}</span></div>`
+					// 射程バッジ
+					const _curP = gameState.party[battle.activeUnitIndex]
+					const _sRange = getSkillRange(s)
+					const _penalty = isSkillBackPenalty(_curP, s)
+					let rangeBadge = ''
+					if (_sRange === 'melee') {
+						rangeBadge = _penalty
+							? '<span style="font-size:0.62rem;padding:0 4px;background:rgba(248,113,113,0.15);border:1px solid #f87171;border-radius:3px;color:#f87171;margin-left:4px;">⚔近接 -20%</span>'
+							: '<span style="font-size:0.62rem;padding:0 4px;background:rgba(100,100,100,0.1);border:1px solid #555;border-radius:3px;color:#888;margin-left:4px;">⚔近接</span>'
+					} else if (_sRange === 'ranged') {
+						rangeBadge = '<span style="font-size:0.62rem;padding:0 4px;background:rgba(96,165,250,0.15);border:1px solid #60a5fa;border-radius:3px;color:#60a5fa;margin-left:4px;">🏹遠距離</span>'
+					}
+					let btnHtml = `<div style="display:flex;justify-content:space-between; align-items:center; gap:8px;"><b style="font-size:0.92rem;">${s.n}</b><span style="display:flex;align-items:center;"><span style="color:var(--accent-blue); font-size:0.8rem; white-space:nowrap;">MP${s.cost}</span>${rangeBadge}</span></div>`
 					if (skillDesc) btnHtml += `<div style="font-size:0.74rem; color:#888; margin-top:3px;">${skillDesc}</div>`
 					if (isOnCooldown) btnHtml += `<div style="color:var(--accent-red); font-size:0.72rem; margin-top:2px;">⏳ 待機:${cooldownTurns}ターン</div>`
 					btn.innerHTML = btnHtml
@@ -5899,36 +7266,42 @@ function winBattle() {
 		}
 		function renderEnemyCard(e, i, isTargeting) {
 			const isDead = e.hp <= 0
-			const clickable = isTargeting && !isDead ? `onclick="selectEnemyTarget(${i})"` : ''
-			const cursorClass = isTargeting && !isDead ? 'cursor-pointer targeting-active' : ''
-			const eliteBorder = e._isElite ? `border:1.5px solid ${e.eliteColor}; box-shadow:0 0 6px ${e.eliteColor}44;` : ''
-			const eliteDot    = e._isElite ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${e.eliteColor};flex-shrink:0;margin-left:2px;" title="${e.eliteTier}"></span>` : ''
-			const nameColor   = e._isElite ? e.eliteColor : '#e0e0e0'
+			// 後衛への射程チェック
+			const _activeP = gameState.party[battle.activeUnitIndex]
+			const _wRange = _activeP ? getWeaponRange(_activeP) : 'short'
+			const _aliveFront = battle.enemies.filter(en => en.hp > 0 && en.row !== 'back')
+			const _backBlocked = isTargeting && e.row === 'back' && _wRange === 'short' && _aliveFront.length > 0
+			const clickable = isTargeting && !isDead && !_backBlocked ? `onclick="selectEnemyTarget(${i})"` : ''
+			const cursorClass = isTargeting && !isDead && !_backBlocked ? 'cursor-pointer targeting-active' : ''
+			const eliteStyle = e._isElite ? `border-color:${e.eliteColor};box-shadow:0 0 6px ${e.eliteColor}44;` : ''
+			const eliteDot   = e._isElite ? `<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${e.eliteColor};" title="${e.eliteTier}"></span>` : ''
+			const nameColor  = e._isElite ? e.eliteColor : '#e0e0e0'
+			// 統一バッジ: 前衛=赤, 後衛=青, ボス=なし
 			const rowBadge = e.isBoss ? '' : (e.row === 'back'
-				? `<span style="font-size:0.72rem;margin-left:2px;" title="後衛">🏹</span>`
-				: `<span style="font-size:0.72rem;margin-left:2px;" title="前衛">⚔️</span>`)
+				? '<span style="font-size:0.58rem;padding:0 4px;background:rgba(96,165,250,0.15);border:1px solid #60a5fa;border-radius:3px;color:#60a5fa;">🏹後衛</span>'
+				: '<span style="font-size:0.58rem;padding:0 4px;background:rgba(248,113,113,0.15);border:1px solid #f87171;border-radius:3px;color:#f87171;">⚔️前衛</span>')
 			const hpPct = Math.max(0, (e.hp / e.maxHp) * 100)
 			const hpBarColor = e._isElite ? e.eliteColor : 'var(--hp-color)'
 			const hpTextColor = e.hp/e.maxHp>0.5?'#ccc':e.hp/e.maxHp>0.25?'var(--gold)':'#f87171'
 			const mpPct = e.maxMp > 0 ? Math.max(0, (e.mp / e.maxMp) * 100) : 0
-			const statusTags = (()=>{ const st=(battle.enemyStatus||[]).filter(s=>s.eId===e.id); const dt=(battle.enemyDots||[]).filter(d=>d.eId===e.id); const tags=[...st.map(s=>s.type==='stun'?`<span style="background:#f97316;color:#000;font-size:0.6rem;padding:0 2px;border-radius:2px;">⚡${s.turns}T</span>`:`<span style="background:#60a5fa;color:#000;font-size:0.6rem;padding:0 2px;border-radius:2px;">❄${s.turns}T</span>`),...dt.map(d=>d.type==='poison'?`<span style="background:#a3e635;color:#000;font-size:0.6rem;padding:0 2px;border-radius:2px;">☠${d.turns}T</span>`:`<span style="background:#f87171;color:#000;font-size:0.6rem;padding:0 2px;border-radius:2px;">🩸${d.turns}T</span>`)]; return tags.length?`<div style="display:flex;gap:1px;flex-wrap:wrap;margin-top:2px;">${tags.join('')}</div>`:'' })()
-			return `<div class="battle-unit-box ${isDead ? 'hidden' : ''} ${e.isBoss ? 'is-boss' : ''} ${cursorClass}" style="${isDead ? 'opacity:0' : ''}${eliteBorder}" ${clickable}>
-				<div style="display:flex; align-items:center; gap:3px; margin-bottom:2px;">
-					<span style="font-weight:bold; font-size:0.78rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; color:${nameColor};">${e.name}</span>
-					${eliteDot}${rowBadge}
-					<button onclick="event.stopPropagation();openMonsterInfo(${i})" style="flex-shrink:0;background:transparent;border:1px solid #444;border-radius:3px;color:#aaa;font-size:0.6rem;padding:0 3px;cursor:pointer;line-height:1.4;">ℹ</button>
+			const statusTags = (()=>{ const st=(battle.enemyStatus||[]).filter(s=>s.eId===e.id); const dt=(battle.enemyDots||[]).filter(d=>d.eId===e.id); const tags=[...st.map(s=>s.type==='stun'?`<span style="background:#f97316;color:#000;font-size:0.58rem;padding:0 2px;border-radius:2px;">⚡${s.turns}T</span>`:`<span style="background:#60a5fa;color:#000;font-size:0.58rem;padding:0 2px;border-radius:2px;">❄${s.turns}T</span>`),...dt.map(d=>d.type==='poison'?`<span style="background:#a3e635;color:#000;font-size:0.58rem;padding:0 2px;border-radius:2px;">☠${d.turns}T</span>`:`<span style="background:#f87171;color:#000;font-size:0.58rem;padding:0 2px;border-radius:2px;">🩸${d.turns}T</span>`)]; return tags.length?`<div style="display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin-top:3px;">${tags.join('')}</div>`:'' })()
+			return `<div class="battle-unit-box ${isDead?'hidden':''} ${e.isBoss?'is-boss':''} ${cursorClass}" data-eid="${e.id}" style="${isDead?'opacity:0':''}${eliteStyle}" ${clickable}>
+				<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+					<div style="display:flex;align-items:center;gap:3px;width:100%;justify-content:center;">
+						${rowBadge}${eliteDot}
+						<button onclick="event.stopPropagation();openMonsterInfo(${i})" style="background:transparent;border:1px solid #333;border-radius:3px;color:#666;font-size:0.55rem;padding:0 3px;cursor:pointer;line-height:1.4;">ℹ</button>
+					</div>
+					<span style="font-weight:bold;font-size:0.8rem;color:${nameColor};text-overflow:ellipsis;overflow:hidden;white-space:nowrap;max-width:100%;">${e.name}</span>
+					<div style="width:100%;">
+						<div style="display:flex;justify-content:space-between;font-size:0.66rem;margin-bottom:2px;">
+							<span style="color:#f87171;">HP</span>
+							<span style="color:${hpTextColor};">${e.hp}<span style="color:#444;">/${e.maxHp}</span></span>
+						</div>
+						<div class="bar-bg" style="height:5px;"><div class="bar-fill" style="background:${hpBarColor};width:${hpPct}%"></div></div>
+					</div>
+					${e.maxMp > 0 ? `<div style="width:100%;"><div style="display:flex;justify-content:space-between;font-size:0.62rem;margin-top:2px;margin-bottom:1px;"><span style="color:#60a5fa;">MP</span><span style="color:#aaa;">${e.mp}<span style="color:#444;">/${e.maxMp}</span></span></div><div class="bar-bg" style="height:3px;"><div class="bar-fill" style="background:var(--mp-color);width:${mpPct}%"></div></div></div>` : ''}
+					${statusTags}
 				</div>
-				<div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-bottom:2px;">
-					<span style="color:#f87171;">HP</span>
-					<span style="color:${hpTextColor};">${e.hp}<span style="color:#444;">/${e.maxHp}</span></span>
-				</div>
-				<div class="bar-bg" style="height:5px;"><div class="bar-fill" style="background:${hpBarColor}; width:${hpPct}%"></div></div>
-				${e.maxMp > 0 ? `<div style="display:flex; justify-content:space-between; font-size:0.68rem; margin-top:2px; margin-bottom:1px;">
-					<span style="color:#60a5fa;">MP</span>
-					<span style="color:#aaa;">${e.mp}<span style="color:#444;">/${e.maxMp}</span></span>
-				</div>
-				<div class="bar-bg" style="height:3px;"><div class="bar-fill" style="background:var(--mp-color); width:${mpPct}%"></div></div>` : ''}
-				${statusTags}
 			</div>`
 		}
 
@@ -5940,20 +7313,20 @@ function winBattle() {
 			const backEnemies  = battle.enemies.map((e,i)=>({e,i})).filter(({e})=> e.row === 'back')
 			const hasFrontE = frontEnemies.some(({e})=>e.hp>0)
 			const hasBackE  = backEnemies.some(({e})=>e.hp>0)
-			let html = ''
+			let html = '<div style="display:flex;flex-direction:column;gap:6px;width:100%;">'
+			// 敵: 後衛が奥(上)→前衛が手前(下)
 			if (hasBackE) {
-				html += `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:6px;">`
-				backEnemies.forEach(({e,i})=>{ html += renderEnemyCard(e,i,isTargeting) })
-				html += `</div>`
+				html += `<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">${backEnemies.map(({e,i})=>renderEnemyCard(e,i,isTargeting)).join('')}</div>`
 			}
 			if (hasFrontE) {
-				html += `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:4px;">`
-				frontEnemies.forEach(({e,i})=>{ html += renderEnemyCard(e,i,isTargeting) })
-				html += `</div>`
+				html += `<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">${frontEnemies.map(({e,i})=>renderEnemyCard(e,i,isTargeting)).join('')}</div>`
 			}
 			if (!hasFrontE && !hasBackE && battle.enemies.length > 0) {
-				html = battle.enemies.map((e,i)=>renderEnemyCard(e,i,isTargeting)).join('')
+				html = '<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">'
+					+ battle.enemies.map((e,i)=>renderEnemyCard(e,i,isTargeting)).join('')
+					+ '</div>'
 			}
+			html += '</div>'
 			container.innerHTML = html
 			if (battle.active && battle.enemies.length > 0 && battle.enemies.every(e => e.hp <= 0)) {
 				container.innerHTML = '<div style="font-size:1.5rem; color:var(--gold); font-weight:bold;">勝利！</div>'
@@ -5966,47 +7339,64 @@ function winBattle() {
 					const isHealTargeting = battle.targeting === 'heal'
 					const clickable = isHealTargeting ? `onclick="selectPartyTarget(${i})"` : ''
 					const cursorClass = isHealTargeting ? 'cursor-pointer targeting-active' : ''
-					const wRange = getWeaponRange(p)
-					const rangeBadge = wRange === 'long'
-						? `<span style="font-size:0.75rem;margin-left:3px;" title="遠距離">🏹</span>`
-						: `<span style="font-size:0.75rem;margin-left:3px;" title="近接">⚔️</span>`
 					const pIdx = gameState.party.indexOf(p)
 					const shieldData = (battle.shields||[]).find(s => s.pIdx === pIdx)
 					const isGuarding = battle.guardIdx === pIdx
-					return `<div class="battle-unit-box ${isCurrent ? 'active-turn' : ''} ${cursorClass}" style="${p.hp <= 0 ? 'opacity:0.5;filter:grayscale(1);' : ''}" ${clickable}>
-						<div style="display:flex; align-items:center; gap:4px; margin-bottom:2px;">
-							<span style="font-weight:bold; font-size:0.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">${p.name}</span>
-							${rangeBadge}
-							${isGuarding ? '<span style="font-size:0.68rem; background:rgba(251,146,60,0.2); border:1px solid #fb923c; border-radius:3px; padding:0 4px; color:#fb923c;">🛡身代わり</span>' : ''}
+					// 統一バッジ: 前衛=赤, 後衛=青
+					const rowBadge = p.row === 'back'
+						? '<span style="font-size:0.58rem;padding:0 4px;background:rgba(96,165,250,0.15);border:1px solid #60a5fa;border-radius:3px;color:#60a5fa;">🏹後衛</span>'
+						: '<span style="font-size:0.58rem;padding:0 4px;background:rgba(248,113,113,0.15);border:1px solid #f87171;border-radius:3px;color:#f87171;">⚔️前衛</span>'
+					const rowBorderColor = p.row === 'back' ? '#1a3040' : '#301a1a'
+					const hpPct = Math.max(0, (p.hp/fs.maxHp)*100)
+					const mpPct = Math.max(0, (p.mp/fs.maxMp)*100)
+					const bufTags = (()=>{ const rg=(battle.partyRegens||[]).find(r=>r.pIdx===pIdx); const mc=(battle.mpCostDown||[]).find(m=>m.pIdx===pIdx); let t=''; if(rg)t+=`<span style="background:#4ade80;color:#000;font-size:0.58rem;padding:0 2px;border-radius:2px;">💚${rg.turns}T</span>`; if(mc)t+=`<span style="background:#818cf8;color:#000;font-size:0.58rem;padding:0 2px;border-radius:2px;">💧</span>`; if(shieldData)t+=`<span style="background:rgba(96,211,148,0.2);color:#60d394;font-size:0.58rem;padding:0 2px;border-radius:2px;">🔷${shieldData.val}</span>`; return t?`<div style="display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin-top:2px;">${t}</div>`:''; })()
+					return `<div class="battle-unit-box ${isCurrent?'active-turn':''} ${cursorClass}" data-pidx="${i}" style="border-color:${rowBorderColor};${p.hp<=0?'opacity:0.4;filter:grayscale(1);':''}" ${clickable}>
+						<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+							<div style="display:flex;align-items:center;gap:3px;justify-content:center;">
+								${rowBadge}
+								${isGuarding?'<span style="font-size:0.56rem;background:rgba(251,146,60,0.2);border:1px solid #fb923c;border-radius:3px;padding:0 2px;color:#fb923c;">🛡身代わり</span>':''}
+							</div>
+							<span style="font-weight:bold;font-size:0.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">${p.name}</span>
+							<div style="width:100%;">
+								<div style="display:flex;justify-content:space-between;font-size:0.66rem;margin-bottom:2px;">
+									<span style="color:#f87171;">HP</span>
+									<span style="color:${p.hp/fs.maxHp>0.5?'#ccc':p.hp/fs.maxHp>0.25?'var(--gold)':'#f87171'}">${p.hp}<span style="color:#444;">/${fs.maxHp}</span></span>
+								</div>
+								<div class="bar-bg" style="height:5px;"><div class="bar-fill" style="background:var(--hp-color);width:${hpPct}%"></div></div>
+								<div style="display:flex;justify-content:space-between;font-size:0.62rem;margin-top:3px;margin-bottom:1px;">
+									<span style="color:#60a5fa;">MP</span>
+									<span style="color:#aaa;">${p.mp}<span style="color:#444;">/${fs.maxMp}</span></span>
+								</div>
+								<div class="bar-bg" style="height:3px;"><div class="bar-fill" style="background:var(--mp-color);width:${mpPct}%"></div></div>
+							</div>
+							${bufTags}
 						</div>
-						<div style="display:flex; justify-content:space-between; font-size:0.72rem; margin-bottom:2px;">
-							<span style="color:#f87171;">HP</span>
-							<span style="color:${p.hp / fs.maxHp > 0.5 ? '#ccc' : p.hp / fs.maxHp > 0.25 ? 'var(--gold)' : '#f87171'};">${p.hp}<span style="color:#444;">/${fs.maxHp}</span></span>
-						</div>
-						<div class="bar-bg" style="height:5px;"><div class="bar-fill" style="background:var(--hp-color); width:${Math.max(0, (p.hp / fs.maxHp) * 100)}%"></div></div>
-						${shieldData ? `<div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-top:2px; color:#60d394;"><span>🔷 SHD</span><span>${shieldData.val} <span style="color:#555;">(${shieldData.turns}T)</span></span></div>` : ''}
-						${(()=>{ const rg=(battle.partyRegens||[]).find(r=>r.pIdx===pIdx); const mc=(battle.mpCostDown||[]).find(m=>m.pIdx===pIdx); let t=''; if(rg)t+=`<span style="background:#4ade80;color:#000;font-size:0.65rem;padding:0 3px;border-radius:2px;">💚再生${rg.turns}T</span>`; if(mc)t+=`<span style="background:#818cf8;color:#000;font-size:0.65rem;padding:0 3px;border-radius:2px;">💧MP軽減</span>`; return t?`<div style="display:flex;gap:2px;flex-wrap:wrap;margin-top:2px;">${t}</div>`:''; })()}
-						<div style="display:flex; justify-content:space-between; font-size:0.72rem; margin-top:3px; margin-bottom:2px;">
-							<span style="color:#60a5fa;">MP</span>
-							<span style="color:#aaa;">${p.mp}<span style="color:#444;">/${fs.maxMp}</span></span>
-						</div>
-						<div class="bar-bg" style="height:4px;"><div class="bar-fill" style="background:var(--mp-color); width:${Math.max(0, (p.mp / fs.maxMp) * 100)}%"></div></div>
 					</div>`
 				}
-				// 前衛・後衛で分けてレンダリング
+				// プレイヤー: 前衛(上段) → 後衛(下段) ── row未設定は'front'扱い
+				gameState.party.forEach(p => { if (!p.row) p.row = 'front' })
 				const frontParty = gameState.party.map((p,i)=>({p,i})).filter(({p})=>p.row==='front')
 				const backParty  = gameState.party.map((p,i)=>({p,i})).filter(({p})=>p.row==='back')
-				let pHtml = ''
+				const rowSep = '<div style="border-top:1px dashed #2a2a2a;margin:2px 0;"></div>'
+				let pHtml = '<div style="display:flex;flex-direction:column;gap:4px;width:100%;">'
+				// 前衛行（常に表示）
+				pHtml += '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;min-height:20px;">'
 				if (frontParty.length > 0) {
-					pHtml += `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:6px;">`
-					frontParty.forEach(({p,i})=>{ pHtml += renderPartyCard(p,i) })
-					pHtml += `</div>`
+					pHtml += frontParty.map(({p,i})=>renderPartyCard(p,i)).join('')
+				} else {
+					pHtml += '<span style="font-size:0.65rem;color:#333;align-self:center;padding:4px 8px;">⚔️ 前衛なし</span>'
 				}
+				pHtml += '</div>'
+				// 後衛行（常に表示）
+				pHtml += rowSep
+				pHtml += '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;min-height:20px;">'
 				if (backParty.length > 0) {
-					pHtml += `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:4px;">`
-					backParty.forEach(({p,i})=>{ pHtml += renderPartyCard(p,i) })
-					pHtml += `</div>`
+					pHtml += backParty.map(({p,i})=>renderPartyCard(p,i)).join('')
+				} else {
+					pHtml += '<span style="font-size:0.65rem;color:#333;align-self:center;padding:4px 8px;">🏹 後衛なし</span>'
 				}
+				pHtml += '</div>'
+				pHtml += '</div>'
 				partyContainer.innerHTML = pHtml
 			}
 		}
@@ -6064,13 +7454,378 @@ function winBattle() {
 				})
 				.join('')
 		}
-		function addLog(m, c = '') {
+
+		// ═══════════════════════════════════════════════
+		//   FX SYSTEM — パーティクル・演出エンジン
+		// ═══════════════════════════════════════════════
+		const fxLayer = () => document.getElementById('fx-layer')
+
+		// パーティカードをpIdx(party配列index)で正確に取得
+		function getPartyCardEl(pIdx) {
+			const byId = document.querySelector(`#party-battle-container .battle-unit-box[data-pidx="${pIdx}"]`)
+			if (byId) return byId
+			const cards = document.querySelectorAll('#party-battle-container .battle-unit-box')
+			return Array.from(cards)[pIdx] || null
+		}
+
+		// 敵カードをeid(battle.enemiesのid)で正確に取得
+		function getEnemyCardEl(e) {
+			const byId = document.querySelector(`#enemy-container .battle-unit-box[data-eid="${e.id}"]`)
+			if (byId) return byId
+			// フォールバック：非hiddenカードから indexOf で取得
+			const cards = document.querySelectorAll('#enemy-container .battle-unit-box')
+			const vis = Array.from(cards).filter(el => !el.classList.contains('hidden'))
+			return vis[0] || null
+		}
+
+		// 基本パーティクル放出（色・個数・位置指定）
+		function fxParticles(x, y, color, count = 12, spread = 60, duration = 600) {
+			const layer = fxLayer(); if (!layer) return
+			for (let i = 0; i < count; i++) {
+				const el = document.createElement('div')
+				el.className = 'fx-particle'
+				const angle = Math.random() * Math.PI * 2
+				const dist  = spread * (0.4 + Math.random() * 0.6)
+				const dx = Math.cos(angle) * dist
+				const dy = Math.sin(angle) * dist - spread * 0.3
+				const size = 4 + Math.random() * 8
+				el.style.cssText = `left:${x}px;top:${y}px;width:${size}px;height:${size}px;background:${color};--dx:${dx}px;--dy:${dy}px;animation-duration:${duration * (0.6+Math.random()*0.7)}ms;`
+				layer.appendChild(el)
+				setTimeout(() => el.remove(), duration * 1.5)
+			}
+		}
+
+		// スラッシュエフェクト（剣・斧など）
+		function fxSlash(x, y, color = '#fb923c', count = 3) {
+			const layer = fxLayer(); if (!layer) return
+			for (let i = 0; i < count; i++) {
+				const el = document.createElement('div')
+				el.className = 'fx-slash'
+				const rot = -30 + i * 25 + (Math.random() - 0.5) * 15
+				const len = 40 + Math.random() * 30
+				el.style.cssText = `left:${x - len/2}px;top:${y}px;width:${len}px;height:${3 + i}px;background:linear-gradient(90deg, transparent, ${color}, transparent);border-radius:2px;--rot:${rot}deg;animation-delay:${i*40}ms;`
+				layer.appendChild(el)
+				setTimeout(() => el.remove(), 600)
+			}
+		}
+
+		// バースト円（魔法・爆発）
+		function fxBurst(x, y, color, size = 60) {
+			const layer = fxLayer(); if (!layer) return
+			const el = document.createElement('div')
+			el.className = 'fx-burst'
+			el.style.cssText = `left:${x - size/2}px;top:${y - size/2}px;width:${size}px;height:${size}px;background:radial-gradient(circle, ${color}88 0%, ${color}22 60%, transparent 100%);border:2px solid ${color};`
+			layer.appendChild(el)
+			setTimeout(() => el.remove(), 500)
+		}
+
+		// テキストポップ（ダメージ数値・CRITICAL等）
+		function fxText(x, y, text, color = '#fff', size = '1.1rem') {
+			const layer = fxLayer(); if (!layer) return
+			const el = document.createElement('div')
+			el.className = 'fx-text'
+			el.style.cssText = `left:${x}px;top:${y}px;color:${color};font-size:${size};`
+			el.textContent = text
+			layer.appendChild(el)
+			setTimeout(() => el.remove(), 1000)
+		}
+
+		// スクリーンフラッシュ
+		function fxScreenFlash(color = '#fff') {
+			const layer = fxLayer(); if (!layer) return
+			const el = document.createElement('div')
+			el.className = 'fx-screen-flash'
+			el.style.background = color
+			layer.appendChild(el)
+			setTimeout(() => el.remove(), 300)
+		}
+
+		// カードグロー効果（一時的に光らせる）
+		function fxCardGlow(cardEl, glowClass, duration = 400) {
+			if (!cardEl) return
+			cardEl.classList.add(glowClass)
+			setTimeout(() => cardEl.classList.remove(glowClass), duration)
+		}
+
+		// カードシェイク
+		function fxCardShake(cardEl) {
+			if (!cardEl) return
+			cardEl.classList.add('fx-shake')
+			setTimeout(() => cardEl.classList.remove('fx-shake'), 350)
+		}
+
+		// 要素の中央座標取得
+		function getElCenter(el) {
+			if (!el) return { x: window.innerWidth/2, y: window.innerHeight/2 }
+			const r = el.getBoundingClientRect()
+			return { x: r.left + r.width/2, y: r.top + r.height/2 }
+		}
+
+		// ── 合成エフェクト ──────────────────────────────
+
+		// 物理攻撃（剣）
+		function fxPhysicalAttack(targetEl, damage, isCrit) {
+			const { x, y } = getElCenter(targetEl)
+			fxSlash(x, y, isCrit ? '#fbbf24' : '#fb923c', isCrit ? 4 : 2)
+			fxParticles(x, y, isCrit ? '#fbbf24' : '#fb923c', isCrit ? 18 : 10, isCrit ? 70 : 50, 500)
+			fxText(x, y - 10, isCrit ? `★${damage}!!` : `-${damage}`, isCrit ? '#fbbf24' : '#f87171', isCrit ? '1.4rem' : '1.1rem')
+			if (isCrit) fxScreenFlash('rgba(251,191,36,0.12)')
+			fxCardGlow(targetEl, isCrit ? 'fx-hit-glow-gold' : 'fx-hit-glow-red', 350)
+			fxCardShake(targetEl)
+		}
+
+		// 魔法攻撃
+		function fxMagicAttack(targetEl, damage, isCrit) {
+			const { x, y } = getElCenter(targetEl)
+			fxBurst(x, y, isCrit ? '#e879f9' : '#818cf8', isCrit ? 80 : 55)
+			fxParticles(x, y, isCrit ? '#e879f9' : '#a78bfa', isCrit ? 20 : 14, 65, 650)
+			// 魔法陣風リング
+			for (let i = 0; i < (isCrit ? 3 : 2); i++) {
+				setTimeout(() => fxBurst(x, y, isCrit ? '#e879f9' : '#818cf8', 40 + i * 20), i * 80)
+			}
+			fxText(x, y - 10, isCrit ? `✦${damage}!!` : `✦${damage}`, isCrit ? '#e879f9' : '#a78bfa', isCrit ? '1.4rem' : '1.1rem')
+			if (isCrit) fxScreenFlash('rgba(232,121,249,0.1)')
+			fxCardGlow(targetEl, isCrit ? 'fx-hit-glow-purple' : 'fx-hit-glow-purple', 400)
+			fxCardShake(targetEl)
+		}
+
+		// 弓矢攻撃
+		function fxArrowAttack(targetEl, damage, isCrit) {
+			const { x, y } = getElCenter(targetEl)
+			// 細い線パーティクル
+			fxParticles(x, y, isCrit ? '#fbbf24' : '#60a5fa', isCrit ? 16 : 8, 55, 500)
+			fxSlash(x, y, isCrit ? '#fbbf24' : '#60a5fa', 2)
+			fxText(x, y - 10, isCrit ? `🏹${damage}!!` : `🏹${damage}`, isCrit ? '#fbbf24' : '#60a5fa', isCrit ? '1.3rem' : '1rem')
+			fxCardGlow(targetEl, isCrit ? 'fx-hit-glow-gold' : 'fx-hit-glow-blue', 350)
+			fxCardShake(targetEl)
+		}
+
+		// 回復エフェクト
+		function fxHeal(targetEl, amount) {
+			const { x, y } = getElCenter(targetEl)
+			fxBurst(x, y, '#4ade80', 60)
+			fxParticles(x, y, '#4ade80', 14, 50, 700)
+			// 上昇するキラキラ
+			for (let i = 0; i < 6; i++) {
+				setTimeout(() => {
+					const ox = (Math.random()-0.5) * 50
+					fxParticles(x + ox, y, '#86efac', 3, 20, 500)
+				}, i * 80)
+			}
+			fxText(x, y - 10, `+${amount}`, '#4ade80', '1.2rem')
+			fxCardGlow(targetEl, 'fx-hit-glow-green', 500)
+		}
+
+		// スキルエフェクト（スキルタイプ別）
+		function fxSkillEffect(targetEl, skillType, skillDType, damage, isCrit) {
+			const { x, y } = getElCenter(targetEl)
+			if (skillType === 'atk') {
+				if (skillDType === 'magic') fxMagicAttack(targetEl, damage, isCrit)
+				else fxPhysicalAttack(targetEl, damage, isCrit)
+			} else if (skillType === 'heal') {
+				fxHeal(targetEl, damage)
+			} else if (skillType === 'buff') {
+				fxBurst(x, y, '#fbbf24', 55)
+				fxParticles(x, y, '#fcd34d', 12, 45, 600)
+				fxText(x, y - 10, '⬆', '#fbbf24', '1.5rem')
+				fxCardGlow(targetEl, 'fx-hit-glow-gold', 450)
+			} else if (skillType === 'debuff') {
+				fxBurst(x, y, '#f97316', 50)
+				fxParticles(x, y, '#fb923c', 10, 40, 500)
+				fxText(x, y - 10, '⬇', '#f97316', '1.4rem')
+			} else if (skillType === 'poison') {
+				fxBurst(x, y, '#a3e635', 48)
+				fxParticles(x, y, '#bef264', 12, 45, 600)
+				fxText(x, y - 10, '☠', '#a3e635', '1.3rem')
+				fxCardShake(targetEl)
+			} else if (skillType === 'bleed') {
+				fxParticles(x, y, '#f87171', 14, 50, 550)
+				fxText(x, y - 10, '🩸', '#f87171', '1.3rem')
+				fxCardShake(targetEl)
+			} else if (skillType === 'stun') {
+				fxBurst(x, y, '#f97316', 55)
+				fxParticles(x, y, '#fdba74', 14, 55, 500)
+				fxText(x, y - 10, '⚡', '#f97316', '1.5rem')
+				fxCardGlow(targetEl, 'fx-hit-glow-red', 500)
+				fxCardShake(targetEl)
+			} else if (skillType === 'freeze') {
+				fxBurst(x, y, '#93c5fd', 60)
+				fxParticles(x, y, '#bfdbfe', 16, 55, 700)
+				fxText(x, y - 10, '❄', '#bfdbfe', '1.5rem')
+				fxCardGlow(targetEl, 'fx-hit-glow-blue', 600)
+			} else if (skillType === 'shield') {
+				fxBurst(x, y, '#60d394', 55)
+				fxParticles(x, y, '#6ee7b7', 10, 40, 600)
+				fxText(x, y - 10, '🔷', '#60d394', '1.3rem')
+				fxCardGlow(targetEl, 'fx-hit-glow-green', 500)
+			} else if (skillType === 'guard') {
+				fxBurst(x, y, '#fb923c', 50)
+				fxText(x, y - 10, '🛡', '#fb923c', '1.4rem')
+				fxCardGlow(targetEl, 'fx-hit-glow-gold', 500)
+			} else if (skillType === 'regen') {
+				for (let i = 0; i < 4; i++) setTimeout(() => fxParticles(x + (Math.random()-0.5)*30, y, '#4ade80', 4, 25, 400), i*100)
+				fxText(x, y - 10, '💚', '#4ade80', '1.2rem')
+				fxCardGlow(targetEl, 'fx-hit-glow-green', 400)
+			}
+		}
+
+		// 探索演出（ダンジョン歩行パーティクル）
+		function fxExplore() {
+			const layer = fxLayer(); if (!layer) return
+			const colors = ['#444', '#555', '#333', '#60a5fa33']
+			for (let i = 0; i < 8; i++) {
+				setTimeout(() => {
+					const x = Math.random() * window.innerWidth
+					const y = window.innerHeight * (0.3 + Math.random() * 0.5)
+					fxParticles(x, y, colors[Math.floor(Math.random()*colors.length)], 3, 30, 600)
+				}, i * 60)
+			}
+		}
+
+		// 戦闘開始演出（中央のみ・控えめ）
+		function fxBattleStart() {
+			const cx = window.innerWidth / 2
+			// battle-view の中央Y（敵エリアとパーティの間）を狙う
+			const bv = document.getElementById('battle-view')
+			const bvRect = bv ? bv.getBoundingClientRect() : null
+			const cy = bvRect ? bvRect.top + bvRect.height * 0.5 : window.innerHeight * 0.5
+			fxScreenFlash('rgba(248,113,113,0.10)')
+			fxBurst(cx, cy, '#f87171', 60)
+			setTimeout(() => fxParticles(cx, cy, '#fb923c', 8, 40, 500), 80)
+		}
+
+		// 勝利演出（シンプル）
+		function fxVictory() {
+			const cx = window.innerWidth / 2
+			const cy = window.innerHeight * 0.45
+			fxBurst(cx, cy, '#4ade80', 60)
+			fxText(cx, cy - 20, '⚔ 勝利！', '#4ade80', '1.3rem')
+		}
+
+		// 敵攻撃エフェクト（ターゲットのカードだけ揺らす）
+		function fxEnemyHit(pIdx, damage) {
+			const tgtCard = getPartyCardEl(pIdx)
+			if (tgtCard) {
+				fxCardShake(tgtCard)
+				fxCardGlow(tgtCard, 'fx-hit-glow-red', 300)
+				const { x, y } = getElCenter(tgtCard)
+				fxText(x, y - 12, `-${damage}`, '#f87171', '1.1rem')
+			} else {
+				fxText(window.innerWidth/2, window.innerHeight * 0.55, `-${damage}`, '#f87171', '1.1rem')
+			}
+			fxScreenFlash('rgba(248,113,113,0.07)')
+		}
+
+		// ═══════════════════════════════════════════════
+		//   武器タイプ別・文脈別 ログ文生成
+		// ═══════════════════════════════════════════════
+		function getAttackVerb(attacker, target, weapon, dType, isCrit) {
+			const wn = weapon ? weapon.n || '' : ''
+			const isRanged = weapon && weapon.range === 'long'
+			// 武器名から種別を推定
+			const isSword   = /剣|刃|ブレード|ソード|大剣|覇剣|光剣/.test(wn)
+			const isAxe     = /斧|アックス|鎚|ハンマー|鉄鎚/.test(wn)
+			const isSpear   = /槍|スピア|穿牙|槍/.test(wn)
+			const isMagicWp = /杖|書|術書|魔道|詠唱|呪術/.test(wn) || dType === 'magic'
+			const isBow     = /弓|弩|矢|砲|吹き矢/.test(wn) || isRanged
+			const isDagger  = /短剣|双刃|血刃|刺/.test(wn)
+
+			if (isBow || (isRanged && !isMagicWp)) {
+				const verbs = [`${attacker}は${target}に矢を放った`, `${attacker}は${target}を狙い射った`, `${attacker}の一矢が${target}を貫いた`]
+				return verbs[Math.floor(Math.random()*verbs.length)]
+			}
+			if (isMagicWp) {
+				const verbs = [`${attacker}は${target}に魔法を放った`, `${attacker}の呪文が${target}を直撃した`, `${attacker}は${target}に魔力を叩きつけた`]
+				return verbs[Math.floor(Math.random()*verbs.length)]
+			}
+			if (isAxe) {
+				const verbs = [`${attacker}は${target}に斧を叩きつけた`, `${attacker}の豪腕が${target}を強打した`, `${attacker}は${target}を斧で薙ぎ払った`]
+				return verbs[Math.floor(Math.random()*verbs.length)]
+			}
+			if (isSpear) {
+				const verbs = [`${attacker}は${target}に槍を突き立てた`, `${attacker}の穂先が${target}を穿った`, `${attacker}は${target}を槍で薙いだ`]
+				return verbs[Math.floor(Math.random()*verbs.length)]
+			}
+			if (isDagger) {
+				const verbs = [`${attacker}は${target}に素早く斬りつけた`, `${attacker}の短刃が${target}を切り裂いた`, `${attacker}は${target}の隙を突いた`]
+				return verbs[Math.floor(Math.random()*verbs.length)]
+			}
+			// デフォルト剣
+			if (isCrit) {
+				const verbs = [`${attacker}は${target}を鋭く斬り裂いた！`, `${attacker}の必殺の一閃が${target}を捉えた！`, `${attacker}は${target}の急所を斬りつけた！`]
+				return verbs[Math.floor(Math.random()*verbs.length)]
+			}
+			const verbs = [`${attacker}は${target}を斬りつけた`, `${attacker}は${target}に剣を振るった`, `${attacker}の刃が${target}を裂いた`]
+			return verbs[Math.floor(Math.random()*verbs.length)]
+		}
+
+		function getSkillVerb(attacker, target, skill) {
+			const sn = skill.n
+			const isAoe = skill.target === 'all' || skill.eTarget === 'all'
+			const targetStr = isAoe ? '全敵' : (target ? target.name : '敵')
+			if (skill.type === 'heal') {
+				if (isAoe) return `${attacker}は仲間全員に${sn}を使った`
+				return `${attacker}は${targetStr}に${sn}を使った`
+			}
+			if (skill.type === 'buff') {
+				if (isAoe) return `${attacker}は仲間全員に${sn}を発動した`
+				return `${attacker}は${sn}で自身を強化した`
+			}
+			if (skill.type === 'guard') return `${attacker}は${sn}で仲間を守る構えをとった`
+			if (skill.type === 'shield') return `${attacker}は${sn}でシールドを展開した`
+			if (skill.type === 'debuff') return `${attacker}は${sn}で${targetStr}を弱体化させた`
+			if (skill.type === 'poison') return `${attacker}は${sn}で${targetStr}を毒に冒した`
+			if (skill.type === 'bleed') return `${attacker}は${sn}で${targetStr}を出血させた`
+			if (skill.type === 'stun') return `${attacker}は${sn}で${targetStr}を気絶させた`
+			if (skill.type === 'freeze') return `${attacker}は${sn}で${targetStr}を凍てつかせた`
+			if (skill.type === 'regen') return `${attacker}は${sn}で${targetStr}に再生の力を与えた`
+			if (skill.type === 'atk') {
+				if (skill.dType === 'magic') {
+					if (isAoe) return `${attacker}は${sn}で全体に魔法を放った`
+					return `${attacker}は${targetStr}に${sn}を唱えた`
+				}
+				if (isAoe) return `${attacker}は${sn}で全体を薙ぎ払った`
+				return `${attacker}は${targetStr}に${sn}を叩きこんだ`
+			}
+			return `${attacker}は${sn}を使った`
+		}
+
+		// ログ一覧をメインとモーダルで同期して管理
+		const _logStore = []
+		function addLog(m, cls = '') {
+			_logStore.push({ m, cls })
+			// メインlog-area
 			const l = document.getElementById('log-area')
 			const d = document.createElement('div')
-			d.className = `log-entry ${c}`
+			d.className = `log-entry ${cls}`
 			d.innerHTML = `> ${m}`
 			l.appendChild(d)
 			l.scrollTop = l.scrollHeight
+			// モーダルが開いていれば同期
+			const mc = document.getElementById('log-modal-content')
+			if (mc && document.getElementById('log-modal-overlay').classList.contains('active')) {
+				const md = document.createElement('div')
+				md.className = `log-entry ${cls}`
+				md.innerHTML = `> ${m}`
+				mc.appendChild(md)
+				mc.scrollTop = mc.scrollHeight
+			}
+		}
+		function openLogModal() {
+			const overlay = document.getElementById('log-modal-overlay')
+			const mc = document.getElementById('log-modal-content')
+			mc.innerHTML = ''
+			_logStore.forEach(({ m, cls }) => {
+				const d = document.createElement('div')
+				d.className = `log-entry ${cls}`
+				d.innerHTML = `> ${m}`
+				mc.appendChild(d)
+			})
+			overlay.classList.add('active')
+			mc.scrollTop = mc.scrollHeight
+		}
+		function closeLogModal() {
+			document.getElementById('log-modal-overlay').classList.remove('active')
 		}
 		window.onload = () => {
 			if (load_game()) {
@@ -6090,5 +7845,7 @@ function winBattle() {
 			console.log('Window resized')
 		}
 		</script>
-	</body>
+
+
+</body>
 </html>
