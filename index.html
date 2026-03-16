@@ -495,10 +495,14 @@ header .btn-icon {
 			.modal [style*="max-height:44vh"],
 			.modal [style*="max-height:48vh"],
 			.modal [style*="max-height:45vh"],
-			.modal [style*="max-height:52vh"],
+			.modal [style*="max-height:52vh"] {
+				max-height: 38dvh !important;
+			}
 			.modal [style*="max-height:38vh"] {
-				max-height: 40vh !important;
-				max-height: 40dvh !important;
+				max-height: 32dvh !important;
+			}
+			.modal [style*="max-height:40vh"] {
+				max-height: 34dvh !important;
 			}
 			/* 戦闘：ユニットボックス小型化 */
 			.battle-unit-box {
@@ -767,6 +771,169 @@ header .btn-icon {
 		}
 		#btn-manual-save:hover { background: rgba(74,222,128,0.12); border-color: #4ade80; color: #4ade80; }
 		#btn-manual-save.saving { color: #4ade80; border-color: #4ade80; background: rgba(74,222,128,0.1); }
+		
+		/* ═══ メニューパネル ═══ */
+		@media (max-width: 480px) {
+			/* スマホ：asideを非表示（メニューパネルに移行） */
+			aside { display: none !important; }
+			#main-container {
+				grid-template-columns: 1fr !important;
+				grid-template-rows: 1fr !important;
+			}
+			/* スマホ：PC用ボタンを非表示 */
+			#header-notice-settings { display: none !important; }
+
+			/* battle-view高さ制御 */
+			#battle-view {
+				display: flex; flex-direction: column; width: 100%;
+				max-height: calc(100dvh - 50px - 72px);
+				overflow: hidden; box-sizing: border-box;
+			}
+			.enemy-container { flex-shrink:1; max-height:34dvh; overflow:hidden; }
+			.party-battle-container { flex-shrink:1; max-height:30dvh; overflow:visible; }
+			#battle-view > div:nth-last-child(-n+2) { flex-shrink:0; }
+			.battle-unit-box { min-width:60px !important; max-width:160px !important; padding:4px 3px !important; font-size:0.7rem !important; }
+			#battle-skill-menu { grid-template-columns:1fr 1fr !important; }
+		}
+		@media (min-width: 481px) {
+			/* PC版：オーバーレイは不要、パネルは表示 */
+			#hb-overlay { display: none !important; }
+		}
+
+		/* メニューボタン（PC・スマホ共通） */
+		#hb-btn {
+			display: flex;
+			align-items: center; gap: 5px;
+			padding: 5px 12px;
+			background: #1a1a1a; border: 1px solid #444; border-radius: 8px;
+			cursor: pointer; flex-shrink: 0;
+			color: #ccc; font-size: 0.82rem; font-family: inherit;
+			transition: background 0.15s, border-color 0.15s;
+		}
+		#hb-btn:hover { background: #252525; border-color: #666; }
+		#hb-btn.open { background: #252525; border-color: #888; }
+		#hb-btn .menu-icon { font-size: 0.9rem; }
+
+		/* オーバーレイ・パネル */
+		#hb-overlay {
+			display: none; position: fixed; inset: 0; z-index: 8800;
+			background: rgba(0,0,0,0.5);
+		}
+		#hb-overlay.open { display: block; }
+		#hb-panel {
+			position: fixed; top: 50px; right: 0;
+			width: 300px; height: calc(100dvh - 50px);
+			background: #111; border-left: 1px solid #333;
+			z-index: 8801;
+			display: flex; flex-direction: column;
+			transform: translateX(100%);
+			transition: transform 0.25s ease;
+			overflow: hidden;
+			pointer-events: none;
+		}
+		#hb-panel.open { transform: translateX(0); pointer-events: auto; }
+		/* スマホでは全高表示 */
+		@media (max-width: 480px) {
+			#hb-panel { top: 0; height: 100dvh; }
+		}
+		#hb-panel-header { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid #222; flex-shrink:0; }
+		#hb-panel-body { flex:1; overflow-y:auto; padding:8px 12px 20px; }
+		.hb-section { margin-bottom:12px; }
+		.hb-section-title { font-size:0.65rem; color:#555; letter-spacing:1px; text-transform:uppercase; padding:6px 0 4px; border-bottom:1px solid #1e1e1e; margin-bottom:7px; }
+		.hb-row { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:4px; }
+		.hb-row.single { grid-template-columns:1fr; }
+		.hb-btn { padding:10px 8px; background:#1a1a1a; border:1px solid #333; border-radius:8px; color:#ccc; font-size:0.82rem; cursor:pointer; text-align:center; font-family:inherit; }
+		.hb-btn.danger { border-color:#5a1a1a; color:#f87171; }
+		.hb-btn.go { border-color:#2a4a2a; color:#4ade80; }
+
+		/* スマホのみ表示するパネル要素 */
+		.hb-mobile-only { display: none; }
+		@media (max-width: 480px) {
+			.hb-mobile-only { display: block; }
+		}
+		/* modal-overlayをhb-panelより前面に */
+		.modal-overlay { z-index: 9000 !important; }
+
+		/* ═══ メニューボタン 赤丸バッジ ═══ */
+		#hb-btn-wrap {
+			position: relative;
+			display: inline-flex;
+			flex-shrink: 0;
+		}
+		#hb-menu-badge {
+			position: absolute;
+			top: -4px;
+			right: -4px;
+			width: 10px;
+			height: 10px;
+			background: #ef4444;
+			border-radius: 50%;
+			border: 2px solid #000;
+			display: none;
+			animation: notifyShimmer 1.4s ease-in-out infinite;
+			z-index: 1;
+		}
+
+		/* ═══ デイリーボーナス カード（メニュー内） ═══ */
+		.hb-daily-card {
+			background: #0a0e18;
+			border: 1px solid #1e3a5f;
+			border-radius: 8px;
+			padding: 10px 12px;
+			margin-bottom: 4px;
+		}
+		.hb-daily-card.claimed {
+			background: #0a0f0a;
+			border-color: #1a3a1a;
+		}
+		.hb-daily-streak {
+			font-size: 0.72rem;
+			color: #888;
+			margin-bottom: 6px;
+		}
+		.hb-daily-streak b {
+			color: #f9a825;
+		}
+		.hb-daily-grid {
+			display: grid;
+			grid-template-columns: repeat(7, 1fr);
+			gap: 3px;
+			margin-bottom: 8px;
+		}
+		.hb-daily-cell {
+			text-align: center;
+			padding: 4px 2px;
+			border-radius: 4px;
+			border: 1px solid #222;
+			background: #0a0a0a;
+		}
+		.hb-daily-cell.today {
+			border-color: #60a5fa;
+			background: #0a1828;
+		}
+		.hb-daily-cell.today.special {
+			border-color: #f59e0b;
+			background: #1a1000;
+		}
+		.hb-daily-cell.past {
+			border-color: #22c55e;
+			background: #0a0f0a;
+		}
+		.hb-daily-cell.future {
+			opacity: 0.35;
+		}
+		.hb-daily-cell .dc-day {
+			font-size: 0.5rem;
+			color: #555;
+		}
+		.hb-daily-cell .dc-icon {
+			font-size: 0.9rem;
+			line-height: 1;
+		}
+		.hb-daily-cell .dc-check {
+			font-size: 0.5rem;
+			color: #22c55e;
+		}
 		</style>
 	</head>
 	<body>
@@ -793,14 +960,9 @@ header .btn-icon {
 						<span style="color:var(--gold)">💰</span>
 						<span id="h-gold">0</span>
 					</div>
-					<div class="stat-badge" style="color:var(--accent-blue)">
-						<span>🏰</span>
-						<span id="h-max-floor">1F</span>
-					</div>
 					<button class="btn-icon" onclick="openInventory()" id="header-bag-btn" style="display:flex; align-items:center; gap:6px;" title="カバン">
 						<span style="color:var(--accent-red)">👜</span> <span id="h-cap">0</span>/<span id="h-max-cap">15</span><span id="h-lv-bonus" style="font-size:0.7rem; color:#7dc; display:none;"> (+Lv)</span>
 					</button>
-					<button id="btn-manual-save" onclick="manualSave()" title="手動セーブ">💾</button>
 				</div>
 				
 				<div class="header-right" style="display:flex; align-items:center; gap:6px;">
@@ -852,11 +1014,13 @@ header .btn-icon {
 							</div>
 						</div>
 					</div>
-					<div style="position:relative;display:inline-block;">
-						<button class="btn-icon" id="notice-header-btn" onclick="openNoticeBoard(false)" title="お知らせ" style="font-size:1.05rem;padding:4px 9px;">📋</button>
-						<span id="notice-badge" style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:#ef4444;border-radius:50%;border:2px solid #000;display:none;animation:notifyShimmer 1.4s ease-in-out infinite;"></span>
+					<!-- メニューボタン（PC・スマホ共通） -->
+					<div id="hb-btn-wrap">
+						<button id="hb-btn" onclick="toggleHbMenu()" aria-label="メニュー">
+							<span class="menu-icon">☰</span> メニュー
+						</button>
+						<span id="hb-menu-badge"></span>
 					</div>
-					<button class="btn-icon" onclick="openSettingsModal()" title="設定" style="font-size:1.15rem;">⚙️</button>
 				</div>
 			</header>
 
@@ -868,7 +1032,7 @@ header .btn-icon {
 							<button id="town-dungeon-btn" class="btn-action btn-green" onclick="enterDungeon()">ダンジョン探索</button>
 							<button id="town-shop-btn" class="btn-action btn-blue" onclick="openShopMenu()">ショップ</button>
 							<button class="btn-action btn-purple" onclick="openGuild()">ギルド</button>
-							<button id="town-smith-btn" class="btn-action" style="background:linear-gradient(135deg,#3a2200,#7a4800);border:1px solid #c0760a;color:#f9a825;display:none;" onclick="openSmithModal()">🔨 鍛冶屋</button>
+							<button id="town-smith-btn" class="btn-action" onclick="openSmithModal()">🔨 鍛冶屋</button>
 						</div>
 					</div>
 
@@ -916,8 +1080,75 @@ header .btn-icon {
 					<div id="log-modal-content"></div>
 				</div>
 			</div>
-			<div id="modal-layer" class="modal-overlay hidden">
-				<div class="modal" id="modal-content"></div>
+			<!-- ハンバーガーパネル -->
+			<div id="hb-overlay" onclick="closeHbMenu()"></div>
+			<div id="hb-panel">
+				<div id="hb-panel-header">
+					<span style="font-size:0.9rem;font-weight:bold;color:#eee;">メニュー</span>
+					<button onclick="closeHbMenu()" style="background:none;border:none;color:#888;font-size:1.2rem;cursor:pointer;padding:4px 8px;">✕</button>
+				</div>
+				<div id="hb-panel-body">
+					<!-- パーティ（スマホのみ表示） -->
+					<div class="hb-section hb-mobile-only">
+						<div class="hb-section-title">⚔️ パーティ</div>
+						<div id="hb-party-list"></div>
+					</div>
+					<!-- デイリーボーナス -->
+					<div class="hb-section">
+						<div class="hb-section-title">🎁 デイリーボーナス</div>
+						<div id="hb-daily-area"></div>
+						<div class="hb-row single" style="margin-top:6px;">
+							<button class="hb-btn" id="hb-daily-btn" onclick="closeHbMenu();setTimeout(openDailyBonus,150)">🎁 ボーナスを確認する</button>
+						</div>
+					</div>
+					<!-- デイリーボーナス -->
+					<div class="hb-section">
+						<div class="hb-section-title">🎁 デイリーボーナス</div>
+						<div id="hb-daily-area"></div>
+						<div class="hb-row single" style="margin-top:6px;">
+							<button class="hb-btn" id="hb-daily-btn" onclick="closeHbMenu();setTimeout(openDailyBonus,150)">🎁 ボーナスを確認する</button>
+						</div>
+					</div>
+					<!-- ゲーム情報 -->
+					<div class="hb-section">
+						<div class="hb-section-title">📊 ゲーム情報</div>
+						<div id="hb-stats-area" style="background:#0d0d0d;border:1px solid #222;border-radius:8px;padding:10px 12px;font-size:0.8rem;line-height:1.9;color:#aaa;"></div>
+					</div>
+					<!-- サウンド -->
+					<div class="hb-section">
+						<div class="hb-section-title">🔊 サウンド</div>
+						<div class="hb-row">
+							<button class="hb-btn" id="hb-bgm-btn" onclick="toggleBgmMute()" style="color:#4ade80;border-color:#2a4a2a;">🎵 BGM：ON</button>
+							<button class="hb-btn" id="hb-se-btn"  onclick="toggleSeMute()"  style="color:#60a5fa;border-color:#1e3a5f;">🔔 効果音：ON</button>
+						</div>
+						<button class="hb-btn" id="hb-mute-btn" style="display:none;" onclick="toggleMute()">🔊 サウンドON</button>
+					</div>
+					<!-- データ -->
+					<div class="hb-section">
+						<div class="hb-section-title">💾 データ</div>
+						<div class="hb-row">
+							<button class="hb-btn go" onclick="closeHbMenu();setTimeout(manualSave,100)">💾 手動セーブ</button>
+							<button class="hb-btn" onclick="closeHbMenu();openSaveModal()">📤 コード出力</button>
+							<button class="hb-btn" onclick="closeHbMenu();openLoadModal()">📂 ロード</button>
+						</div>
+					</div>
+					<!-- 情報・設定 -->
+					<div class="hb-section">
+						<div class="hb-section-title">ℹ️ 情報・設定</div>
+						<div class="hb-row">
+							<button class="hb-btn" onclick="closeHbMenu();openNoticeBoard(false)">📋 お知らせ<span id="hb-notice-badge" style="display:none;margin-left:3px;font-size:0.6rem;background:#ef4444;color:#fff;border-radius:8px;padding:0 4px;">NEW</span></button>
+							<button class="hb-btn" onclick="closeHbMenu();openHelpModal()">❓ ヘルプ</button>
+							<button class="hb-btn" onclick="closeHbMenu();openPatchNotesModal()">📋 更新履歴</button>
+						</div>
+					</div>
+					<!-- 危険ゾーン -->
+					<div class="hb-section">
+						<div class="hb-section-title" style="color:#5a1a1a;">⚠️ 危険</div>
+						<div class="hb-row single">
+							<button class="hb-btn danger" onclick="closeHbMenu();setTimeout(resetGame_confirm1,100)">🗑️ リセット</button>
+						</div>
+					</div>
+				</div>
 			</div>
 			<!-- エンチャントポップアップ（game-wrapper内に配置） -->
 			<div id="enchant-popup-overlay" onclick="if(event.target===this)closeEnchantPopup()">
@@ -945,12 +1176,16 @@ header .btn-icon {
 		console.log('Game Initialized')
 
 		// ==========================================
-		// オーディオシステム (BGM & SE)
+		// オーディオシステム (BGM & SE 独立制御)
 		// ==========================================
 		const AudioContext = window.AudioContext || window.webkitAudioContext;
 		let audioCtx = null;
 		let masterGain = null;
-		let isMuted = false;
+		let bgmGain   = null;
+		let seGain    = null;
+		let isBgmMuted = false;
+		let isSeMuted  = false;
+		let isMuted = false; // 後方互換用（playBGM/playSE内の参照向け）
 		let currentBGM = null;
 		let bgmNodes = [];
 		let bgmInterval = null;
@@ -959,19 +1194,69 @@ header .btn-icon {
 			if(audioCtx) return;
 			audioCtx = new AudioContext();
 			masterGain = audioCtx.createGain();
-			masterGain.gain.value = 0.1; // 全体音量
+			masterGain.gain.value = 1.0;
 			masterGain.connect(audioCtx.destination);
+			bgmGain = audioCtx.createGain();
+			bgmGain.gain.value = isBgmMuted ? 0 : 0.1;
+			bgmGain.connect(masterGain);
+			seGain = audioCtx.createGain();
+			seGain.gain.value = isSeMuted ? 0 : 1.0;
+			seGain.connect(masterGain);
 		}
 
-		function toggleMute() {
-			initAudio();
-			isMuted = !isMuted;
-			masterGain.gain.value = isMuted ? 0 : 0.1;
-			document.getElementById('btn-mute').innerText = isMuted ? '🔇' : '🔊';
-			if (!isMuted && audioCtx.state === 'suspended') {
-				audioCtx.resume();
-			}
+		function _applyBgmMute() {
+			if (!bgmGain) return;
+			bgmGain.gain.value = isBgmMuted ? 0 : 0.1;
 		}
+		function _applySeМute() {
+			if (!seGain) return;
+			seGain.gain.value = isSeMuted ? 0 : 1.0;
+		}
+		function toggleBgmMute() {
+			initAudio();
+			isBgmMuted = !isBgmMuted;
+			_applyBgmMute();
+			if (!isBgmMuted && audioCtx.state === 'suspended') audioCtx.resume();
+			if (!isBgmMuted && currentBGM) { const s = currentBGM; currentBGM = null; playBGM(s); }
+			isMuted = isBgmMuted && isSeMuted;
+			_updateSoundButtons();
+			try { localStorage.setItem('abyss_bgm_muted', isBgmMuted ? '1' : '0') } catch {}
+		}
+		function toggleSeMute() {
+			initAudio();
+			isSeMuted = !isSeMuted;
+			_applySeМute();
+			if (!isSeMuted && audioCtx.state === 'suspended') audioCtx.resume();
+			isMuted = isBgmMuted && isSeMuted;
+			_updateSoundButtons();
+			try { localStorage.setItem('abyss_se_muted', isSeMuted ? '1' : '0') } catch {}
+		}
+		function toggleMute() {
+			const anyOn = !isBgmMuted || !isSeMuted;
+			isBgmMuted = anyOn; isSeMuted = anyOn; isMuted = anyOn;
+			_applyBgmMute(); _applySeМute();
+			if (!anyOn && audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+			if (!isBgmMuted && currentBGM) { const s = currentBGM; currentBGM = null; playBGM(s); }
+			_updateSoundButtons();
+			try {
+				localStorage.setItem('abyss_bgm_muted', isBgmMuted ? '1' : '0')
+				localStorage.setItem('abyss_se_muted',  isSeMuted  ? '1' : '0')
+			} catch {}
+		}
+		function _updateSoundButtons() {
+			const _bb = document.getElementById('hb-bgm-btn')
+			const _sb = document.getElementById('hb-se-btn')
+			if (_bb) { _bb.textContent = isBgmMuted ? '🎵 BGM：OFF' : '🎵 BGM：ON'; _bb.style.color = isBgmMuted ? '#666' : '#4ade80'; _bb.style.borderColor = isBgmMuted ? '#333' : '#2a4a2a'; }
+			if (_sb) { _sb.textContent = isSeMuted  ? '🔔 効果音：OFF' : '🔔 効果音：ON'; _sb.style.color = isSeMuted ? '#666' : '#60a5fa'; _sb.style.borderColor = isSeMuted ? '#333' : '#1e3a5f'; }
+			var _bm = document.getElementById('btn-mute'); if (_bm) _bm.innerText = (isBgmMuted && isSeMuted) ? '🔇' : '🔊'
+		}
+		;(function _loadSoundPrefs() {
+			try {
+				isBgmMuted = localStorage.getItem('abyss_bgm_muted') === '1'
+				isSeMuted  = localStorage.getItem('abyss_se_muted')  === '1'
+				isMuted    = isBgmMuted && isSeMuted
+			} catch {}
+		})()
 
 		// 画面のどこかをクリックしたらオーディオ再生許可＆クリック音
 		document.addEventListener('click', (e) => {
@@ -986,12 +1271,12 @@ header .btn-icon {
 		});
 
 		function playSE(type) {
-			if(!audioCtx || isMuted) return;
+			if(!audioCtx || isSeMuted) return;
 			const t = audioCtx.currentTime;
 			const osc = audioCtx.createOscillator();
 			const gain = audioCtx.createGain();
 			osc.connect(gain);
-			gain.connect(masterGain);
+			gain.connect(seGain);
 
 			if (type === 'click') {
 				osc.type = 'sine';
@@ -1000,7 +1285,7 @@ header .btn-icon {
 				gain.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
 				osc.start(t);
 				osc.stop(t + 0.05);
-			} else if (type === 'attack') { // 物理攻撃
+			} else if (type === 'attack') {
 				osc.type = 'square';
 				osc.frequency.setValueAtTime(800, t);
 				osc.frequency.exponentialRampToValueAtTime(100, t + 0.1);
@@ -1008,7 +1293,7 @@ header .btn-icon {
 				gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
 				osc.start(t);
 				osc.stop(t + 0.1);
-			} else if (type === 'enemy_attack') { // 敵の攻撃ダメージ
+			} else if (type === 'enemy_attack') {
 				osc.type = 'sawtooth';
 				osc.frequency.setValueAtTime(200, t);
 				osc.frequency.linearRampToValueAtTime(50, t + 0.15);
@@ -1016,7 +1301,7 @@ header .btn-icon {
 				gain.gain.linearRampToValueAtTime(0.01, t + 0.15);
 				osc.start(t);
 				osc.stop(t + 0.15);
-			} else if (type === 'heal' || type === 'item') { // 回復・アイテム
+			} else if (type === 'heal' || type === 'item') {
 				osc.type = 'sine';
 				osc.frequency.setValueAtTime(400, t);
 				osc.frequency.linearRampToValueAtTime(800, t + 0.2);
@@ -1024,7 +1309,7 @@ header .btn-icon {
 				gain.gain.linearRampToValueAtTime(0.01, t + 0.2);
 				osc.start(t);
 				osc.stop(t + 0.2);
-			} else if (type === 'magic') { // 魔法
+			} else if (type === 'magic') {
 				osc.type = 'sine';
 				osc.frequency.setValueAtTime(600, t);
 				osc.frequency.linearRampToValueAtTime(1200, t + 0.3);
@@ -1032,7 +1317,7 @@ header .btn-icon {
 				gain.gain.linearRampToValueAtTime(0.01, t + 0.3);
 				osc.start(t);
 				osc.stop(t + 0.3);
-			} else if (type === 'debuff') { // デバフ
+			} else if (type === 'debuff') {
 				osc.type = 'triangle';
 				osc.frequency.setValueAtTime(400, t);
 				osc.frequency.linearRampToValueAtTime(100, t + 0.3);
@@ -1040,26 +1325,82 @@ header .btn-icon {
 				gain.gain.linearRampToValueAtTime(0.01, t + 0.3);
 				osc.start(t);
 				osc.stop(t + 0.3);
-			} else if (type === 'error') { // エラー
+			} else if (type === 'error') {
 				osc.type = 'sawtooth';
 				osc.frequency.setValueAtTime(150, t);
 				gain.gain.setValueAtTime(0.3, t);
 				gain.gain.linearRampToValueAtTime(0.01, t + 0.1);
 				osc.start(t);
 				osc.stop(t + 0.1);
-			} else if (type === 'win') { // 勝利ファンファーレ
+			} else if (type === 'win') {
 				[400, 500, 600, 800].forEach((freq, i) => {
 					const o = audioCtx.createOscillator();
 					const g = audioCtx.createGain();
 					o.type = 'square';
 					o.connect(g);
-					g.connect(masterGain);
+					g.connect(seGain);
 					let startTime = t + i * 0.1;
 					o.frequency.setValueAtTime(freq, startTime);
 					g.gain.setValueAtTime(0.2, startTime);
 					g.gain.linearRampToValueAtTime(0.01, startTime + 0.2);
 					o.start(startTime);
 					o.stop(startTime + 0.2);
+				});
+			} else if (type === 'legendary') {
+				// ★ レジェンダリー入手：豪華な上昇ファンファーレ
+				osc.disconnect(); gain.disconnect(); // 単音oscは使わない
+				const notes = [523, 659, 784, 1047, 1319];
+				notes.forEach((freq, i) => {
+					const o = audioCtx.createOscillator();
+					const g = audioCtx.createGain();
+					o.type = i < 3 ? 'square' : 'sine';
+					o.connect(g); g.connect(seGain);
+					const st = t + i * 0.13;
+					o.frequency.setValueAtTime(freq, st);
+					g.gain.setValueAtTime(0.22, st);
+					g.gain.exponentialRampToValueAtTime(0.001, st + 0.55);
+					o.start(st); o.stop(st + 0.6);
+				});
+				// 追加：キラキラ高音
+				[2093, 2637].forEach((freq, i) => {
+					const o = audioCtx.createOscillator();
+					const g = audioCtx.createGain();
+					o.type = 'sine';
+					o.connect(g); g.connect(seGain);
+					const st = t + 0.55 + i * 0.12;
+					o.frequency.setValueAtTime(freq, st);
+					g.gain.setValueAtTime(0.15, st);
+					g.gain.exponentialRampToValueAtTime(0.001, st + 0.4);
+					o.start(st); o.stop(st + 0.45);
+				});
+			} else if (type === 'unlock') {
+				// ★ 鍛冶屋解放：明るい解禁チャイム
+				osc.disconnect(); gain.disconnect();
+				const unlockNotes = [392, 523, 659, 784];
+				unlockNotes.forEach((freq, i) => {
+					const o = audioCtx.createOscillator();
+					const g = audioCtx.createGain();
+					o.type = 'sine';
+					o.connect(g); g.connect(seGain);
+					const st = t + i * 0.18;
+					o.frequency.setValueAtTime(freq, st);
+					g.gain.setValueAtTime(0.25, st);
+					g.gain.exponentialRampToValueAtTime(0.001, st + 0.5);
+					o.start(st); o.stop(st + 0.55);
+				});
+			} else if (type === 'daily') {
+				// ★ デイリー受け取り：軽やかなコイン音＋上昇
+				osc.disconnect(); gain.disconnect();
+				[523, 659, 784, 1047].forEach((freq, i) => {
+					const o = audioCtx.createOscillator();
+					const g = audioCtx.createGain();
+					o.type = i % 2 === 0 ? 'triangle' : 'sine';
+					o.connect(g); g.connect(seGain);
+					const st = t + i * 0.1;
+					o.frequency.setValueAtTime(freq, st);
+					g.gain.setValueAtTime(0.3, st);
+					g.gain.exponentialRampToValueAtTime(0.001, st + 0.35);
+					o.start(st); o.stop(st + 0.4);
 				});
 			}
 		}
@@ -1071,7 +1412,7 @@ header .btn-icon {
 			stopBGM();
 			currentBGM = scene;
 			
-			if(isMuted) return;
+			if(isBgmMuted) return;
 
 			const t = audioCtx.currentTime;
 			
@@ -1105,7 +1446,7 @@ header .btn-icon {
 					osc.frequency.value = f
 					gain.gain.setValueAtTime(0.001, t)
 					gain.gain.linearRampToValueAtTime(pi === 0 ? 0.07 : 0.04, t + 3)
-					osc.connect(filt); filt.connect(gain); gain.connect(masterGain)
+					osc.connect(filt); filt.connect(gain); gain.connect(bgmGain)
 					osc.start()
 					bgmNodes.push({ osc, gain })
 				})
@@ -1121,9 +1462,8 @@ header .btn-icon {
 
 				// ピアノ風単音を鳴らすヘルパー
 				function playPianoNote(freq, vol) {
-					if (isMuted || !audioCtx) return
+					if (isBgmMuted || !audioCtx) return
 					const now = audioCtx.currentTime
-					// 基音 (sine)
 					const o1 = audioCtx.createOscillator()
 					const g1 = audioCtx.createGain()
 					o1.type = 'sine'
@@ -1131,62 +1471,56 @@ header .btn-icon {
 					g1.gain.setValueAtTime(vol, now)
 					g1.gain.exponentialRampToValueAtTime(vol * 0.3, now + 0.4)
 					g1.gain.exponentialRampToValueAtTime(0.0001, now + 1.8)
-					o1.connect(g1); g1.connect(masterGain)
+					o1.connect(g1); g1.connect(bgmGain)
 					o1.start(now); o1.stop(now + 1.9)
-					// 倍音 (triangle) でピアノ感
 					const o2 = audioCtx.createOscillator()
 					const g2 = audioCtx.createGain()
 					o2.type = 'triangle'
 					o2.frequency.value = freq * 2
 					g2.gain.setValueAtTime(vol * 0.18, now)
 					g2.gain.exponentialRampToValueAtTime(0.0001, now + 0.8)
-					o2.connect(g2); g2.connect(masterGain)
+					o2.connect(g2); g2.connect(bgmGain)
 					o2.start(now); o2.stop(now + 0.9)
 				}
 
 				let mStep = 0
-				const BPM_INTERVAL = 480 // ms per 16th note（ゆったり = 約31BPM相当）
+				const BPM_INTERVAL = 480
 				bgmInterval = setInterval(() => {
-					if (isMuted) return
+					if (isBgmMuted) return
 					const note = melody[mStep % melody.length]
 					if (note && NOTE[note]) playPianoNote(NOTE[note], 0.13)
 					mStep++
 				}, BPM_INTERVAL)
 			} else if (scene === 'dungeon') {
-				const freqs = [65.41, 73.42]; // C2, D2
+				const freqs = [65.41, 73.42];
 				freqs.forEach(f => {
 					const osc = audioCtx.createOscillator();
 					const gain = audioCtx.createGain();
 					osc.type = 'triangle';
 					osc.frequency.value = f;
-					
 					gain.gain.setValueAtTime(0.01, t);
 					gain.gain.linearRampToValueAtTime(0.2, t + 2);
-					
 					osc.connect(gain);
-					gain.connect(masterGain);
+					gain.connect(bgmGain);
 					osc.start();
 					bgmNodes.push({osc, gain});
 				});
 			} else if (scene === 'battle') {
 				let step = 0;
-				const sequence = [130.81, 130.81, 146.83, 155.56, 130.81, 0, 116.54, 130.81]; 
-				
+				const sequence = [130.81, 130.81, 146.83, 155.56, 130.81, 0, 116.54, 130.81];
 				bgmInterval = setInterval(() => {
-					if(isMuted) return;
+					if(isBgmMuted) return;
 					const freq = sequence[step % sequence.length];
 					if(freq > 0) {
 						const osc = audioCtx.createOscillator();
 						const gain = audioCtx.createGain();
 						osc.type = 'square';
-						
 						const time = audioCtx.currentTime;
 						osc.frequency.setValueAtTime(freq, time);
 						gain.gain.setValueAtTime(0.15, time);
 						gain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
-						
 						osc.connect(gain);
-						gain.connect(masterGain);
+						gain.connect(bgmGain);
 						osc.start(time);
 						osc.stop(time + 0.15);
 					}
@@ -1224,21 +1558,25 @@ header .btn-icon {
 			const currentTier = Math.min(5, Math.floor((gameState.maxFloor - 1) / 10) + 1);
 			const isPct = Math.random() > 0.5;
             
-			// 8属性の定義（全ステータス網羅）
+			// 属性の定義（既存8種＋新4種）
 			const elements = [
-				{ id: 'fire',   n: '緋',   color: '#e91e63', stat: 'str' },   // 物理攻撃
-				{ id: 'magic',  n: '紫苑', color: '#9c27b0', stat: 'matk' },  // 特殊攻撃
-				{ id: 'earth',  n: '琥珀', color: '#ff9800', stat: 'vit' },   // 物理耐性
-				{ id: 'water',  n: '瑠璃', color: '#2196f3', stat: 'mdef' },  // 特殊耐性
-				{ id: 'life',   n: '翡翠', color: '#4caf50', stat: 'hp' },    // 最大HP
-				{ id: 'spirit', n: '蒼',   color: '#00bcd4', stat: 'mp' },    // 最大MP
-				{ id: 'wind',   n: '迅',   color: '#8bc34a', stat: 'agi' },   // 速度
-				{ id: 'star',   n: '煌',   color: '#ffc107', stat: 'luk' }    // 幸運・会心
+				{ id: 'fire',        n: '緋',   color: '#e91e63', stat: 'str'         },
+				{ id: 'magic',       n: '紫苑', color: '#9c27b0', stat: 'matk'        },
+				{ id: 'earth',       n: '琥珀', color: '#ff9800', stat: 'vit'         },
+				{ id: 'water',       n: '瑠璃', color: '#2196f3', stat: 'mdef'        },
+				{ id: 'life',        n: '翡翠', color: '#4caf50', stat: 'hp'          },
+				{ id: 'spirit',      n: '蒼',   color: '#00bcd4', stat: 'mp'          },
+				{ id: 'wind',        n: '迅',   color: '#8bc34a', stat: 'agi'         },
+				{ id: 'star',        n: '煌',   color: '#ffc107', stat: 'luk'         },
+				{ id: 'gold',        n: '財',   color: '#f9a825', stat: 'goldBonus'   },  // ゴールド獲得
+				{ id: 'wisdom',      n: '智',   color: '#7c4dff', stat: 'expBonus'    },  // EXP獲得
+				{ id: 'slayer',      n: '刃',   color: '#ff5252', stat: 'dmgBonus'    },  // ダメージ増加
+				{ id: 'shadow',      n: '影',   color: '#607d8b', stat: 'evaBonus'    },  // 回避率
 			];
 			const el = elements[Math.floor(Math.random() * elements.length)];
 
-			// 煌(star)の場合は幸運か会心に分岐
 			let targetStat = el.stat;
+			// 煌(star)は幸運か会心に分岐
 			if (el.id === 'star') {
 				targetStat = Math.random() > 0.5 ? 'luk' : 'cri';
 			}
@@ -1247,26 +1585,32 @@ header .btn-icon {
 			let statKey = targetStat;
 			let d = '';
 
+			const pctStats = { goldBonus:'G獲得', expBonus:'EXP', dmgBonus:'ダメージ', evaBonus:'回避率' };
+
 			if (targetStat === 'cri') {
-				val = Math.floor(Math.random() * 5 + 1) + currentTier * 2; 
+				val = Math.floor(Math.random() * 5 + 1) + currentTier * 2;
 				d = `会心+${val}%`;
 				val = val / 100;
+			} else if (pctStats[targetStat]) {
+				// 新属性：常に%値
+				val = Math.floor(Math.random() * 3 + 1) + currentTier;
+				statKey = targetStat;
+				d = `${pctStats[targetStat]}+${val}%`;
 			} else {
 				const statNameMap = {str:'物攻', matk:'特攻', vit:'物耐', mdef:'特耐', agi:'速度', luk:'幸運', hp:'HP', mp:'MP'};
 				if (isPct) {
-					val = Math.floor(Math.random() * 3 + 1) + currentTier * 2; 
+					val = Math.floor(Math.random() * 3 + 1) + currentTier * 2;
 					statKey = targetStat + 'Pct';
 					d = `${statNameMap[targetStat]} ${val}%UP`;
 				} else {
-					let base = Math.floor(Math.random() * 20) + 10; 
-					if (targetStat === 'hp') base *= 5; 
+					let base = Math.floor(Math.random() * 20) + 10;
+					if (targetStat === 'hp') base *= 5;
 					if (targetStat === 'mp') base *= 2;
-					val = base * (currentTier * currentTier); 
+					val = base * (currentTier * currentTier);
 					d = `${statNameMap[targetStat]} +${val}`;
 				}
 			}
 
-			// 色情報(color)も持たせておくことでUI描画が綺麗になります
 			let rune = { id: 'r_' + Date.now() + Math.random(), n: `${el.n}のルーン`, d: d, type: 'rune', element: el.id, color: el.color, s: {}, locked: false };
 			rune.s[statKey] = val;
 			return applyRarity(rune);
@@ -1290,28 +1634,60 @@ const JOB_DATA = {
 					      { n:'ブラッド・エッジ',   type:'atk_dot', dType:'physical', target:'single', cost:18, pow:0.8, dot:'bleed', dotTurns:4, d:'単体物理 ×0.8 ＋ 出血4ターン ／ 近接' } ],
 					12: [ { type:'passive', stat:'str', val:20,  d:'STR+20' },
 					      { type:'passive', stat:'hp',  val:150, d:'MaxHP+150' } ],
-					15: [ { n:'グランド・インパクト', type:'enhance', target_lv:5, option:0, upgrade:{ pow:5.5, cost:22, target:'single' }, d:'【ヘヴィ・スマッシュ強化】単体 ×5.5' },
-					      { n:'アース・ディバイド',   type:'enhance', target_lv:5, option:1, upgrade:{ pow:3.0, cost:22, target:'all'    }, d:'【ワール・ウィンド強化】全体 ×3.0' } ],
+					15: [
+					  { type:'enhance', target_lv:5, option:0, choices:[
+					      { n:'グランド・インパクト', upgrade:{ pow:5.5, cost:22 }, d:'単体 ×5.5 超火力' },
+					      { n:'アーマー・ブレイク',   upgrade:{ pow:3.5, cost:20, debuff:{ stat:'vit', val:0.35 } }, d:'単体 ×3.5 ＋ DEF-35%' }
+					  ] },
+					  { type:'enhance', target_lv:5, option:1, choices:[
+					      { n:'アース・ディバイド',   upgrade:{ pow:3.0, cost:22 }, d:'全体 ×3.0 全体強化版' },
+					      { n:'ストーム・サイクロン', upgrade:{ pow:2.2, cost:20, dot:'stun', dotTurns:1 }, d:'全体 ×2.2 ＋ スタン1T' }
+					  ] }
+					],
 					17: [ { n:'ブラッド・ラスト',    type:'talent', trigger:'on_kill',  effect:{ healPct:0.12 }, d:'【タレント】敵討伐時：HP最大値×12%回復（自動）' },
 					      { n:'カウンター・スタンス', type:'talent', trigger:'on_hit',   effect:{ counterChance:0.25, counterPow:0.5, dType:'physical' }, d:'【タレント】被ダメ時：25%でカウンター×0.5（自動）' } ],
 					20: [ { n:'アース・クエイク',    type:'atk_dot', dType:'physical', target:'all',    cost:40, pow:3.5, dot:'stun',  dotTurns:1, d:'全体物理 ×3.5 ＋ スタン1ターン' },
 					      { n:'ウォー・クライ',      type:'buff',    stat:'str',        target:'all',    cost:35, val:0.30, d:'味方全体 STR+30%（3ターン）' } ],
-					25: [ { n:'ドラゴニック・バスター', type:'enhance', target_lv:10, option:0, upgrade:{ pow:9.0, cost:35 },                  d:'【ドラゴン・ファング強化】単体 ×9.0' },
-					      { n:'ドラゴニック・レイ',    type:'enhance', target_lv:10, option:1, upgrade:{ target:'all', pow:4.5, cost:40 },       d:'【ドラゴン・ファング強化B】全体 ×4.5' } ],
+					25: [
+					  { type:'enhance', target_lv:10, option:0, choices:[
+					      { n:'ドラゴニック・バスター', upgrade:{ pow:9.0, cost:35 }, d:'単体 ×9.0 超貫通' },
+					      { n:'ドラゴン・フレア',      upgrade:{ pow:6.0, cost:38, dot:'bleed', dotTurns:4 }, d:'単体 ×6.0 ＋ 出血4T' }
+					  ] },
+					  { type:'enhance', target_lv:10, option:1, choices:[
+					      { n:'ドラゴニック・レイ',    upgrade:{ target:'all', pow:4.5, cost:40 }, d:'全体 ×4.5' },
+					      { n:'ブラッド・フレンジー',  upgrade:{ pow:3.5, cost:30, dot:'bleed', dotTurns:3 }, d:'全体 ×3.5 ＋ 出血3T' }
+					  ] }
+					],
 					30: [ { n:'メテオ・スマッシュ',  type:'atk', dType:'physical', target:'all',    cost:60, pow:7.0,  d:'全体物理 ×7.0' },
 					      { n:'アビス・スラッシュ',  type:'atk', dType:'physical', target:'single', cost:55, pow:12.0, d:'単体物理 ×12.0 ／ 近接' } ],
 					33: [ { type:'passive', stat:'str', val:80,   d:'STR+80' },
 					      { type:'passive', stat:'cri', val:0.08, d:'会心率+8%' } ],
-					35: [ { n:'カタストロフィ',       type:'enhance', target_lv:20, option:0, upgrade:{ pow:6.0, dot:'stun', dotTurns:2 }, d:'【アース・クエイク強化】×6.0 ＋ スタン2ターン' },
-					      { n:'オーバーロード・オーラ', type:'enhance', target_lv:20, option:1, upgrade:{ stat:'str', val:0.50 },           d:'【ウォー・クライ強化】STR+50%' } ],
+					35: [
+					  { type:'enhance', target_lv:20, option:0, choices:[
+					      { n:'カタストロフィ',       upgrade:{ pow:6.0, dot:'stun', dotTurns:2 }, d:'全体 ×6.0 ＋ スタン2T' },
+					      { n:'テクトニック・スラム', upgrade:{ pow:5.0, debuff:{ stat:'vit', val:0.30 } }, d:'全体 ×5.0 ＋ DEF-30%' }
+					  ] },
+					  { type:'enhance', target_lv:20, option:1, choices:[
+					      { n:'オーバーロード・オーラ', upgrade:{ stat:'str', val:0.50 }, d:'全体 STR+50%' },
+					      { n:'ウォー・ロード',         upgrade:{ stat:'str', val:0.30, stat2:'cri', val2:0.20 }, d:'全体 STR+30% ＋ CRI+20%' }
+					  ] }
+					],
 					38: [ { n:'バーサーカー・ソウル', type:'talent', trigger:'hp_below', threshold:0.5, effect:{ stat:'str', buffPct:0.35 },            d:'【タレント】HP50%以下：STR自動+35%（自動）' },
 					      { n:'アンブレイカブル',    type:'talent', trigger:'hp_below', threshold:0.5, effect:{ dmgReducePct:0.30, stat:'vit', buffPct:0.40 }, d:'【タレント】HP50%以下：被ダメ-30% ＋ VIT+40%（自動）' } ],
 					40: [ { n:'ゴッド・キラー',      type:'atk_multi', dType:'physical', cost:80, hits:4, pow:3.0, d:'ランダム4hit 物理 ×3.0/hit ／ 近接' },
-					      { n:'オーラ・オブ・アシュラ', type:'buff', stat:'cri', target:'single', cost:50, val:0.50, d:'自身 CRI+50%（3ターン）' } ],
+					      { n:'オーラ・オブ・アシュラ', type:'buff', stat:'cri', target:'single', self:true, cost:50, val:0.50, d:'自身 CRI+50%（3ターン）' } ],
 					43: [ { type:'passive', stat:'str', val:130,  d:'STR+130' },
 					      { type:'passive', stat:'hp',  val:1000, d:'MaxHP+1000' } ],
-					45: [ { n:'プラネット・ブレイカー', type:'enhance', target_lv:30, option:0, upgrade:{ pow:12.0, cost:80 }, d:'【メテオ・スマッシュ強化】全体 ×12.0' },
-					      { n:'ゼロ・スラッシュ',       type:'enhance', target_lv:30, option:1, upgrade:{ pow:20.0, cost:80 }, d:'【アビス・スラッシュ強化】単体 ×20.0' } ],
+					45: [
+					  { type:'enhance', target_lv:30, option:0, choices:[
+					      { n:'プラネット・ブレイカー', upgrade:{ pow:12.0, cost:80 }, d:'全体 ×12.0 惑星破砕' },
+					      { n:'コズミック・ストーム',   upgrade:{ pow:9.0, cost:75, dot:'stun', dotTurns:2 }, d:'全体 ×9.0 ＋ スタン2T' }
+					  ] },
+					  { type:'enhance', target_lv:30, option:1, choices:[
+					      { n:'ゼロ・スラッシュ',    upgrade:{ pow:20.0, cost:80 }, d:'単体 ×20.0 虚無斬り' },
+					      { n:'アビス・デバスト',   upgrade:{ pow:16.0, cost:80, debuff:{ stat:'vit', val:0.50 } }, d:'単体 ×16.0 ＋ DEF-50%' }
+					  ] }
+					],
 					48: [ { type:'passive', stat:'cri', val:0.12, d:'会心率+12%' },
 					      { type:'passive', stat:'vit', val:150,  d:'VIT+150' } ],
 					50: [ { n:'ワールド・エンド',   type:'atk',    dType:'physical', target:'all',    cost:130, pow:14.0, selfDmgPct:0.20, d:'全体物理 ×14.0 ／ 反動：自身HP20%喪失' },
@@ -1335,28 +1711,60 @@ const JOB_DATA = {
 					      { n:'マーターズ・ガード',  type:'guard', target:'single', cost:20, d:'1ターン：味方全員ダメージを肩代わり' } ],
 					12: [ { type:'passive', stat:'mdef', val:20,  d:'MDEF+20' },
 					      { type:'passive', stat:'hp',   val:200, d:'MaxHP+200' } ],
-					15: [ { n:'ジャッジメント・スマイト', type:'enhance', target_lv:5, option:0, upgrade:{ pow:4.5, cost:22, dot:'stun', dotTurns:1, type:'atk_dot' }, d:'【ホーリー・スマイト強化】×4.5 ＋ スタン1ターン' },
-					      { n:'ホーリー・クロス',         type:'enhance', target_lv:5, option:1, upgrade:{ target:'all', pow:2.8, cost:22 },                           d:'【ホーリー・スマイト強化B】全体化 ×2.8' } ],
+					15: [
+					  { type:'enhance', target_lv:5, option:0, choices:[
+					      { n:'ジャッジメント・スマイト', upgrade:{ pow:4.5, cost:22, dot:'stun', dotTurns:1, type:'atk_dot' }, d:'単体 ×4.5 ＋ スタン1T' },
+					      { n:'ホーリー・エクスプロード', upgrade:{ pow:3.5, cost:22, target:'all' }, d:'全体化 ×3.5' }
+					  ] },
+					  { type:'enhance', target_lv:5, option:1, choices:[
+					      { n:'ホーリー・クロス',         upgrade:{ target:'all', pow:2.8, cost:22 }, d:'全体 ×2.8' },
+					      { n:'ディバイン・ガード',       upgrade:{ val:0.25, target:'all', cost:20 }, d:'全体シールド MaxHP×25%' }
+					  ] }
+					],
 					17: [ { n:'パラディンズ・オース',       type:'talent', trigger:'shield_active', effect:{ stat:'vit', buffPct:0.25 },                          d:'【タレント】シールド有効中：VIT+25%（自動）' },
 					      { n:'ホーリー・リトリビューション', type:'talent', trigger:'on_hit',       effect:{ mdefDebuffChance:0.30, mdefDebuffVal:0.15 },         d:'【タレント】被ダメ時：30%で敵MDEF-15%（自動）' } ],
 					20: [ { n:'ブレス・オブ・ゴッデス', type:'heal', scale:'self_hp',  target:'all',    cost:45, val:0.20, d:'味方全体回復：自身MaxHP×20%' },
 					      { n:'サンクチュアリ',        type:'buff', stat:'vit',        target:'single', cost:30, val:0.35, d:'単体 VIT+35%（3ターン）' } ],
-					25: [ { n:'グランド・クロス',      type:'enhance', target_lv:10, option:0, upgrade:{ pow:4.0, cost:35 },                d:'【レイ・オブ・ライト強化】全体 ×4.0' },
-					      { n:'ホーリー・サクリファイス', type:'enhance', target_lv:10, option:1, upgrade:{ dmgMultiplier:1.5, counterPow:2.0 }, d:'【マーターズ・ガード強化】肩代わり×1.5 ＋ 反撃×2.0' } ],
+					25: [
+					  { type:'enhance', target_lv:10, option:0, choices:[
+					      { n:'グランド・クロス',    upgrade:{ pow:4.0, cost:35 }, d:'全体 ×4.0 聖なる十字' },
+					      { n:'レイ・オブ・ダウン',  upgrade:{ pow:3.0, cost:30, dot:'stun', dotTurns:1 }, d:'全体 ×3.0 ＋ スタン1T' }
+					  ] },
+					  { type:'enhance', target_lv:10, option:1, choices:[
+					      { n:'ホーリー・サクリファイス', upgrade:{ dmgMultiplier:1.5, counterPow:2.0 }, d:'肩代わり×1.5 ＋ 反撃×2.0' },
+					      { n:'マーターズ・ライト',       upgrade:{ dmgMultiplier:2.0, healPct:0.15 }, d:'肩代わり×2.0 ＋ HP15%回復' }
+					  ] }
+					],
 					30: [ { n:'アークエンジェル・ウォール', type:'shield', target:'all',    cost:65, val:0.30, d:'味方全体シールド MaxHP×30%' },
 					      { n:'ヘブンズ・パニッシュ',       type:'atk',    dType:'magic', target:'all', cost:75, pow:7.0, d:'全体魔法 ×7.0' } ],
 					33: [ { type:'passive', stat:'vit', val:70,  d:'VIT+70' },
 					      { type:'passive', stat:'hp',  val:700, d:'MaxHP+700' } ],
-					35: [ { n:'ゴッデス・ティア',    type:'enhance', target_lv:20, option:0, upgrade:{ val:0.35, cost:55 },                         d:'【ブレス・オブ・ゴッデス強化】回復×1.75倍' },
-					      { n:'ホーリー・フィールド', type:'enhance', target_lv:20, option:1, upgrade:{ target:'all', stat:'vit', val:0.30, regen:0.05, regenTurns:3 }, d:'【サンクチュアリ強化】全体化 ＋ リジェネ3ターン' } ],
+					35: [
+					  { type:'enhance', target_lv:20, option:0, choices:[
+					      { n:'ゴッデス・ティア',    upgrade:{ val:0.35, cost:55 }, d:'回復 ×1.75倍' },
+					      { n:'セイント・ブラッド',  upgrade:{ val:0.25, cost:50, target:'all' }, d:'全体化 ×1.5倍' }
+					  ] },
+					  { type:'enhance', target_lv:20, option:1, choices:[
+					      { n:'ホーリー・フィールド', upgrade:{ target:'all', stat:'vit', val:0.30, regen:0.05, regenTurns:3 }, d:'全体 VIT+30% ＋ リジェネ3T' },
+					      { n:'プロテクション・フィールド', upgrade:{ target:'all', stat:'vit', val:0.50 }, d:'全体 VIT+50%（防御特化）' }
+					  ] }
+					],
 					38: [ { n:'イモータル・ソウル', type:'talent', trigger:'fatal_damage', effect:{ reviveHpPct:0.50 },    d:'【タレント】致死ダメ時：1度だけHP50%で復活（自動）' },
 					      { n:'マナ・リターン',     type:'talent', trigger:'ally_hit',     effect:{ mpRecoverFlat:8 },     d:'【タレント】味方被ダメ時：自身MP+8回復（自動）' } ],
 					40: [ { n:'アヴァロン・ゲート',  type:'buff', stat:'vit', target:'all', cost:90,  val:0.60, d:'味方全体 VIT+60%（3ターン）' },
 					      { n:'ジャッジメント・レイ', type:'atk', dType:'magic', target:'all', cost:100, pow:10.0, d:'全体魔法 ×10.0' } ],
 					43: [ { type:'passive', stat:'vit', val:120,  d:'VIT+120' },
 					      { type:'passive', stat:'hp',  val:1200, d:'MaxHP+1200' } ],
-					45: [ { n:'セラフィム・ウォール',    type:'enhance', target_lv:30, option:0, upgrade:{ val:0.50, cost:80 },                         d:'【アークエンジェル・ウォール強化】MaxHP×50%シールド' },
-					      { n:'ヘブンズ・カタストロフィ', type:'enhance', target_lv:30, option:1, upgrade:{ pow:13.0, dot:'stun', dotTurns:1, type:'atk_dot', cost:90 }, d:'【ヘブンズ・パニッシュ強化】×13.0 ＋ 全体スタン' } ],
+					45: [
+					  { type:'enhance', target_lv:30, option:0, choices:[
+					      { n:'セラフィム・ウォール',  upgrade:{ val:0.50, cost:80 }, d:'全体 MaxHP×50%シールド' },
+					      { n:'エンジェル・バリア',    upgrade:{ val:0.35, cost:70, target:'all', regen:0.05, regenTurns:3 }, d:'全体シールド×35% ＋ リジェネ3T' }
+					  ] },
+					  { type:'enhance', target_lv:30, option:1, choices:[
+					      { n:'ヘブンズ・カタストロフィ', upgrade:{ pow:13.0, dot:'stun', dotTurns:1, type:'atk_dot', cost:90 }, d:'全体 ×13.0 ＋ スタン1T' },
+					      { n:'ヘブンズ・デバスト',       upgrade:{ pow:10.0, target:'all', debuff:{ stat:'vit', val:0.40 } }, d:'全体 ×10.0 ＋ DEF-40%' }
+					  ] }
+					],
 					48: [ { type:'passive', stat:'mdef', val:100, d:'MDEF+100' },
 					      { type:'passive', stat:'mp',   val:400, d:'MaxMP+400' } ],
 					50: [ { n:'アブソリュート・プロテクション', type:'shield', target:'all', cost:130, val:0, invincible:true, d:'味方全体に1回限りダメージ完全無効シールド' },
@@ -1377,31 +1785,63 @@ const JOB_DATA = {
 					7:  [ { type:'passive', stat:'matk', val:25, d:'MATK+25' },
 					      { type:'passive', stat:'mdef', val:20, d:'MDEF+20' } ],
 					10: [ { n:'ライトニング・ボルト', type:'atk',  dType:'magic', target:'all',    cost:35, pow:2.8, d:'全体魔法(雷) ×2.8' },
-					      { n:'マナ・フォーカス',     type:'buff', stat:'matk', target:'single', cost:20, val:0.30, d:'自身 MATK+30%（3ターン）' } ],
+					      { n:'マナ・フォーカス',     type:'buff', stat:'matk', target:'single', self:true, cost:20, val:0.30, d:'自身 MATK+30%（3ターン）' } ],
 					12: [ { type:'passive', stat:'matk', val:40,  d:'MATK+40' },
 					      { type:'passive', stat:'mp',   val:120, d:'MaxMP+120' } ],
-					15: [ { n:'エクスプロージョン', type:'enhance', target_lv:5, option:0, upgrade:{ pow:8.0, target:'all', cost:22 }, d:'【ファイア・ボール強化】全体化 ×8.0 大爆発' },
-					      { n:'フリーズ・コフィン',  type:'enhance', target_lv:5, option:1, upgrade:{ pow:5.0, dot:'freeze', dotTurns:3, cost:22 }, d:'【アイス・ランス強化】×5.0 ＋ 凍結3ターン' } ],
+					15: [
+					  { type:'enhance', target_lv:5, option:0, choices:[
+					      { n:'エクスプロージョン', upgrade:{ pow:8.0, target:'all', cost:22 }, d:'全体化 ×8.0 大爆発' },
+					      { n:'フレイム・バースト',  upgrade:{ pow:6.0, cost:20, dot:'bleed', dotTurns:2 }, d:'×6.0 ＋ 火傷2T（単体強化版）' }
+					  ] },
+					  { type:'enhance', target_lv:5, option:1, choices:[
+					      { n:'フリーズ・コフィン',  upgrade:{ pow:5.0, dot:'freeze', dotTurns:3, cost:22 }, d:'×5.0 ＋ 凍結3T' },
+					      { n:'アイス・クリスタル', upgrade:{ pow:4.0, target:'all', dot:'freeze', dotTurns:2, cost:25 }, d:'全体化 ×4.0 ＋ 凍結2T' }
+					  ] }
+					],
 					17: [ { n:'マルチ・キャスト', type:'talent', trigger:'on_magic_cast', effect:{ extraCastChance:0.20 }, d:'【タレント】魔法使用時：20%で連続発動（自動）' },
 					      { n:'マナ・シールド',   type:'talent', trigger:'on_hit',        effect:{ mpAbsorbPct:0.30 },    d:'【タレント】被ダメ時：ダメ30%をMPで肩代わり（自動）' } ],
 					20: [ { n:'ダーク・テンペスト', type:'atk',  dType:'magic', target:'all',    cost:55, pow:5.5, d:'全体魔法(闇) ×5.5' },
 					      { n:'アンチ・マジック',   type:'buff', stat:'mdef', target:'single', cost:30, val:0.50, d:'単体 MDEF+50%（3ターン）' } ],
-					25: [ { n:'チェイン・ライトニング', type:'enhance', target_lv:10, option:0, upgrade:{ pow:5.0, target:'all', cost:45 }, d:'【ライトニング・ボルト強化】全体 ×5.0 連鎖雷撃' },
-					      { n:'ワイズマンズ・コア',    type:'enhance', target_lv:10, option:1, upgrade:{ stat:'matk', val:0.60, cost:25 }, d:'【マナ・フォーカス強化】MATK+60%' } ],
+					25: [
+					  { type:'enhance', target_lv:10, option:0, choices:[
+					      { n:'チェイン・ライトニング', upgrade:{ pow:5.0, target:'all', cost:45 }, d:'全体 ×5.0 連鎖雷撃' },
+					      { n:'サンダー・スタン',       upgrade:{ pow:4.0, cost:38, dot:'stun', dotTurns:2 }, d:'単体 ×4.0 ＋ スタン2T' }
+					  ] },
+					  { type:'enhance', target_lv:10, option:1, choices:[
+					      { n:'ワイズマンズ・コア',    upgrade:{ stat:'matk', val:0.60, cost:25 }, d:'自身 MATK+60%' },
+					      { n:'マナ・エンプティ',      upgrade:{ stat:'matk', val:0.40, target:'all', cost:28 }, d:'全体 MATK+40%' }
+					  ] }
+					],
 					30: [ { n:'メテオ・フォール', type:'atk',        dType:'magic', target:'all',    cost:90, pow:9.0,  d:'全体魔法 ×9.0 隕石落下' },
 					      { n:'ブラック・ホール',  type:'atk_debuff', dType:'magic', target:'single', cost:80, pow:16.0, debuff:{ stat:'agi', val:0.50 }, d:'単体魔法 ×16.0 ＋ AGI-50%' } ],
 					33: [ { type:'passive', stat:'matk', val:80,  d:'MATK+80' },
 					      { type:'passive', stat:'mp',   val:400, d:'MaxMP+400' } ],
-					35: [ { n:'ディザスター・ストーム', type:'enhance', target_lv:20, option:0, upgrade:{ pow:10.0, dot:'freeze', dotTurns:2, type:'atk_dot' }, d:'【ダーク・テンペスト強化】×10.0 ＋ 全体凍結2ターン' },
-					      { n:'マジック・サンクチュアリ', type:'enhance', target_lv:20, option:1, upgrade:{ stat:'mdef', val:0.70, target:'all' },              d:'【アンチ・マジック強化】全体化 MDEF+70%' } ],
+					35: [
+					  { type:'enhance', target_lv:20, option:0, choices:[
+					      { n:'ディザスター・ストーム', upgrade:{ pow:10.0, dot:'freeze', dotTurns:2, type:'atk_dot' }, d:'全体 ×10.0 ＋ 凍結2T' },
+					      { n:'ダーク・ノヴァ',         upgrade:{ pow:8.0, debuff:{ stat:'matk', val:0.40 } }, d:'全体 ×8.0 ＋ MATK-40%' }
+					  ] },
+					  { type:'enhance', target_lv:20, option:1, choices:[
+					      { n:'マジック・サンクチュアリ', upgrade:{ stat:'mdef', val:0.70, target:'all' }, d:'全体 MDEF+70%' },
+					      { n:'マジック・リフレクト',     upgrade:{ stat:'mdef', val:0.40, reflectPct:0.30, target:'all' }, d:'全体 MDEF+40% ＋ 魔法反射30%' }
+					  ] }
+					],
 					38: [ { n:'マナ・オーバーロード', type:'talent', trigger:'mp_above', threshold:0.50, effect:{ magicDmgBonus:0.30 }, d:'【タレント】MP50%以上：魔法ダメ+30%（自動）' },
 					      { n:'ソウル・イーター',    type:'talent', trigger:'on_kill',              effect:{ mpRecoverPct:0.25 },   d:'【タレント】敵討伐時：MaxMP×25%回復（自動）' } ],
 					40: [ { n:'デス・ストリーク',      type:'atk_dot',   dType:'magic', target:'all', cost:130, pow:12.0, dot:'poison', dotTurns:3, d:'全体魔法 ×12.0 ＋ 毒3ターン' },
 					      { n:'タイム・ディストーション', type:'atk_debuff', dType:'magic', target:'all', cost:100, pow:3.0, debuff:{ stat:'agi', val:0.60 }, d:'全体魔法 ×3.0 ＋ AGI-60%' } ],
 					43: [ { type:'passive', stat:'matk', val:180, d:'MATK+180' },
 					      { type:'passive', stat:'mp',   val:800, d:'MaxMP+800' } ],
-					45: [ { n:'アルマゲドン',       type:'enhance', target_lv:30, option:0, upgrade:{ pow:16.0, cost:110 },                        d:'【メテオ・フォール強化】全体 ×16.0 世界終焉隕石' },
-					      { n:'ディメンション・フォール', type:'enhance', target_lv:30, option:1, upgrade:{ pow:28.0, ignoreDef:true, debuff:{ stat:'agi', val:0.80 } }, d:'【ブラック・ホール強化】単体 ×28.0 防御無視 ＋ AGI-80%' } ],
+					45: [
+					  { type:'enhance', target_lv:30, option:0, choices:[
+					      { n:'アルマゲドン',     upgrade:{ pow:16.0, cost:110 }, d:'全体 ×16.0 世界終焉隕石' },
+					      { n:'メテオ・クラスター', upgrade:{ pow:12.0, cost:100, dot:'stun', dotTurns:2 }, d:'全体 ×12.0 ＋ スタン2T' }
+					  ] },
+					  { type:'enhance', target_lv:30, option:1, choices:[
+					      { n:'ディメンション・フォール', upgrade:{ pow:28.0, ignoreDef:true, debuff:{ stat:'agi', val:0.80 } }, d:'単体 ×28.0 防御無視 ＋ AGI-80%' },
+					      { n:'ボイド・インパクト',       upgrade:{ pow:22.0, ignoreDef:true, dot:'freeze', dotTurns:3 }, d:'単体 ×22.0 防御無視 ＋ 凍結3T' }
+					  ] }
+					],
 					48: [ { type:'passive', stat:'matk', val:250, d:'MATK+250' },
 					      { type:'passive', stat:'cri',  val:0.15, d:'会心率+15%' } ],
 					50: [ { n:'メガ・エクスプロージョン', type:'atk', dType:'magic', target:'all', cost:999, pow:22.0, allMpCost:true, d:'全体魔法 ×22.0 ／ 全MP消費' },
@@ -1418,35 +1858,67 @@ const JOB_DATA = {
 					2:  [ { type:'passive', stat:'luk', val:15,   d:'LUK+15' },
 					      { type:'passive', stat:'eva', val:0.05, d:'回避率+5%' } ],
 					5:  [ { n:'ダブル・スラッシュ', type:'atk_multi', dType:'physical', target:'single', cost:14, hits:2, pow:1.5, d:'単体 2hit 物理 ×1.5/hit' },
-					      { n:'シャドウ・ステップ', type:'buff',      stat:'agi', target:'single', cost:10, val:0.30, d:'自身 AGI+30%（3ターン）' } ],
+					      { n:'シャドウ・ステップ', type:'buff',      stat:'agi', target:'single', self:true, cost:10, val:0.30, d:'自身 AGI+30%（3ターン）' } ],
 					7:  [ { type:'passive', stat:'cri', val:0.06, d:'会心率+6%' },
 					      { type:'passive', stat:'agi', val:15,   d:'AGI+15' } ],
 					10: [ { n:'ポイズン・ダガー', type:'atk_dot', dType:'physical', target:'single', cost:16, pow:1.2, dot:'poison', dotTurns:3, d:'単体物理 ×1.2 ＋ 毒3ターン' },
 					      { n:'バックスタブ',     type:'atk',     dType:'physical', target:'single', cost:18, pow:4.5, criForce:true, d:'単体物理 ×4.5 会心確定' } ],
 					12: [ { type:'passive', stat:'luk', val:30, d:'LUK+30' },
 					      { type:'passive', stat:'agi', val:25, d:'AGI+25' } ],
-					15: [ { n:'クロス・ラッシュ',   type:'enhance', target_lv:5, option:0, upgrade:{ hits:3, pow:1.8, cost:20 },         d:'【ダブル・スラッシュ強化】3hit化 ×1.8/hit' },
-					      { n:'ファントム・ダンス', type:'enhance', target_lv:5, option:1, upgrade:{ stat:'agi', val:0.50, cost:18 },      d:'【シャドウ・ステップ強化】AGI+50%' } ],
+					15: [
+					  { type:'enhance', target_lv:5, option:0, choices:[
+					      { n:'クロス・ラッシュ',   upgrade:{ hits:3, pow:1.8, cost:20 }, d:'3hit化 ×1.8/hit' },
+					      { n:'ブレード・スピン',   upgrade:{ hits:2, pow:2.0, cost:18, target:'all' }, d:'全体2hit ×2.0/hit' }
+					  ] },
+					  { type:'enhance', target_lv:5, option:1, choices:[
+					      { n:'ファントム・ダンス', upgrade:{ stat:'agi', val:0.50, cost:18 }, d:'AGI+50%' },
+					      { n:'シャドウ・クローク', upgrade:{ stat:'agi', val:0.30, stat2:'cri', val2:0.20, cost:18 }, d:'AGI+30% ＋ CRI+20%' }
+					  ] }
+					],
 					17: [ { n:'アサシン・インスティンクト', type:'talent', trigger:'always',   effect:{ criBonus:0.15 },           d:'【タレント】常時：CRI+15%（自動）' },
 					      { n:'トリックスター',           type:'talent', trigger:'on_evade', effect:{ stat:'str', buffPct:0.25 }, d:'【タレント】回避成功時：次の攻撃+25%（自動）' } ],
 					20: [ { n:'ヴァイパー・ストライク', type:'atk_dot', dType:'physical', target:'single', cost:30, pow:1.8, dot:'poison', dotTurns:5, d:'単体物理 ×1.8 ＋ 猛毒5ターン' },
 					      { n:'ブラッド・ダンス',       type:'atk_dot', dType:'physical', target:'all',    cost:35, pow:1.0, dot:'bleed',  dotTurns:4, d:'全体 ×1.0/hit ＋ 出血4ターン' } ],
-					25: [ { n:'デス・ヴェノム',   type:'enhance', target_lv:10, option:0, upgrade:{ pow:2.0, dot:'poison', dotTurns:5 }, d:'【ポイズン・ダガー強化】×2.0 ＋ 猛毒5ターン' },
-					      { n:'キリング・ブロウ', type:'enhance', target_lv:10, option:1, upgrade:{ pow:8.0, criForce:true, cost:28 },    d:'【バックスタブ強化】×8.0 会心確定' } ],
+					25: [
+					  { type:'enhance', target_lv:10, option:0, choices:[
+					      { n:'デス・ヴェノム',   upgrade:{ pow:2.0, dot:'poison', dotTurns:5 }, d:'×2.0 ＋ 猛毒5T' },
+					      { n:'ヴェノム・バースト', upgrade:{ pow:1.5, dot:'poison', dotTurns:3, target:'all' }, d:'全体化 ×1.5 ＋ 毒3T' }
+					  ] },
+					  { type:'enhance', target_lv:10, option:1, choices:[
+					      { n:'キリング・ブロウ',   upgrade:{ pow:8.0, criForce:true, cost:28 }, d:'×8.0 会心確定' },
+					      { n:'エグゼキューション', upgrade:{ pow:6.0, criForce:true, debuff:{ stat:'vit', val:0.30 } }, d:'×6.0 会心確定 ＋ DEF-30%' }
+					  ] }
+					],
 					30: [ { n:'アサシネーション',    type:'atk', dType:'physical', target:'single', cost:70, pow:14.0, criForce:true, d:'単体物理 ×14.0 会心確定' },
 					      { n:'ブレード・テンペスト', type:'atk', dType:'physical', target:'all',    cost:65, pow:6.0,  d:'全体物理 ×6.0' } ],
 					33: [ { type:'passive', stat:'luk', val:80,  d:'LUK+80' },
 					      { type:'passive', stat:'agi', val:100, d:'AGI+100' } ],
-					35: [ { n:'トキシック・カタストロフィ', type:'enhance', target_lv:20, option:0, upgrade:{ pow:3.0, dot:'poison', dotTurns:6, target:'all' }, d:'【ヴァイパー・ストライク強化】全体化 猛毒×6ターン' },
-					      { n:'クリムゾン・ダンス',         type:'enhance', target_lv:20, option:1, upgrade:{ hits:6, pow:1.2, target:'all', dot:'bleed', dotTurns:5 }, d:'【ブラッド・ダンス強化】全体6hit ＋ 出血5ターン' } ],
+					35: [
+					  { type:'enhance', target_lv:20, option:0, choices:[
+					      { n:'トキシック・カタストロフィ', upgrade:{ pow:3.0, dot:'poison', dotTurns:6, target:'all' }, d:'全体化 ×3.0 ＋ 毒6T' },
+					      { n:'ヴェノム・ストーム',         upgrade:{ pow:2.5, dot:'poison', dotTurns:4, debuff:{ stat:'vit', val:0.25 } }, d:'×2.5 ＋ 毒4T ＋ DEF-25%' }
+					  ] },
+					  { type:'enhance', target_lv:20, option:1, choices:[
+					      { n:'クリムゾン・ダンス',   upgrade:{ hits:6, pow:1.2, target:'all', dot:'bleed', dotTurns:5 }, d:'全体6hit ＋ 出血5T' },
+					      { n:'ブラッド・カーニバル', upgrade:{ hits:4, pow:1.8, dot:'bleed', dotTurns:3, criForce:true }, d:'4hit 会心確定 ＋ 出血3T' }
+					  ] }
+					],
 					38: [ { n:'フェイタル・ラッシュ',   type:'talent', trigger:'always',        effect:{ extraHitOnMulti:1 }, d:'【タレント】常時：多段スキルのhit数+1（自動）' },
 					      { n:'シャドウ・プレデター', type:'talent', trigger:'enemy_debuffed', effect:{ dmgBonus:0.30 },    d:'【タレント】デバフ中の敵へのダメ+30%（自動）' } ],
 					40: [ { n:'デス・ラプチャー',    type:'atk',       dType:'physical', target:'single', cost:90,  pow:20.0, criForce:true, d:'単体物理 ×20.0 会心確定' },
 					      { n:'シャドウ・カーニバル', type:'atk_multi', dType:'physical', cost:100, hits:8, pow:1.5, d:'全体ランダム8hit ×1.5/hit' } ],
 					43: [ { type:'passive', stat:'luk', val:150, d:'LUK+150' },
 					      { type:'passive', stat:'agi', val:200, d:'AGI+200' } ],
-					45: [ { n:'ファントム・エクスキュージョン', type:'enhance', target_lv:30, option:0, upgrade:{ pow:25.0, instakillChance:0.20, criForce:true }, d:'【アサシネーション強化】×25.0 ＋ 即死20%' },
-					      { n:'ナイトメア・テンペスト',         type:'enhance', target_lv:30, option:1, upgrade:{ pow:10.0, dot:'poison', dotTurns:4, secondDot:'bleed', secondDotTurns:4 }, d:'【ブレード・テンペスト強化】×10.0 ＋ 毒4T ＋ 出血4T' } ],
+					45: [
+					  { type:'enhance', target_lv:30, option:0, choices:[
+					      { n:'ファントム・エクスキュージョン', upgrade:{ pow:25.0, instakillChance:0.20, criForce:true }, d:'×25.0 会心確定 ＋ 即死20%' },
+					      { n:'アサシン・オブリタレイト',       upgrade:{ pow:20.0, criForce:true, debuff:{ stat:'agi', val:0.60 } }, d:'×20.0 会心確定 ＋ AGI-60%' }
+					  ] },
+					  { type:'enhance', target_lv:30, option:1, choices:[
+					      { n:'ナイトメア・テンペスト', upgrade:{ pow:10.0, dot:'poison', dotTurns:4, secondDot:'bleed', secondDotTurns:4 }, d:'×10.0 ＋ 毒4T ＋ 出血4T' },
+					      { n:'ブラッド・テンペスト',   upgrade:{ pow:12.0, dot:'bleed', dotTurns:6, target:'all' }, d:'全体 ×12.0 ＋ 出血6T' }
+					  ] }
+					],
 					48: [ { type:'passive', stat:'cri', val:0.15, d:'会心率+15%' },
 					      { type:'passive', stat:'agi', val:280,  d:'AGI+280' } ],
 					50: [ { n:'ゴッド・アサシネーション', type:'atk',       dType:'physical', target:'single', cost:150, pow:30.0, criForce:true, d:'単体物理 ×30.0 会心確定' },
@@ -1470,28 +1942,60 @@ const JOB_DATA = {
 					      { n:'フロスト・ブレード',   type:'atk_dot', dType:'magic', target:'single', cost:20, pow:2.5, dot:'freeze', dotTurns:2, d:'単体魔法(氷) ×2.5 ＋ 凍結2ターン' } ],
 					12: [ { type:'passive', stat:'matk', val:25,  d:'MATK+25' },
 					      { type:'passive', stat:'mp',   val:100, d:'MaxMP+100' } ],
-					15: [ { n:'エレメンタル・バースト', type:'enhance', target_lv:5, option:0, upgrade:{ pow:5.5, cost:25, target:'all' },               d:'【エレメント・ブレード強化】全体化 ×5.5' },
-					      { n:'マナ・オーバーフロー',   type:'enhance', target_lv:5, option:1, upgrade:{ pow:3.5, debuff:{ stat:'mdef', val:0.30 } }, d:'【マナ・エッジ強化】×3.5 ＋ MDEF-30%' } ],
+					15: [
+					  { type:'enhance', target_lv:5, option:0, choices:[
+					      { n:'エレメンタル・バースト', upgrade:{ pow:5.5, cost:25, target:'all' }, d:'全体化 ×5.5' },
+					      { n:'アルカナ・ブレイド',    upgrade:{ pow:4.5, cost:22, dot:'stun', dotTurns:1 }, d:'×4.5 ＋ スタン1T' }
+					  ] },
+					  { type:'enhance', target_lv:5, option:1, choices:[
+					      { n:'マナ・オーバーフロー', upgrade:{ pow:3.5, debuff:{ stat:'mdef', val:0.30 } }, d:'×3.5 ＋ MDEF-30%' },
+					      { n:'マナ・クラッシュ',    upgrade:{ pow:4.0, debuff:{ stat:'mdef', val:0.20 }, target:'all' }, d:'全体化 ×4.0 ＋ MDEF-20%' }
+					  ] }
+					],
 					17: [ { n:'マジック・コンダクター', type:'talent', trigger:'always',    effect:{ magicDmgBonus:0.20 }, d:'【タレント】常時：魔法ダメ+20%（自動）' },
 					      { n:'スペル・ガード',         type:'talent', trigger:'front_row', effect:{ stat:'mdef', buffPct:0.25 }, d:'【タレント】前衛中：MDEF+25%（自動）' } ],
 					20: [ { n:'サンダー・ブレード', type:'atk_dot', dType:'magic', target:'all',    cost:45, pow:3.0, dot:'stun', dotTurns:1, d:'全体魔法(雷) ×3.0 ＋ スタン1ターン確率' },
-					      { n:'マナ・シールド',      type:'shield', target:'single', cost:30, val:0.30, d:'自身シールド MaxHP×30%' } ],
-					25: [ { n:'インフェルノ・スラッシュ', type:'enhance', target_lv:10, option:0, upgrade:{ pow:5.0, dot:'bleed',  dotTurns:5, target:'all' }, d:'【フレイム・スラッシュ強化】全体化 ×5.0 ＋ 火傷5T' },
-					      { n:'ブリザード・エッジ',       type:'enhance', target_lv:10, option:1, upgrade:{ pow:5.0, dot:'freeze', dotTurns:3, target:'all' }, d:'【フロスト・ブレード強化】全体化 ×5.0 ＋ 凍結3T' } ],
+					      { n:'マナ・シールド',      type:'shield', target:'single', self:true, cost:30, val:0.30, d:'自身シールド MaxHP×30%' } ],
+					25: [
+					  { type:'enhance', target_lv:10, option:0, choices:[
+					      { n:'インフェルノ・スラッシュ', upgrade:{ pow:5.0, dot:'bleed', dotTurns:5, target:'all' }, d:'全体化 ×5.0 ＋ 火傷5T' },
+					      { n:'フレイム・デバスト',       upgrade:{ pow:6.0, debuff:{ stat:'vit', val:0.30 } }, d:'単体 ×6.0 ＋ DEF-30%' }
+					  ] },
+					  { type:'enhance', target_lv:10, option:1, choices:[
+					      { n:'ブリザード・エッジ',   upgrade:{ pow:5.0, dot:'freeze', dotTurns:3, target:'all' }, d:'全体化 ×5.0 ＋ 凍結3T' },
+					      { n:'フロスト・ストライク', upgrade:{ pow:6.5, dot:'freeze', dotTurns:2 }, d:'単体 ×6.5 ＋ 凍結2T' }
+					  ] }
+					],
 					30: [ { n:'アストラル・ブレード',   type:'atk', dType:'magic', target:'all',    cost:75, pow:8.0,  d:'全体魔法 ×8.0' },
 					      { n:'ディメンション・スラッシュ', type:'atk', dType:'magic', target:'single', cost:70, pow:14.0, d:'単体魔法 ×14.0 極大一撃' } ],
 					33: [ { type:'passive', stat:'matk', val:90,  d:'MATK+90' },
 					      { type:'passive', stat:'mp',   val:400, d:'MaxMP+400' } ],
-					35: [ { n:'テンペスト・ブレード', type:'enhance', target_lv:20, option:0, upgrade:{ pow:5.5, dot:'stun', dotTurns:2, target:'all' }, d:'【サンダー・ブレード強化】×5.5 ＋ スタン2ターン' },
-					      { n:'マナ・バリア',          type:'enhance', target_lv:20, option:1, upgrade:{ val:0.50, target:'all' },                         d:'【マナ・シールド強化】全体化 MaxHP×50%シールド' } ],
+					35: [
+					  { type:'enhance', target_lv:20, option:0, choices:[
+					      { n:'テンペスト・ブレード', upgrade:{ pow:5.5, dot:'stun', dotTurns:2, target:'all' }, d:'全体 ×5.5 ＋ スタン2T' },
+					      { n:'ライトニング・エッジ',  upgrade:{ pow:7.0, dot:'stun', dotTurns:1 }, d:'単体 ×7.0 ＋ スタン1T' }
+					  ] },
+					  { type:'enhance', target_lv:20, option:1, choices:[
+					      { n:'マナ・バリア',       upgrade:{ val:0.50, target:'all' }, d:'全体 MaxHP×50%シールド' },
+					      { n:'マジック・フォート', upgrade:{ val:0.35, target:'all', stat:'mdef', buffVal:0.30 }, d:'全体シールド×35% ＋ MDEF+30%' }
+					  ] }
+					],
 					38: [ { n:'アルカナ・ソウル',    type:'talent', trigger:'mp_above',     threshold:0.50, effect:{ magicDmgBonus:0.30 }, d:'【タレント】MP50%以上：魔法ダメ+30%（自動）' },
 					      { n:'スペル・ヴァンパイア', type:'talent', trigger:'on_magic_hit',               effect:{ mpRecoverPct:0.50 }, d:'【タレント】魔法ヒット時：消費MP×50%回収（自動）' } ],
 					40: [ { n:'カオス・ブレード',   type:'atk', dType:'magic', target:'all',    cost:110, pow:12.0, d:'全体魔法 ×12.0' },
 					      { n:'エーテル・スラッシュ', type:'atk', dType:'magic', target:'single', cost:100, pow:22.0, d:'単体魔法 ×22.0 極大斬撃' } ],
 					43: [ { type:'passive', stat:'matk', val:200, d:'MATK+200' },
 					      { type:'passive', stat:'mp',   val:800, d:'MaxMP+800' } ],
-					45: [ { n:'ギャラクシー・ブレード', type:'enhance', target_lv:30, option:0, upgrade:{ pow:14.0, cost:100 }, d:'【アストラル・ブレード強化】全体 ×14.0' },
-					      { n:'ヴォイド・スラッシュ',   type:'enhance', target_lv:30, option:1, upgrade:{ pow:25.0, cost:100 }, d:'【ディメンション・スラッシュ強化】単体 ×25.0' } ],
+					45: [
+					  { type:'enhance', target_lv:30, option:0, choices:[
+					      { n:'ギャラクシー・ブレード', upgrade:{ pow:14.0, cost:100 }, d:'全体 ×14.0' },
+					      { n:'スターバースト・ブレード', upgrade:{ pow:11.0, cost:95, dot:'stun', dotTurns:2 }, d:'全体 ×11.0 ＋ スタン2T' }
+					  ] },
+					  { type:'enhance', target_lv:30, option:1, choices:[
+					      { n:'ヴォイド・スラッシュ',   upgrade:{ pow:25.0, cost:100 }, d:'単体 ×25.0' },
+					      { n:'イナーシャ・ブレイク',   upgrade:{ pow:20.0, cost:95, debuff:{ stat:'agi', val:0.60 } }, d:'単体 ×20.0 ＋ AGI-60%' }
+					  ] }
+					],
 					48: [ { type:'passive', stat:'matk', val:280, d:'MATK+280' },
 					      { type:'passive', stat:'cri',  val:0.15, d:'会心率+15%' } ],
 					50: [ { n:'インフィニティ・ブレード', type:'atk',        dType:'magic', target:'all',    cost:160, pow:18.0, d:'全体魔法 ×18.0 無限斬撃' },
@@ -1515,28 +2019,60 @@ const JOB_DATA = {
 					      { n:'ホーク・ショット',  type:'atk',        dType:'physical', target:'single', cost:22, pow:4.5, criForce:true, d:'単体物理 ×4.5 会心確定 ／ 後衛射撃' } ],
 					12: [ { type:'passive', stat:'agi', val:20, d:'AGI+20' },
 					      { type:'passive', stat:'luk', val:25, d:'LUK+25' } ],
-					15: [ { n:'ギガント・ショット', type:'enhance', target_lv:5, option:0, upgrade:{ pow:7.0, cost:22 },         d:'【パワー・ショット強化】×7.0 圧倒的一射' },
-					      { n:'ラピッド・アロー',   type:'enhance', target_lv:5, option:1, upgrade:{ hits:5, pow:1.2, cost:22 }, d:'【トリプル・アロー強化】5hit化 連射特化' } ],
+					15: [
+					  { type:'enhance', target_lv:5, option:0, choices:[
+					      { n:'ギガント・ショット', upgrade:{ pow:7.0, cost:22 }, d:'×7.0 超貫通一矢' },
+					      { n:'ピアス・ショット',   upgrade:{ pow:5.5, cost:20, debuff:{ stat:'vit', val:0.30 } }, d:'×5.5 ＋ DEF-30%' }
+					  ] },
+					  { type:'enhance', target_lv:5, option:1, choices:[
+					      { n:'ラピッド・アロー',   upgrade:{ hits:5, pow:1.2, cost:22 }, d:'5hit化 連射特化' },
+					      { n:'スプレッド・アロー', upgrade:{ hits:4, pow:1.0, cost:20, target:'all' }, d:'全体4hit ×1.0/hit' }
+					  ] }
+					],
 					17: [ { n:'イーグル・アイ',       type:'talent', trigger:'always',   effect:{ criBonus:0.10 },   d:'【タレント】常時：CRI+10%（自動）' },
 					      { n:'スナイパー・フォーカス', type:'talent', trigger:'back_row', effect:{ dmgBonus:0.20 }, d:'【タレント】後衛配置中：全ダメ+20%（自動）' } ],
 					20: [ { n:'チャージ・ショット',    type:'atk',        dType:'physical', target:'single', cost:40, pow:10.0, d:'単体物理 ×10.0 ／ 後衛射撃' },
 					      { n:'ピンポイント・ショット', type:'atk_debuff', dType:'physical', target:'single', cost:35, pow:3.5, debuff:{ stat:'str', val:0.20 }, buffDispel:true, d:'単体物理 ×3.5 ＋ バフ全解除 ＋ STR-20%' } ],
-					25: [ { n:'アーマー・ブレイク', type:'enhance', target_lv:10, option:0, upgrade:{ pow:3.5, debuff:{ stat:'def', val:0.40 } }, d:'【アーマー・ピアス強化】×3.5 ＋ DEF-40%' },
-					      { n:'デッド・ショット',   type:'enhance', target_lv:10, option:1, upgrade:{ pow:8.0, criForce:true, criMultBonus:0.40 }, d:'【ホーク・ショット強化】×8.0 会心確定 ＋ 会心倍率+40%' } ],
+					25: [
+					  { type:'enhance', target_lv:10, option:0, choices:[
+					      { n:'アーマー・ブレイク',  upgrade:{ pow:3.5, debuff:{ stat:'def', val:0.40 } }, d:'×3.5 ＋ DEF-40%' },
+					      { n:'ピアシング・ボルト',  upgrade:{ pow:4.5, ignoreDef:true }, d:'×4.5 防御無視' }
+					  ] },
+					  { type:'enhance', target_lv:10, option:1, choices:[
+					      { n:'デッド・ショット',   upgrade:{ pow:8.0, criForce:true, criMultBonus:0.40 }, d:'×8.0 会心確定 ＋ 会心倍率+40%' },
+					      { n:'イーグル・キル',     upgrade:{ pow:6.5, criForce:true, dot:'bleed', dotTurns:3 }, d:'×6.5 会心確定 ＋ 出血3T' }
+					  ] }
+					],
 					30: [ { n:'メテオ・アロー',    type:'atk', dType:'physical', target:'all',    cost:70, pow:6.5, d:'全体物理 ×6.5 矢の雨' },
 					      { n:'リーサル・スナイプ', type:'atk', dType:'physical', target:'single', cost:65, pow:14.0, ignoreDef:true, d:'単体物理 ×14.0 防御無視 ／ 後衛射撃' } ],
 					33: [ { type:'passive', stat:'str', val:100, d:'STR+100' },
 					      { type:'passive', stat:'agi', val:100, d:'AGI+100' } ],
-					35: [ { n:'ギャラクシー・ショット', type:'enhance', target_lv:20, option:0, upgrade:{ pow:18.0, cost:55 },                                     d:'【チャージ・ショット強化】×18.0' },
-					      { n:'ディスペル・アロー',     type:'enhance', target_lv:20, option:1, upgrade:{ pow:6.0, target:'all', buffDispel:true, debuff:{ stat:'str', val:0.35 } }, d:'【ピンポイント・ショット強化】全体化 ＋ バフ解除 ＋ STR-35%' } ],
+					35: [
+					  { type:'enhance', target_lv:20, option:0, choices:[
+					      { n:'ギャラクシー・ショット', upgrade:{ pow:18.0, cost:55 }, d:'×18.0 超火力' },
+					      { n:'スターライト・アロー',   upgrade:{ pow:14.0, cost:50, dot:'stun', dotTurns:2 }, d:'×14.0 ＋ スタン2T' }
+					  ] },
+					  { type:'enhance', target_lv:20, option:1, choices:[
+					      { n:'ディスペル・アロー',  upgrade:{ pow:6.0, target:'all', buffDispel:true, debuff:{ stat:'str', val:0.35 } }, d:'全体化 ＋ バフ解除 ＋ STR-35%' },
+					      { n:'カース・アロー',      upgrade:{ pow:5.0, target:'all', debuff:{ stat:'str', val:0.30 }, secondDebuff:{ stat:'agi', val:0.30 } }, d:'全体化 ＋ STR-30% ＋ AGI-30%' }
+					  ] }
+					],
 					38: [ { n:'クリティカル・マスター', type:'talent', trigger:'always',      effect:{ criMultBonus:0.40 },   d:'【タレント】常時：会心倍率+40%（自動）' },
 					      { n:'ファスト・エイム',       type:'talent', trigger:'after_skill', effect:{ stat:'agi', buffPct:0.20 }, d:'【タレント】スキル使用後：AGI一時+20%（自動）' } ],
 					40: [ { n:'スターライト・レイン', type:'atk', dType:'physical', target:'all',    cost:110, pow:11.0, d:'全体物理 ×11.0 星の雨' },
 					      { n:'ファントム・スナイプ',  type:'atk', dType:'physical', target:'single', cost:100, pow:22.0, ignoreDef:true, criForce:true, d:'単体物理 ×22.0 防御無視 会心確定' } ],
 					43: [ { type:'passive', stat:'str', val:250, d:'STR+250' },
 					      { type:'passive', stat:'luk', val:150, d:'LUK+150' } ],
-					45: [ { n:'コメット・シャワー', type:'enhance', target_lv:30, option:0, upgrade:{ pow:18.0, cost:90 },                               d:'【メテオ・アロー強化】全体 ×18.0 彗星の嵐' },
-					      { n:'ワンショット・キル',  type:'enhance', target_lv:30, option:1, upgrade:{ pow:25.0, ignoreDef:true, instakillChance:0.15 }, d:'【リーサル・スナイプ強化】×25.0 防御無視 ＋ 即死15%' } ],
+					45: [
+					  { type:'enhance', target_lv:30, option:0, choices:[
+					      { n:'コメット・シャワー', upgrade:{ pow:18.0, cost:90 }, d:'全体 ×18.0 彗星の嵐' },
+					      { n:'メテオ・レイン',     upgrade:{ pow:14.0, cost:85, dot:'stun', dotTurns:2 }, d:'全体 ×14.0 ＋ スタン2T' }
+					  ] },
+					  { type:'enhance', target_lv:30, option:1, choices:[
+					      { n:'ワンショット・キル',  upgrade:{ pow:25.0, ignoreDef:true, instakillChance:0.15 }, d:'×25.0 防御無視 ＋ 即死15%' },
+					      { n:'インビジブル・スナイプ', upgrade:{ pow:20.0, ignoreDef:true, criForce:true }, d:'×20.0 防御無視 ＋ 会心確定' }
+					  ] }
+					],
 					48: [ { type:'passive', stat:'cri', val:0.25, d:'会心率+25%' },
 					      { type:'passive', stat:'agi', val:250,  d:'AGI+250' } ],
 					50: [ { n:'アポカリプス・アロー',  type:'atk_multi', dType:'physical', cost:150, hits:12, pow:2.0, d:'全体ランダム12hit ×2.0/hit 終焉の矢嵐' },
@@ -1560,28 +2096,60 @@ const JOB_DATA = {
 					      { n:'ホーリー・レイ',     type:'atk',    dType:'magic', target:'single', cost:20, pow:3.5, d:'単体魔法 ×3.5' } ],
 					12: [ { type:'passive', stat:'mp',  val:100, d:'MaxMP+100' },
 					      { type:'passive', stat:'vit', val:20,  d:'VIT+20' } ],
-					15: [ { n:'ハイ・ヒール',  type:'enhance', target_lv:5, option:0, upgrade:{ val:2.5, cost:20 },         d:'【ヒール強化】回復量×1.67倍 大回復' },
-					      { n:'エリア・ヒール', type:'enhance', target_lv:5, option:1, upgrade:{ val:1.2, target:'all', cost:28 }, d:'【ヒール強化B】全体化・全員回復' } ],
+					15: [
+					  { type:'enhance', target_lv:5, option:0, choices:[
+					      { n:'ハイ・ヒール',   upgrade:{ val:2.5, cost:20 }, d:'回復量 ×1.67倍' },
+					      { n:'クイック・ヒール', upgrade:{ val:1.5, cost:14 }, d:'回復量 ×1.0倍、MP消費-30%' }
+					  ] },
+					  { type:'enhance', target_lv:5, option:1, choices:[
+					      { n:'エリア・ヒール', upgrade:{ val:1.2, target:'all', cost:28 }, d:'全体化 ×0.8倍' },
+					      { n:'グループ・リジェネ', upgrade:{ val:0.8, target:'all', regen:0.04, regenTurns:3, cost:30 }, d:'全体回復 ＋ リジェネ3T' }
+					  ] }
+					],
 					17: [ { n:'エンジェル・ブレス', type:'talent', trigger:'turn_start', effect:{ regenPct:0.03 }, d:'【タレント】毎ターン：味方全体HP+3%自動回復（自動）' },
 					      { n:'マナ・セーブ',       type:'talent', trigger:'always',     effect:{ mpCostReduction:0.20 }, d:'【タレント】常時：全スキルMP消費-20%（自動）' } ],
 					20: [ { n:'リザレクション', type:'heal',   scale:'target_hp', target:'single', cost:50, val:0.50, revive:true, d:'戦闘不能の味方1人を蘇生：HP50%で復活' },
 					      { n:'ホーリー・ジャッジ', type:'atk_dot', dType:'magic', target:'single', cost:35, pow:3.0, dot:'stun', dotTurns:2, d:'単体魔法 ×3.0 ＋ スタン2ターン' } ],
-					25: [ { n:'ディバイン・ウォール', type:'enhance', target_lv:10, option:0, upgrade:{ target:'all', val:0.25, cost:35 }, d:'【ホーリー・シールド強化】全体化 MaxHP×25%' },
-					      { n:'シャイニング・レイ',   type:'enhance', target_lv:10, option:1, upgrade:{ pow:6.0, target:'all', cost:35 },    d:'【ホーリー・レイ強化】全体化 ×6.0' } ],
+					25: [
+					  { type:'enhance', target_lv:10, option:0, choices:[
+					      { n:'ディバイン・ウォール', upgrade:{ target:'all', val:0.25, cost:35 }, d:'全体化 MaxHP×25%シールド' },
+					      { n:'セイクリッド・バリア', upgrade:{ target:'all', val:0.40, cost:45 }, d:'全体化 MaxHP×40%シールド（高コスト強化版）' }
+					  ] },
+					  { type:'enhance', target_lv:10, option:1, choices:[
+					      { n:'シャイニング・レイ',   upgrade:{ pow:6.0, target:'all', cost:35 }, d:'全体化 ×6.0' },
+					      { n:'ホーリー・ジャッジメント', upgrade:{ pow:5.0, target:'all', dot:'stun', dotTurns:1, cost:38 }, d:'全体化 ×5.0 ＋ スタン1T' }
+					  ] }
+					],
 					30: [ { n:'フル・ヒール',       type:'heal',  scale:'target_hp', target:'single', cost:60, val:1.00, d:'単体HP全回復' },
 					      { n:'リジェネレーション', type:'regen', target:'all', cost:55, val:0.06, turns:5, d:'味方全体 5ターン継続回復：MaxHP×6%/ターン' } ],
 					33: [ { type:'passive', stat:'mp',   val:350, d:'MaxMP+350' },
 					      { type:'passive', stat:'matk', val:70,  d:'MATK+70' } ],
-					35: [ { n:'パーフェクト・リザレクション', type:'enhance', target_lv:20, option:0, upgrade:{ val:1.00, cost:70 }, d:'【リザレクション強化】HP100%で蘇生' },
-					      { n:'ヘブンズ・ジャッジ',           type:'enhance', target_lv:20, option:1, upgrade:{ pow:6.5, target:'all', dot:'stun', dotTurns:1 }, d:'【ホーリー・ジャッジ強化】全体化 ×6.5 ＋ 全体スタン' } ],
+					35: [
+					  { type:'enhance', target_lv:20, option:0, choices:[
+					      { n:'パーフェクト・リザレクション', upgrade:{ val:1.00, cost:70 }, d:'HP100%で蘇生' },
+					      { n:'イモータル・ブレス',           upgrade:{ val:0.50, cost:55, regen:0.08, regenTurns:3 }, d:'HP50%蘇生 ＋ リジェネ3T' }
+					  ] },
+					  { type:'enhance', target_lv:20, option:1, choices:[
+					      { n:'ヘブンズ・ジャッジ',     upgrade:{ pow:6.5, target:'all', dot:'stun', dotTurns:1 }, d:'全体化 ×6.5 ＋ スタン1T' },
+					      { n:'ゴッデス・ライトニング', upgrade:{ pow:8.0, target:'all', debuff:{ stat:'mdef', val:0.30 } }, d:'全体 ×8.0 ＋ MDEF-30%' }
+					  ] }
+					],
 					38: [ { n:'ゴッデス・オーラ',  type:'talent', trigger:'always', effect:{ allResBonusPct:0.15 }, d:'【タレント】生存中：味方全体の全耐性+15%（自動）' },
 					      { n:'セイント・ブラッド', type:'talent', trigger:'always', effect:{ healReceiveBonus:2.0 }, d:'【タレント】常時：自身への回復量×2.0（自動）' } ],
 					40: [ { n:'オメガ・ヒール',  type:'heal', scale:'target_hp', target:'all', cost:90,  val:0.70, d:'味方全体HP×70%回復' },
 					      { n:'ホーリー・ノヴァ', type:'atk', dType:'magic', target:'all', cost:100, pow:11.0, d:'全体魔法 ×11.0' } ],
 					43: [ { type:'passive', stat:'matk', val:100, d:'MATK+100' },
 					      { type:'passive', stat:'mp',   val:600, d:'MaxMP+600' } ],
-					45: [ { n:'ミラクル・ヒール', type:'enhance', target_lv:30, option:0, upgrade:{ val:1.50, cost:80 }, d:'【フル・ヒール強化】回復×1.5倍' },
-					      { n:'エターナル・リジェネ', type:'enhance', target_lv:30, option:1, upgrade:{ val:0.10, turns:8, cost:75 }, d:'【リジェネレーション強化】MaxHP×10%×8ターン' } ],
+					45: [
+					  { type:'enhance', target_lv:30, option:0, choices:[
+					      { n:'ミラクル・ヒール',    upgrade:{ val:1.50, cost:80 }, d:'回復 ×1.5倍' },
+					      { n:'リザレクション・ウェイブ', upgrade:{ val:1.20, target:'all', cost:90 }, d:'全体化 ×1.2倍' }
+					  ] },
+					  { type:'enhance', target_lv:30, option:1, choices:[
+					      { n:'エターナル・リジェネ', upgrade:{ val:0.10, turns:8, cost:75 }, d:'MaxHP×10%×8T' },
+					      { n:'グレート・リジェネ',   upgrade:{ val:0.15, turns:5, cost:75, target:'all' }, d:'全体化 MaxHP×15%×5T' }
+					  ] }
+					],
 					48: [ { type:'passive', stat:'vit', val:120,  d:'VIT+120' },
 					      { type:'passive', stat:'hp',  val:1000, d:'MaxHP+1000' } ],
 					50: [ { n:'リヴァイブ・オール', type:'heal', scale:'target_hp', target:'all', cost:999, val:1.00, allMpCost:true, revive:true, d:'全体HP全回復 ＋ 全員蘇生 ／ 全MP消費' },
@@ -1605,28 +2173,60 @@ const JOB_DATA = {
 					      { n:'フリーズ・ガス',   type:'atk_dot',    dType:'magic', target:'single', cost:18, pow:1.5, dot:'freeze', dotTurns:2, d:'単体魔法 ×1.5 ＋ 凍結2ターン' } ],
 					12: [ { type:'passive', stat:'matk', val:30,  d:'MATK+30' },
 					      { type:'passive', stat:'mp',   val:100, d:'MaxMP+100' } ],
-					15: [ { n:'メルト・アーマー',  type:'enhance', target_lv:5, option:0, upgrade:{ pow:2.5, debuff:{ stat:'def', val:0.35 }, target:'all' }, d:'【アシッド・ボトル強化】全体化 ×2.5 ＋ DEF-35%' },
-					      { n:'ヴェノム・フラスコ', type:'enhance', target_lv:5, option:1, upgrade:{ pow:1.5, dot:'poison', dotTurns:5 },                    d:'【ポイズン・フラスコ強化】×1.5 ＋ 猛毒5ターン' } ],
+					15: [
+					  { type:'enhance', target_lv:5, option:0, choices:[
+					      { n:'メルト・アーマー',   upgrade:{ pow:2.5, debuff:{ stat:'def', val:0.35 }, target:'all' }, d:'全体化 ×2.5 ＋ DEF-35%' },
+					      { n:'コロシブ・ウェイブ', upgrade:{ pow:2.0, debuff:{ stat:'def', val:0.25 }, secondDebuff:{ stat:'mdef', val:0.25 }, target:'all' }, d:'全体 ×2.0 ＋ DEF/MDEF-25%' }
+					  ] },
+					  { type:'enhance', target_lv:5, option:1, choices:[
+					      { n:'ヴェノム・フラスコ', upgrade:{ pow:1.5, dot:'poison', dotTurns:5 }, d:'×1.5 ＋ 猛毒5T' },
+					      { n:'デスリィ・フラスコ', upgrade:{ pow:1.2, dot:'poison', dotTurns:4, target:'all' }, d:'全体化 ×1.2 ＋ 毒4T' }
+					  ] }
+					],
 					17: [ { n:'アナライズ',        type:'talent', trigger:'battle_start', effect:{ debuff:{ stat:'def', val:0.10 }, target:'all' }, d:'【タレント】戦闘開始時：敵全体DEF自動-10%（自動）' },
 					      { n:'ケミカル・ブースト', type:'talent', trigger:'always',       effect:{ itemHealBonus:2.0 },                             d:'【タレント】常時：アイテム回復量×2.0（自動）' } ],
 					20: [ { n:'ディケイ・フォグ', type:'atk_dot', dType:'magic', target:'all',    cost:35, pow:2.5, dot:'poison', dotTurns:4, d:'全体魔法 ×2.5 ＋ 全体毒4ターン' },
 					      { n:'マナ・ポーション',  type:'mpcost', target:'single', cost:15, val:0.50, d:'単体：次スキルのMP消費-50%' } ],
-					25: [ { n:'アシッド・ストーム', type:'enhance', target_lv:10, option:0, upgrade:{ pow:4.0, debuff:{ stat:'def', val:0.30 }, target:'all' }, d:'【アシッド・レイン強化】全体 ×4.0 ＋ DEF-30%' },
-					      { n:'ゼロ・ブラスト',     type:'enhance', target_lv:10, option:1, upgrade:{ pow:3.5, dot:'freeze', dotTurns:3, target:'all' },        d:'【フリーズ・ガス強化】全体化 ×3.5 ＋ 凍結3ターン' } ],
+					25: [
+					  { type:'enhance', target_lv:10, option:0, choices:[
+					      { n:'アシッド・ストーム', upgrade:{ pow:4.0, debuff:{ stat:'def', val:0.30 }, target:'all' }, d:'全体 ×4.0 ＋ DEF-30%' },
+					      { n:'腐食の嵐',           upgrade:{ pow:3.0, debuff:{ stat:'def', val:0.20 }, secondDebuff:{ stat:'mdef', val:0.20 }, target:'all' }, d:'全体 ×3.0 ＋ DEF/MDEF-20%' }
+					  ] },
+					  { type:'enhance', target_lv:10, option:1, choices:[
+					      { n:'ゼロ・ブラスト',    upgrade:{ pow:3.5, dot:'freeze', dotTurns:3, target:'all' }, d:'全体化 ×3.5 ＋ 凍結3T' },
+					      { n:'クライオ・フラスコ', upgrade:{ pow:2.5, dot:'freeze', dotTurns:5, target:'all' }, d:'全体 ×2.5 ＋ 凍結5T（長期）' }
+					  ] }
+					],
 					30: [ { n:'アルケミック・ボム',   type:'atk_debuff', dType:'magic', target:'all', cost:90, pow:9.0, debuff:{ stat:'def', val:0.20 }, d:'全体魔法 ×9.0 ＋ 全体DEF-20%' },
 					      { n:'カース・リチュアル', type:'debuff', stat:'atk', target:'all', cost:80, val:0.35, multiDebuff:true, d:'全体：STR/MATK/DEF/MDEF -35%（ダメなし）' } ],
 					33: [ { type:'passive', stat:'matk', val:120, d:'MATK+120' },
 					      { type:'passive', stat:'mp',   val:600, d:'MaxMP+600' } ],
-					35: [ { n:'デッドリー・フォグ', type:'enhance', target_lv:20, option:0, upgrade:{ pow:5.0, dot:'poison', dotTurns:5, secondDot:'bleed', secondDotTurns:3 }, d:'【ディケイ・フォグ強化】×5.0 ＋ 毒5T ＋ 出血3T' },
-					      { n:'マナ・エリクサー',   type:'enhance', target_lv:20, option:1, upgrade:{ target:'all', val:0.40, cost:20 },                                          d:'【マナ・ポーション強化】全体化 MP-40%' } ],
+					35: [
+					  { type:'enhance', target_lv:20, option:0, choices:[
+					      { n:'デッドリー・フォグ',   upgrade:{ pow:5.0, dot:'poison', dotTurns:5, secondDot:'bleed', secondDotTurns:3 }, d:'×5.0 ＋ 毒5T ＋ 出血3T' },
+					      { n:'ミアズマ・クラウド',   upgrade:{ pow:4.0, dot:'poison', dotTurns:4, target:'all', debuff:{ stat:'vit', val:0.20 } }, d:'全体化 ×4.0 ＋ 毒4T ＋ DEF-20%' }
+					  ] },
+					  { type:'enhance', target_lv:20, option:1, choices:[
+					      { n:'マナ・エリクサー',   upgrade:{ target:'all', val:0.40, cost:20 }, d:'全体化 MP-40%' },
+					      { n:'ハイパー・エリクサー', upgrade:{ target:'all', val:0.60, cost:28 }, d:'全体化 MP-60%（高効率）' }
+					  ] }
+					],
 					38: [ { n:'マッド・サイエンティスト', type:'talent', trigger:'always',      effect:{ debuffChanceBonus:0.50, debuffEffectBonus:0.50 }, d:'【タレント】常時：デバフ付与率×1.5倍 ＆ 効果×1.5倍（自動）' },
 					      { n:'ホムンクルス・ガード',     type:'talent', trigger:'hp_below', threshold:0.40, effect:{ selfShieldPct:0.30 }, d:'【タレント】HP40%以下：自身MaxHP×30%シールド自動付与（1回）' } ],
 					40: [ { n:'メルトダウン',         type:'atk_debuff', dType:'magic', target:'all', cost:120, pow:4.0, debuff:{ stat:'def', val:0.80 }, multiDebuff:true, d:'全体魔法 ×4.0 ＋ DEF/MDEF-80%' },
 					      { n:'パラライズ・パウダー', type:'atk_dot',    dType:'magic', target:'all', cost:110, pow:5.0, dot:'stun', dotTurns:2, d:'全体魔法 ×5.0 ＋ 全体スタン2ターン' } ],
 					43: [ { type:'passive', stat:'matk', val:220,  d:'MATK+220' },
 					      { type:'passive', stat:'mp',   val:1000, d:'MaxMP+1000' } ],
-					45: [ { n:'ニュークリア・ボム', type:'enhance', target_lv:30, option:0, upgrade:{ pow:16.0, debuff:{ stat:'def', val:0.35 }, cost:110 }, d:'【アルケミック・ボム強化】全体 ×16.0 ＋ DEF-35%' },
-					      { n:'アビス・リチュアル',  type:'enhance', target_lv:30, option:1, upgrade:{ allDebuffVal:0.50, cost:110 },                         d:'【カース・リチュアル強化】全能力-50%（究極呪縛）' } ],
+					45: [
+					  { type:'enhance', target_lv:30, option:0, choices:[
+					      { n:'ニュークリア・ボム',  upgrade:{ pow:16.0, debuff:{ stat:'def', val:0.35 }, cost:110 }, d:'全体 ×16.0 ＋ DEF-35%' },
+					      { n:'クリティカル・ボム',  upgrade:{ pow:12.0, cost:100, dot:'stun', dotTurns:2, target:'all' }, d:'全体 ×12.0 ＋ スタン2T' }
+					  ] },
+					  { type:'enhance', target_lv:30, option:1, choices:[
+					      { n:'アビス・リチュアル',   upgrade:{ allDebuffVal:0.50, cost:110 }, d:'全能力-50% 究極呪縛' },
+					      { n:'リチュアル・チェイン', upgrade:{ allDebuffVal:0.35, dot:'poison', dotTurns:5, cost:100 }, d:'全能力-35% ＋ 呪毒5T' }
+					  ] }
+					],
 					48: [ { type:'passive', stat:'matk', val:300, d:'MATK+300' },
 					      { type:'passive', stat:'cri',  val:0.12, d:'会心率+12%' } ],
 					50: [ { n:'ウロボロス・ミクスチャー', type:'heal',   scale:'target_hp', target:'all', cost:120, val:1.00, clearDebuffs:true, allStatBuff:true, buffVal:0.30, d:'味方全体HP全回復 ＋ デバフ解除 ＋ 全ステ+30%' },
@@ -2184,15 +2784,23 @@ const JOB_DATA = {
 
 		// 共通SUBプール（武器・防具・装飾 共通）
 		const GLOBAL_SUB_POOL = [
-			{ n: 'HP+',   k: 'maxHp', min: 5,  max: 40  },
-			{ n: 'MP+',   k: 'maxMp', min: 3,  max: 20  },
-			{ n: 'ATK+',  k: 'str',   min: 2,  max: 18  },
-			{ n: 'MATK+', k: 'matk',  min: 2,  max: 18  },
-			{ n: 'DEF+',  k: 'vit',   min: 2,  max: 12  },
-			{ n: 'MDEF+', k: 'mdef',  min: 2,  max: 12  },
-			{ n: 'AGI+',  k: 'agi',   min: 1,  max: 8   },
-			{ n: 'LUK+',  k: 'luk',   min: 1,  max: 6   },
-			{ n: 'CRI+',  k: 'cri',   min: 1,  max: 4, isCri: true }, // 0.01〜0.04
+			{ n: 'HP+',       k: 'maxHp',      min: 5,  max: 40  },
+			{ n: 'MP+',       k: 'maxMp',      min: 3,  max: 20  },
+			{ n: 'ATK+',      k: 'str',         min: 2,  max: 18  },
+			{ n: 'MATK+',     k: 'matk',        min: 2,  max: 18  },
+			{ n: 'DEF+',      k: 'vit',         min: 2,  max: 12  },
+			{ n: 'MDEF+',     k: 'mdef',        min: 2,  max: 12  },
+			{ n: 'AGI+',      k: 'agi',         min: 1,  max: 8   },
+			{ n: 'LUK+',      k: 'luk',         min: 1,  max: 6   },
+			{ n: 'CRI+',      k: 'cri',         min: 1,  max: 4,  isCri: true },   // 0.01〜0.04
+			{ n: 'G獲得+',    k: 'goldBonus',   min: 2,  max: 8,  isPct: true },   // ゴールド+%
+			{ n: 'EXP+',      k: 'expBonus',    min: 2,  max: 8,  isPct: true },   // EXP+%
+			{ n: '会心威力+', k: 'criMult',     min: 3,  max: 10, isPct: true },   // 会心ダメージ+%
+			{ n: '物理貫通+', k: 'physPierce',  min: 2,  max: 8,  isPct: true },   // 物理防御貫通%
+			{ n: '特殊貫通+', k: 'magicPierce', min: 2,  max: 8,  isPct: true },   // 特殊防御貫通%
+			{ n: 'ダメージ+', k: 'dmgBonus',    min: 1,  max: 5,  isPct: true },   // 最終ダメージ+%
+			{ n: 'MP消費-',   k: 'mpCostReduce',min: 3,  max: 10, isPct: true },   // MP消費軽減%
+			{ n: '回避+',     k: 'evaBonus',    min: 1,  max: 4,  isPct: true },   // 回避率直接+%
 		]
 
 		// サブステータスを再生成して item.subEffects を書き換える
@@ -2233,6 +2841,15 @@ const JOB_DATA = {
 			playSE('enchant_success')
 			addLog(`🎲 ${item.n} のサブステータスをリロール！ (${cost.toLocaleString()}G)`, 'log-gold')
 			showSubRerollResult(item, prevSubs, cost, idx, filterType)
+		}
+
+		// パーセント系サブステータスのキー一覧
+		const _SUB_PCT_KEYS = new Set(['goldBonus','expBonus','criMult','physPierce','magicPierce','dmgBonus','mpCostReduce','evaBonus'])
+		// サブステータス1件の表示文字列を返す
+		function _fmtSub(e) {
+			if (e.k === 'cri') return e.n + '+' + (e.v * 100).toFixed(0) + '%'
+			if (_SUB_PCT_KEYS.has(e.k)) return e.n + '+' + e.v + '%'
+			return e.n + '+' + e.v
 		}
 
 		function getItemDisplayName(item) {
@@ -2482,7 +3099,7 @@ const JOB_DATA = {
 				{ id: 'i5', tier: 5, n: '【神薬】エリクサー', p: 10000, d: 'HPとMPを全回復', e: { hpPct: 1.0, mpPct: 1.0 } },
 			],
 		}
-		let gameState = { gold: 500, floor: 1, inDungeon: false, party: [], guildBench: [], inventory: [], tempGold: 0, exploreCount: 0, stairsFound: false, bossDefeated: [], maxFloor: 1, guildWarehouse: [], guildWarehouseCap: 50, bagExpansion: 0 }
+		let gameState = { gold: 500, floor: 1, inDungeon: false, party: [], guildBench: [], inventory: [], tempGold: 0, exploreCount: 0, stairsFound: false, bossDefeated: [], maxFloor: 1, guildWarehouse: [], guildWarehouseCap: 50, bagExpansion: 0, createdAt: new Date().toLocaleDateString('ja-JP'), playSeconds: 0 }
 		let battle = { active: false, isProcessing: false, enemies: [], turn: 'player', activeUnitIndex: 0, buffs: [], enemyDebuffs: [], targeting: null, pendingSkill: null, remainingHits: 0, shields: [], guardIdx: -1, enemyDots: [], partyDots: [], partyRegens: [], enemyStatus: [], mpCostDown: [] }
 		let autoFarm = { active: false, floor: 1, kills: 0, gold: 0, exp: 0, timerId: null, hpThreshold: 0.25, useSkills: true, speed: 'normal' }
 
@@ -2570,15 +3187,23 @@ const JOB_DATA = {
 
 			item.subEffects = [];
 			const subPool = [
-				{ k: 'str', n: '物理攻撃', v: 4 },
-				{ k: 'vit', n: '物理耐性', v: 4 },
-				{ k: 'matk', n: '特殊攻撃', v: 4 },
-				{ k: 'mdef', n: '特殊耐性', v: 4 },
-				{ k: 'agi', n: '速度', v: 3 },
-				{ k: 'luk', n: '幸運', v: 5 },
-				{ k: 'hp', n: 'HP', v: 40 },
-				{ k: 'mp', n: 'MP', v: 20 },
-				{ k: 'cri', n: '会心', v: 0.03 }
+				{ k: 'str',         n: '物理攻撃',   v: 4    },
+				{ k: 'vit',         n: '物理耐性',   v: 4    },
+				{ k: 'matk',        n: '特殊攻撃',   v: 4    },
+				{ k: 'mdef',        n: '特殊耐性',   v: 4    },
+				{ k: 'agi',         n: '速度',       v: 3    },
+				{ k: 'luk',         n: '幸運',       v: 5    },
+				{ k: 'hp',          n: 'HP',         v: 40   },
+				{ k: 'mp',          n: 'MP',         v: 20   },
+				{ k: 'cri',         n: '会心',       v: 0.03 },
+				{ k: 'goldBonus',   n: 'G獲得+',     v: 4    },
+				{ k: 'expBonus',    n: 'EXP+',       v: 4    },
+				{ k: 'criMult',     n: '会心威力+',  v: 5    },
+				{ k: 'physPierce',  n: '物理貫通+',  v: 4    },
+				{ k: 'magicPierce', n: '特殊貫通+',  v: 4    },
+				{ k: 'dmgBonus',    n: 'ダメージ+',  v: 2    },
+				{ k: 'mpCostReduce',n: 'MP消費-',    v: 5    },
+				{ k: 'evaBonus',    n: '回避+',      v: 2    },
 			];
 			for(let i=0; i<subCount; i++) {
 				const eff = subPool[Math.floor(Math.random()*subPool.length)];
@@ -2620,7 +3245,17 @@ const JOB_DATA = {
 					let key = eff.k;
 					if (key === 'hp') key = 'maxHp';
 					if (key === 'mp') key = 'maxMp';
-					if (fs[key] !== undefined) fs[key] += eff.v;
+					// 通常ステータス
+					if (fs[key] !== undefined) { fs[key] += eff.v; return; }
+					// 特殊サブステータス（fs._xxx に集積）
+					if (key === 'goldBonus')    { fs._goldBonus    = (fs._goldBonus    || 0) + eff.v; return; }
+					if (key === 'expBonus')     { fs._expBonus     = (fs._expBonus     || 0) + eff.v; return; }
+					if (key === 'criMult')      { fs._criMultBonus = (fs._criMultBonus || 0) + eff.v; return; }
+					if (key === 'physPierce')   { fs._physPierce   = (fs._physPierce   || 0) + eff.v; return; }
+					if (key === 'magicPierce')  { fs._magicPierce  = (fs._magicPierce  || 0) + eff.v; return; }
+					if (key === 'dmgBonus')     { fs._dmgBonus     = (fs._dmgBonus     || 0) + eff.v; return; }
+					if (key === 'mpCostReduce') { fs._mpCostReduce = (fs._mpCostReduce || 0) + eff.v; return; }
+					if (key === 'evaBonus')     { fs._evaBonus     = (fs._evaBonus     || 0) + eff.v; return; }
 				});
 			};
 
@@ -2740,9 +3375,10 @@ const JOB_DATA = {
 			battle.buffs
 				.filter(b => b.pIdx === gameState.party.indexOf(p))
 				.forEach(b => {
-					if(fs[b.stat] !== undefined) {
-						if (b.val >= 1) fs[b.stat] += b.val;
-						else fs[b.stat] = Math.floor(fs[b.stat] * (1 + b.val));
+					if (b.stat === 'cri') { fs.cri += (b.val || 0); return }
+					if (fs[b.stat] !== undefined) {
+						if (b.val >= 1) fs[b.stat] += b.val
+						else fs[b.stat] = Math.floor(fs[b.stat] * (1 + b.val))
 					}
 				})
 			fs.cri = Math.min(fs.cri, 0.5)
@@ -2830,13 +3466,14 @@ const JOB_DATA = {
 		// ═══ 回避率計算 ═══════════════════════════════════════════════
 		// 回避率(%) = 5 + (防御側agi - 攻撃側agi)×0.2 + (防御側luk - 攻撃側luk)×0.1
 		// 上限35%、下限0%
-		function calcEvasion(atkAgi, atkLuk, defAgi, defLuk) {
+		function calcEvasion(atkAgi, atkLuk, defAgi, defLuk, evaBonus = 0) {
 			const rate = 5 + (defAgi - atkAgi) * 0.2 + (defLuk - atkLuk) * 0.1
-			return Math.min(35, Math.max(0, rate)) / 100
+			const capped = Math.min(35, Math.max(0, rate))
+			return Math.min(1, (capped + evaBonus) / 100)
 		}
 		// 回避判定 → true:回避成功
-		function rollEvasion(atkAgi, atkLuk, defAgi, defLuk) {
-			return Math.random() < calcEvasion(atkAgi, atkLuk, defAgi, defLuk)
+		function rollEvasion(atkAgi, atkLuk, defAgi, defLuk, evaBonus = 0) {
+			return Math.random() < calcEvasion(atkAgi, atkLuk, defAgi, defLuk, evaBonus)
 		}
 
 				function calcTacticalDamage(attackerStats, defenderDef, defenderMDef, lv, isEnemy = false, dType = 'physical') {
@@ -2864,11 +3501,10 @@ const JOB_DATA = {
 			// ════════════════════════════════════════════════════════════
 
 			// ── ① 最終防御力の算出 ──
-			// 基礎防御（バフ込み）← 呼び出し側で getFinalStats 相当の値を渡す
 			let finalDef = dType === 'physical' ? defenderDef : defenderMDef
 
 			if (!isEnemy) {
-				// デバフ減衰率（防御デバフスキル・デバフ効果）
+				// デバフ減衰率
 				battle.enemyDebuffs.forEach(d => {
 					const matchesDef = (dType === 'physical' && (d.stat === 'def' || d.stat === 'vit'))
 					                || (dType === 'magic'    && (d.stat === 'mdef'))
@@ -2877,35 +3513,48 @@ const JOB_DATA = {
 						? Math.max(0, finalDef - d.val)
 						: Math.floor(finalDef * (1 - d.val))
 				})
-				// 防御緩和量（貫通エンチャント：防御を〇%無視）
+				// エンチャント貫通（防御を%無視）
 				if (attackerStats._enchantPierce) {
 					finalDef = Math.floor(finalDef * (1 - attackerStats._enchantPierce))
+				}
+				// サブステータス・ルーン貫通（物理/特殊別）
+				const _subPierce = dType === 'physical'
+					? (attackerStats._physPierce || 0)
+					: (attackerStats._magicPierce || 0)
+				if (_subPierce > 0) {
+					finalDef = Math.floor(finalDef * (1 - _subPierce / 100))
 				}
 			}
 			finalDef = Math.max(0, finalDef)
 
 			// ── ② 最終攻撃力の算出 ──
-			// atkStat はバフ・%UP・ルーンセット・スキル倍率込みの値
 			const atkStat = dType === 'magic' ? attackerStats.matk : attackerStats.str
-			// × 武器倍率（multiplier）
 			const finalAtk = atkStat * (attackerStats.multiplier || 1.0)
 
 			// ── ③ ダメージ計算 ──
-			// 最低保証：finalAtk の 5%（防御が高くても必ず入る）
 			const minGuarantee = Math.max(1, Math.floor(finalAtk * 0.05))
 			const rawDamage    = (finalAtk * 0.5) - (finalDef * 0.25)
 			let baseDamage     = Math.max(minGuarantee, rawDamage)
 
 			// ── ④ 会心判定 ──
-			// 会心倍率 ×1.6（致命エンチャントで加算）
+			// 会心倍率：1.6 + エンチャント加算 + サブステ/ルーン会心威力(%)
 			const isCrit   = Math.random() < (attackerStats.cri || 0)
-			const critMult = 1.6 + (attackerStats._enchantLethal || 0)
-			const damage   = isCrit ? baseDamage * critMult : baseDamage
+			const _criMultBonus = !isEnemy ? ((attackerStats._criMultBonus || 0) / 100) : 0
+			const critMult = 1.6 + (attackerStats._enchantLethal || 0) + _criMultBonus
+			let damage     = isCrit ? baseDamage * critMult : baseDamage
 
-			// ── ⑤ ブレ補正 ±10% ──
+			// ── ⑤ 最終ダメージボーナス（サブステ/ルーン） ──
+			if (!isEnemy && attackerStats._dmgBonus) {
+				damage = damage * (1 + attackerStats._dmgBonus / 100)
+			}
+			// タレント由来のダメージボーナス
+			if (!isEnemy && attackerStats._talentDmgBonus) {
+				damage = damage * (1 + attackerStats._talentDmgBonus)
+			}
+
+			// ── ⑥ ブレ補正 ±10% ──
 			const finalDamage = Math.floor(damage * (0.9 + Math.random() * 0.2))
 
-			// 最終値：最低保証を下回らない
 			return { val: Math.max(minGuarantee, finalDamage), crit: isCrit }
 		}
 
@@ -2977,6 +3626,7 @@ const JOB_DATA = {
 						p.equip = p.equip ?? { weapon: null, armor: null, acc: null, runes: [] }
 						p.learnedSkills = p.learnedSkills ?? {}
 						p.equippedSkills = p.equippedSkills ?? []
+						p.skillUpgrades = p.skillUpgrades ?? {}
 						p.row = p.row ?? 'front'
 					})
 					parsed.party.forEach(p => {
@@ -3296,6 +3946,8 @@ const JOB_DATA = {
 				// シールドのターン経過減衰
 				battle.shields = (battle.shields||[]).filter(s => { s.turns--; return s.turns > 0 })
 				battle.guardIdx = -1
+				battle._guardDmgMul = 1.0
+				battle._guardCounter = null
 				// ── タレント: turn_start（エンジェル・ブレス等）──
 				gameState.party.forEach(member => {
 					if (member.hp <= 0 || !member.talents) return
@@ -3492,6 +4144,14 @@ const JOB_DATA = {
 						}
 					}
 				}
+				// ── タレント: on_hit（被ダメ時 → 攻撃者=target）──
+				if (res.val > 0 && p.hp > 0) {
+					fireTalentOnHit(p, res.val, target.hp > 0 ? target : null)
+				}
+				// ── タレント: on_kill（討伐時）──
+				if (target.hp <= 0) {
+					gameState.party.forEach(pm => { if (pm.hp > 0) fireTalentOnKill(pm) })
+				}
 				updateBattleUI()
 				
 				battle.remainingHits--;
@@ -3543,7 +4203,10 @@ const JOB_DATA = {
 			const p = gameState.party[battle.activeUnitIndex]
 			const _pIdxCheck = gameState.party.indexOf(p)
 			const _discCheck = (battle.mpCostDown||[]).find(m=>m.pIdx===_pIdxCheck)
-			const _checkCost = _discCheck ? Math.max(0, Math.floor(s.cost*(1-_discCheck.val))) : s.cost
+			const _pFsCheck = getFinalStats(p)
+			const _subReduceCheck = (_pFsCheck._mpCostReduce || 0) / 100
+			let _checkCost = _discCheck ? Math.max(0, Math.floor(s.cost*(1-_discCheck.val))) : s.cost
+			if (_subReduceCheck > 0) _checkCost = Math.max(0, Math.floor(_checkCost * (1 - _subReduceCheck)))
 			if (p.hp <= 0 || p.mp < _checkCost) return
 			// 敵単体対象スキル（atk/状態異常系）: 複数敵がいるときターゲット選択
 			const _needsEnemyTarget = ((s.type === 'atk' || s.type === 'atk_dot' || s.type === 'atk_debuff') && s.target === 'single') ||
@@ -3567,13 +4230,19 @@ const JOB_DATA = {
 					return
 				}
 			}
-			if (s.type === 'heal' && s.target === 'single') {
-				battle.targeting = 'heal'
+			// 単体サポート系スキルのターゲット選択
+			// heal/shield/buff/regen/mpcostのsingleかつself:trueでないものはターゲット選択へ
+			const _isSupportSingle = s.target === 'single' && !s.self
+				&& ['heal','shield','buff','regen','mpcost'].includes(s.type)
+			if (_isSupportSingle) {
+				battle.targeting = 'heal'  // 味方ターゲット選択モードを共用
 				battle.pendingSkill = s
 				battle.pendingSkillLv = lv
 				document.getElementById('battle-skill-menu').classList.add('hidden')
 				updateBattleUI()
-				document.getElementById('battle-msg').innerText = '回復対象を選択'
+				document.getElementById('battle-msg').innerText = s.revive
+					? '蘇生対象を選択（戦闘不能のみ）'
+					: '対象を選択'
 				return
 			}
 			executeSkill(s, null, lv)
@@ -3584,7 +4253,11 @@ const JOB_DATA = {
 			if (p !== gameState.party[battle.activeUnitIndex]) return
 			const _pIdx = gameState.party.indexOf(p)
 			const _mpDisc = (battle.mpCostDown||[]).find(m=>m.pIdx===_pIdx)
-			const _effCost = _mpDisc ? Math.max(0, Math.floor(s.cost*(1-_mpDisc.val))) : s.cost
+			// サブステ・ルーンによるMP消費軽減（%）
+			const _pFsForMp = getFinalStats(p)
+			const _subMpReduce = (_pFsForMp._mpCostReduce || 0) / 100
+			let _effCost = _mpDisc ? Math.max(0, Math.floor(s.cost*(1-_mpDisc.val))) : s.cost
+			if (_subMpReduce > 0) _effCost = Math.max(0, Math.floor(_effCost * (1 - _subMpReduce)))
 			if (_mpDisc) { battle.mpCostDown = battle.mpCostDown.filter(m=>m.pIdx!==_pIdx); addLog(`MPコスト軽減！ ${_effCost}MP消費（元${s.cost}MP）`, 'log-sys') }
 			p.mp -= _effCost
 			battle.isProcessing = true
@@ -3622,10 +4295,17 @@ const JOB_DATA = {
 							healAmt = s.val >= 10 ? s.val : Math.floor(casterFs.matk * s.val * 3);
 						}
 
-						// 死亡者には蘇生系のみ、生存者には回復系のみ適用
-						if((tc.hp > 0 && s.n !== '蘇生' && s.n !== '奇跡の復活') || 
-						   (tc.hp <= 0 && (s.n === '蘇生' || s.n === '奇跡の復活'))) {
-							tc.hp = Math.min(targetFs.maxHp, tc.hp + healAmt);
+						// 蘇生スキル（revive:true）は死亡者のみ、通常回復は生存者のみ
+						if (s.revive) {
+							// 蘇生：死亡者にのみ適用
+							if (tc.hp <= 0) {
+								tc.hp = Math.min(targetFs.maxHp, tc.hp + healAmt);
+							}
+						} else {
+							// 通常回復：生存者のみ
+							if (tc.hp > 0) {
+								tc.hp = Math.min(targetFs.maxHp, tc.hp + healAmt);
+							}
 						}
 					});
 					const targetName = targets.length > 1 ? '味方全体' : targets[0].name;
@@ -3667,8 +4347,22 @@ const JOB_DATA = {
 							addLog(`${p.name}の${s.n} → <b style="color:#60a5fa;">💨 ${t.name}に回避された！</b>`, 'log-sys')
 							return
 						}
-						const res = calcTacticalDamage({ ...fs, str: atkStat * s.pow, matk: atkStat * s.pow }, t.def, t.mdef, p.lv, false, skillDType)
+						// ignoreDef: 防御を0として計算
+						const _tDef  = s.ignoreDef ? 0 : t.def
+						const _tMDef = s.ignoreDef ? 0 : t.mdef
+						const res = calcTacticalDamage({ ...fs, str: atkStat * s.pow, matk: atkStat * s.pow }, _tDef, _tMDef, p.lv, false, skillDType)
+						// criForce: 会心確定（criMultBonus で倍率上乗せ）
+						if (s.criForce) {
+							res.crit = true
+							const _criMul = 1.6 + (s.criMultBonus || 0) + (fs._criMultBonus || 0)
+							res.val = Math.floor(res.val * _criMul)
+						}
 						res.val = Math.floor(res.val * _sm * _skPenalty)
+						// instakillChance: 即死判定（ボスには無効）
+						if (s.instakillChance && !t.isBoss && Math.random() < s.instakillChance) {
+							res.val = t.hp
+							addLog(`💀 即死発動！ <b>${t.name}</b> を一撃で仕留めた！`, 'log-crit')
+						}
 						t.hp = Math.max(0, t.hp - res.val)
 						// 復讐する：反射
 						if (t._reflectChance && t.hp > 0 && Math.random() < t._reflectChance) {
@@ -3682,61 +4376,102 @@ const JOB_DATA = {
 							if (targets.length > 1) setTimeout(() => fxSkillEffect(_tCard, 'atk', skillDType, res.val, res.crit), _ti * 100)
 							else fxSkillEffect(_tCard, 'atk', skillDType, res.val, res.crit)
 						})()
+						// タレント on_kill（スキルで討伐）
+						if (t.hp <= 0) {
+							gameState.party.forEach(pm => { if (pm.hp > 0) fireTalentOnKill(pm) })
+						}
 					})
 					} else if (s.type === 'heal') {
 					const targets = s.target === 'all' ? gameState.party : [explicitTarget || p];
-					const fs = getFinalStats(p); // 発動者(プリースト等)のステータスを取得
-					
-					// 魔法攻撃力(MATK) × スキル倍率(val) で回復量を計算
-					// 旧データ(固定値10以上)の場合はそのまま固定値回復として扱う
-					const healAmt = s.val >= 10 ? s.val : Math.floor(fs.matk * s.val * 3); // MATKの低い序盤でも使えるよう3倍補正
-					
+					const fs = getFinalStats(p);
 					targets.forEach(tc => {
 						const tFs = getFinalStats(tc);
-						if(tc.hp > 0 || s.n === '蘇生' || s.n === '奇跡の復活') {
-							tc.hp = Math.min(tFs.maxHp, tc.hp + healAmt);
+						const healAmt2 = s.scale === 'target_hp' ? Math.floor(tFs.maxHp * s.val)
+							: s.scale === 'self_hp' ? Math.floor(fs.maxHp * s.val)
+							: (s.val >= 10 ? s.val : Math.floor(fs.matk * s.val * 3));
+						if (s.revive) {
+							if (tc.hp <= 0) tc.hp = Math.min(tFs.maxHp, healAmt2);
+						} else {
+							if (tc.hp > 0) tc.hp = Math.min(tFs.maxHp, tc.hp + healAmt2);
 						}
 					});
-					const targetName = targets.length > 1 ? '味方全体' : targets[0].name;
-					addLog(`${targetName}のHPが <b>${healAmt}</b> 回復した！`, 'log-sys')
+					const targetName = targets.length > 1 ? '味方全体' : targets[0] ? targets[0].name : '不明';
 					// 回復パーティクル
 					targets.forEach((tc, ti) => {
 						if (tc.hp <= 0) return
 						const _pIdx2 = gameState.party.indexOf(tc)
-						const _pCard = getPartyCardEl(_pIdx2)
-						setTimeout(() => fxHeal(_pCard, healAmt), ti * 80)
+						const _pCard2 = getPartyCardEl(_pIdx2)
+						const _healAmt2 = s.scale === 'target_hp' ? Math.floor(getFinalStats(tc).maxHp * s.val)
+							: s.scale === 'self_hp' ? Math.floor(getFinalStats(p).maxHp * s.val)
+							: (s.val >= 10 ? s.val : Math.floor(getFinalStats(p).matk * s.val * 3))
+						setTimeout(() => fxHeal(_pCard2, _healAmt2), ti * 80)
 					})
 				} else if (s.type === 'debuff') {
 					battle.enemyDebuffs.push({ stat: s.stat, val: s.val, skillName: s.n })
 					addLog('敵を弱体化！', 'log-e-atk')
 				} else if (s.type === 'buff') {
-					const targets = s.target === 'all' ? gameState.party.map((_, i) => i) : [gameState.party.indexOf(p)]
+					const _buffTarget = explicitTarget || p
+					const targets = s.target === 'all' ? gameState.party.map((_, i) => i) : [gameState.party.indexOf(_buffTarget)]
 					targets.forEach(idx => {
 						battle.buffs.push({ pIdx: idx, stat: s.stat, val: s.val, skillName: s.n })
+						// stat2/val2（複合バフ）対応
+						if (s.stat2 && s.val2 != null) {
+							battle.buffs.push({ pIdx: idx, stat: s.stat2, val: s.val2, skillName: s.n })
+						}
 						const _bc = getPartyCardEl(idx)
 						setTimeout(() => fxSkillEffect(_bc, 'buff', '', 0, false), idx * 60)
 					})
 					addLog('✨ 能力が強化された！', 'log-sys')
+					// buff 強化による regen 追加（ホーリー・フィールド等）
+					if (s.regen && s.regenTurns) {
+						const _rTargets = s.target === 'all'
+							? gameState.party.filter(m => m.hp > 0).map(m => gameState.party.indexOf(m))
+							: [gameState.party.indexOf(_buffTarget)]
+						_rTargets.forEach(rIdx => {
+							const ex = (battle.partyRegens||[]).find(r => r.pIdx === rIdx)
+							if (ex) { ex.turns = Math.max(ex.turns, s.regenTurns); ex.val = Math.max(ex.val, s.regen) }
+							else battle.partyRegens.push({ pIdx: rIdx, val: s.regen, turns: s.regenTurns })
+						})
+						addLog(`💚 リジェネ付与！ ${s.regenTurns}ターン間 MaxHP×${Math.floor(s.regen*100)}%回復！`, 'log-sys')
+					}
 				} else if (s.type === 'shield') {
 					const fs = getFinalStats(p)
 					const shieldAmt = Math.floor(fs.maxHp * s.val)
-					const targetPeople = s.target === 'all' ? gameState.party.filter(m => m.hp > 0).map((_, i) => gameState.party.indexOf(gameState.party.filter(m=>m.hp>0)[i])) : [gameState.party.indexOf(p)]
+					const _shieldTarget = explicitTarget || p
+					const targetPeople = s.target === 'all'
+						? gameState.party.filter(m => m.hp > 0).map(m => gameState.party.indexOf(m))
+						: [gameState.party.indexOf(_shieldTarget)]
 					targetPeople.forEach(idx => {
-						// 既存シールドはスタックせず上書き（より大きい方を採用）
-						const existing = battle.shields.find(s => s.pIdx === idx)
+						const existing = battle.shields.find(sh => sh.pIdx === idx)
 						if (existing) { existing.val = Math.max(existing.val, shieldAmt); existing.turns = 3 }
 						else battle.shields.push({ pIdx: idx, val: shieldAmt, turns: 3 })
 					})
-					const tName = s.target === 'all' ? '味方全体' : p.name
+					const tName = s.target === 'all' ? '味方全体' : _shieldTarget.name
 					addLog(`${p.name}のシールド展開！ ${tName}に ${shieldAmt} のシールドを付与！`, 'log-sys')
+					// shield 強化による regen 追加（エンジェル・バリア等）
+					if (s.regen && s.regenTurns) {
+						targetPeople.forEach(rIdx => {
+							const ex = (battle.partyRegens||[]).find(r => r.pIdx === rIdx)
+							if (ex) { ex.turns = Math.max(ex.turns, s.regenTurns); ex.val = Math.max(ex.val, s.regen) }
+							else battle.partyRegens.push({ pIdx: rIdx, val: s.regen, turns: s.regenTurns })
+						})
+						addLog(`💚 リジェネも付与！ ${s.regenTurns}ターン間回復！`, 'log-sys')
+					}
 				} else if (s.type === 'guard') {
 					const pIdx = gameState.party.indexOf(p)
 					battle.guardIdx = pIdx
+					// dmgMultiplier: 肩代わりダメージ倍率（マーターズ・ガード強化等）
+					if (s.dmgMultiplier) battle._guardDmgMul = s.dmgMultiplier
+					// counterPow: 肩代わり後カウンター（反撃倍率）
+					if (s.counterPow) battle._guardCounter = { pIdx, pow: s.counterPow, dType: s.dType || 'physical' }
 					addLog(`${p.name}が身代わりの構え！ 1ターン、味方全員へのダメージを肩代わりする！`, 'log-sys')
 
 				// ── 再生バフ ──
 				} else if (s.type === 'regen') {
-					const targets = s.target === 'all' ? gameState.party.filter(m=>m.hp>0).map((_,i)=>gameState.party.indexOf(gameState.party.filter(m=>m.hp>0)[i])) : [gameState.party.indexOf(p)]
+					const _regenTarget = explicitTarget || p
+					const targets = s.target === 'all'
+						? gameState.party.filter(m=>m.hp>0).map(m=>gameState.party.indexOf(m))
+						: [gameState.party.indexOf(_regenTarget)]
 					// 再生バフの緑エフェクト
 					targets.forEach((idx, ti) => {
 						const _rc = getPartyCardEl(idx)
@@ -3747,7 +4482,7 @@ const JOB_DATA = {
 						if (ex) { ex.turns = Math.max(ex.turns, s.turns); ex.val = Math.max(ex.val, s.val) }
 						else battle.partyRegens.push({ pIdx: idx, val: s.val, turns: s.turns })
 					})
-					const tname = s.target==='all'?'味方全体':p.name
+					const tname = s.target==='all' ? '味方全体' : _regenTarget.name
 					addLog(`${p.name}の再生付与！ ${tname}に${s.turns}ターン間のリジェネを付与！`, 'log-sys')
 
 				// ── MPコスト軽減バフ ──
@@ -3830,7 +4565,10 @@ const JOB_DATA = {
 					const _pen2 = isSkillBackPenalty(p, s) ? 0.8 : 1.0
 					_targets2.forEach((t, ti) => {
 						const _sm2 = getEnemyDamageMult(t.id, s.dType)
-						const res2 = calcTacticalDamage({ ...fs2, str: _atkStat2 * s.pow, matk: _atkStat2 * s.pow }, t.def, t.mdef, p.lv, false, s.dType)
+						const _td2  = s.ignoreDef ? 0 : t.def
+						const _tmd2 = s.ignoreDef ? 0 : t.mdef
+						const res2 = calcTacticalDamage({ ...fs2, str: _atkStat2 * s.pow, matk: _atkStat2 * s.pow }, _td2, _tmd2, p.lv, false, s.dType)
+						if (s.criForce) { res2.crit = true; res2.val = Math.floor(res2.val * (1.6 + (s.criMultBonus||0) + (fs2._criMultBonus||0))) }
 						res2.val = Math.floor(res2.val * _sm2 * _pen2)
 						t.hp = Math.max(0, t.hp - res2.val)
 						addLog(`${t.name}に <b>${res2.val}</b>ダメージ`, 'log-p-atk')
@@ -3867,17 +4605,27 @@ const JOB_DATA = {
 					const _pen3 = isSkillBackPenalty(p, s) ? 0.8 : 1.0
 					_targets3.forEach((t, ti) => {
 						const _sm3 = getEnemyDamageMult(t.id, s.dType)
-						const res3 = calcTacticalDamage({ ...fs3, str: _atkStat3 * s.pow, matk: _atkStat3 * s.pow }, t.def, t.mdef, p.lv, false, s.dType)
+						const _td3  = s.ignoreDef ? 0 : t.def
+						const _tmd3 = s.ignoreDef ? 0 : t.mdef
+						const res3 = calcTacticalDamage({ ...fs3, str: _atkStat3 * s.pow, matk: _atkStat3 * s.pow }, _td3, _tmd3, p.lv, false, s.dType)
+						if (s.criForce) { res3.crit = true; res3.val = Math.floor(res3.val * (1.6 + (s.criMultBonus||0) + (fs3._criMultBonus||0))) }
 						res3.val = Math.floor(res3.val * _sm3 * _pen3)
+						if (s.instakillChance && !t.isBoss && Math.random() < s.instakillChance) { res3.val = t.hp; addLog(`💀 即死発動！`, 'log-crit') }
 						t.hp = Math.max(0, t.hp - res3.val)
-						addLog(`${t.name}に <b>${res3.val}</b>ダメージ`, 'log-p-atk')
+						addLog(`${t.name}に <b>${res3.val}</b>ダメージ${res3.crit?' ★会心':''}`, 'log-p-atk')
 						const _tc3 = getEnemyCardEl(t)
 						setTimeout(() => fxSkillEffect(_tc3, 'atk', s.dType, res3.val, res3.crit), ti * 100)
+						if (t.hp <= 0) gameState.party.forEach(pm => { if (pm.hp > 0) fireTalentOnKill(pm) })
 					})
 					const _dbAlive = _targets3.filter(t => t.hp > 0)
 					if (s.debuff && _dbAlive.length > 0) {
 						_dbAlive.forEach(t => battle.enemyDebuffs.push({ eId: t.id, stat: s.debuff.stat, val: s.debuff.val, skillName: s.n }))
 						addLog(`↓ ${s.debuff.stat} -${Math.floor(s.debuff.val*100)}% を付与！`, 'log-e-atk')
+					}
+					// secondDebuff（二重デバフ）
+					if (s.secondDebuff && _dbAlive.length > 0) {
+						_dbAlive.forEach(t => battle.enemyDebuffs.push({ eId: t.id, stat: s.secondDebuff.stat, val: s.secondDebuff.val, skillName: s.n }))
+						addLog(`↓ ${s.secondDebuff.stat} -${Math.floor(s.secondDebuff.val*100)}% も付与！`, 'log-e-atk')
 					}
 					if (s.buffDispel) { battle.buffs = []; addLog('✗ 敵のバフを全解除！', 'log-e-atk') }
 
@@ -3895,7 +4643,9 @@ const JOB_DATA = {
 						const t4 = aliveE4[Math.floor(Math.random() * aliveE4.length)]
 						if (!t4 || t4.hp <= 0) continue
 						const _sm4 = getEnemyDamageMult(t4.id, s.dType)
-						const res4 = calcTacticalDamage({ ...fs4, str: _atkStat4 * s.pow, matk: _atkStat4 * s.pow }, t4.def, t4.mdef, p.lv, false, s.dType)
+						const _td4  = s.ignoreDef ? 0 : t4.def
+						const _tmd4 = s.ignoreDef ? 0 : t4.mdef
+						const res4 = calcTacticalDamage({ ...fs4, str: _atkStat4 * s.pow, matk: _atkStat4 * s.pow }, _td4, _tmd4, p.lv, false, s.dType)
 						res4.val = Math.floor(res4.val * _sm4 * _pen4)
 						t4.hp = Math.max(0, t4.hp - res4.val)
 						totalDmg += res4.val
@@ -3940,19 +4690,25 @@ const JOB_DATA = {
 		function selectPartyTarget(index) {
 			if (battle.targeting !== 'heal') return;
 			const target = gameState.party[index];
+			const ps = battle.pendingSkill;
 
-			// 死者への通常回復、生者への蘇生を防ぐ
-			if (target.hp <= 0 && battle.pendingSkill.n !== '蘇生') {
-				showMsg('戦闘不能の味方には使えません');
-				playSE('error');
-				return;
-			} else if (target.hp > 0 && battle.pendingSkill.n === '蘇生') {
-				showMsg('生存している味方には使えません');
-				playSE('error');
-				return;
+			// 蘇生スキル（revive:true）→ 死亡者のみ対象
+			if (ps && ps.revive) {
+				if (target.hp > 0) {
+					showMsg('生存している味方には使えません');
+					playSE('error');
+					return;
+				}
+			} else {
+				// 通常サポートスキル → 生存者のみ対象
+				if (target.hp <= 0) {
+					showMsg('戦闘不能の味方には使えません');
+					playSE('error');
+					return;
+				}
 			}
 
-			executeSkill(battle.pendingSkill, target, battle.pendingSkillLv);
+			executeSkill(ps, target, battle.pendingSkillLv);
 		}
 
 						// ═══ DoT / 状態異常システム ═══
@@ -4141,8 +4897,22 @@ const JOB_DATA = {
 						if (absorbed > 0) addLog(`${guardian.name}のシールドが ${absorbed} を吸収！`, 'log-sys')
 					}
 					if (remaining > 0) {
-						guardian.hp = Math.max(0, guardian.hp - remaining)
-						addLog(`${guardian.name}が身代わり！ ${remaining}ダメージを肩代わり`, 'log-sys')
+						const _gMul = battle._guardDmgMul || 1.0
+						const _gDmg = Math.floor(remaining * _gMul)
+						guardian.hp = Math.max(0, guardian.hp - _gDmg)
+						addLog(`${guardian.name}が身代わり！ ${_gDmg}ダメージを肩代わり`, 'log-sys')
+						// counterPow: 身代わり後カウンター
+						if (battle._guardCounter && battle._guardCounter.pIdx === battle.guardIdx) {
+							const _gc = battle._guardCounter
+							const _gcFs = getFinalStats(guardian)
+							const _gcAtk = _gc.dType === 'magic' ? _gcFs.matk : _gcFs.str
+							const _gcDmg = Math.floor(_gcAtk * _gc.pow)
+							const _gcTgt = battle.enemies.find(e => e.hp > 0)
+							if (_gcTgt && _gcDmg > 0) {
+								_gcTgt.hp = Math.max(0, _gcTgt.hp - _gcDmg)
+								addLog(`⚡ ${guardian.name}の反撃！ ${_gcTgt.name}に${_gcDmg}ダメージ！`, 'log-p-atk')
+							}
+						}
 					}
 					return
 				}
@@ -4158,6 +4928,10 @@ const JOB_DATA = {
 			}
 			// 残りダメージをHP適用
 			if (remaining > 0) targetP.hp = Math.max(0, targetP.hp - remaining)
+			// ── タレント: on_hit（被ダメ時）──
+			if (remaining > 0 && targetP.hp > 0) {
+				fireTalentOnHit(targetP, remaining, null)
+			}
 		}
 		async function enemyTurn() {
 			if (!battle.active) return
@@ -4740,7 +5514,7 @@ const JOB_DATA = {
 					const hyIsStrong = Math.random() < 0.30
 					const dAK = getFinalStats(targetP)
 					// 回避判定（プレイヤー側が回避できるか）
-					const _evAK = rollEvasion(e.agi || 10, e.luk || 5, dAK.agi, dAK.luk)
+					const _evAK = rollEvasion(e.agi || 10, e.luk || 5, dAK.agi, dAK.luk, dAK._evaBonus || 0)
 					if (_evAK) {
 						const _pCrd = getPartyCardEl(gameState.party.indexOf(targetP))
 						if (_pCrd) { const {x,y}=getElCenter(_pCrd); fxText(x, y-14, '💨 回避', '#60a5fa', '0.85rem') }
@@ -4823,7 +5597,7 @@ const JOB_DATA = {
 									const dType = usedSkill.type === 'magic' ? 'magic' : 'physical'
 									const ds = getFinalStats(tgSk)
 									// 回避判定（単体スキルのみ）
-									const _evSk = rollEvasion(e.agi||10, e.luk||5, ds.agi, ds.luk)
+									const _evSk = rollEvasion(e.agi||10, e.luk||5, ds.agi, ds.luk, ds._evaBonus || 0)
 									if (_evSk) {
 										const _skPCrd = getPartyCardEl(gameState.party.indexOf(tgSk))
 										if (_skPCrd) { const {x,y}=getElCenter(_skPCrd); fxText(x, y-14, '💨 回避', '#60a5fa', '0.85rem') }
@@ -5225,8 +5999,18 @@ function winBattle() {
 				}
 			})
 			gameState.tempGold += g
+			// ゴールドボーナス（全パーティのgoldBonusを平均）
+			const _aliveParty = gameState.party.filter(p => p.hp > 0)
+			if (_aliveParty.length > 0) {
+				const _goldBonusPct = _aliveParty.reduce((sum, p) => sum + (getFinalStats(p)._goldBonus || 0), 0) / _aliveParty.length
+				if (_goldBonusPct > 0) gameState.tempGold += Math.floor(g * _goldBonusPct / 100)
+			}
 			gameState.party.forEach(p => {
-				p.exp += x
+				if (p.hp <= 0) return  // 死亡中は経験値なし
+				const _pFs = getFinalStats(p)
+				const _expBonusPct = _pFs._expBonus || 0
+				const _expGain = _expBonusPct > 0 ? Math.floor(x * (1 + _expBonusPct / 100)) : x
+				p.exp += _expGain
 				while (p.exp >= p.nextExp) levelUp(p)
 			})
 			addLog(`⚔️ 勝利！ ${g}G / ${x}EXP 獲得。`, 'log-gold')
@@ -5325,6 +6109,10 @@ function winBattle() {
 			box.className = type || ''
 			overlay.style.display = 'flex'
 			requestAnimationFrame(() => requestAnimationFrame(() => box.classList.add('active')))
+			// SE再生
+			if (type === 'legendary') playSE('legendary')
+			else if (type === 'unlock') playSE('unlock')
+			else if (type === 'hire')   playSE('win')
 			if (_notifyTimer) clearTimeout(_notifyTimer)
 			if (autoClose > 0) _notifyTimer = setTimeout(closeNotify, autoClose)
 		}
@@ -5343,9 +6131,18 @@ function winBattle() {
 			const tree = JOB_DATA[jobKey].skills
 			return MILESTONES.some(lv => {
 				if (!tree[lv]) return false
-				if (p.lv < lv) return false                    // まだ解放されていない
-				if (p.learnedSkills[lv] !== undefined) return false // すでに習得済み
-				return true
+				if (p.lv < lv) return false
+				if (p.learnedSkills[lv] !== undefined) return false
+				// enhance の場合: 対応する target_lv のスキルを習得済みなら表示対象
+				const candidates = tree[lv]
+				const hasVisible = candidates.some(s => {
+					if (s.type === 'enhance') {
+						const tl = p.learnedSkills[s.target_lv]
+						return tl !== undefined && tl === s.option
+					}
+					return true
+				})
+				return hasVisible
 			})
 		}
 
@@ -5374,6 +6171,7 @@ function winBattle() {
 		}
 
 		function openTraining(pIdx) {
+			saveModalScroll()
 			const p = gameState.party[pIdx]
 			const jobKey = Object.keys(JOB_DATA).find(k => JOB_DATA[k].name === p.job)
 			if (!jobKey) return
@@ -5404,12 +6202,12 @@ function winBattle() {
 				if (!tree[lv]) return
 				const learnedIdx = p.learnedSkills[lv]
 				const isUnlocked = p.lv >= lv
+				// 習得済みスキルは強化適用済みで表示
+				const _resolvedLearned = (learnedIdx !== undefined) ? resolveSkill(p, lv, learnedIdx) : null
 
 				treeHtml += `<div class="skill-milestone" style="margin-bottom:14px; border-bottom:1px solid #1a1a1a; padding-bottom:10px;">
 					<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-						<span style="font-size:0.72rem; padding:2px 8px; border-radius:10px;
-							background:${isUnlocked ? '#0d2438' : '#111'}; color:${isUnlocked ? '#60a5fa' : '#444'};
-							border:1px solid ${isUnlocked ? '#1e4060' : '#222'};">
+						<span style="font-size:0.72rem; padding:2px 8px; border-radius:10px; background:${isUnlocked ? '#0d2438' : '#111'}; color:${isUnlocked ? '#60a5fa' : '#444'}; border:1px solid ${isUnlocked ? '#1e4060' : '#222'};">
 							Lv.${lv}
 						</span>
 						${!isUnlocked ? '<span style="font-size:0.7rem;color:#444;">🔒 未解放</span>' : ''}
@@ -5418,19 +6216,60 @@ function winBattle() {
 					<div class="skill-options" style="display:grid; grid-template-columns:${tree[lv].length > 1 ? '1fr 1fr' : '1fr'}; gap:8px;">`
 
 				tree[lv].forEach((s, sIdx) => {
-					const isSelected = learnedIdx === sIdx
+					// enhance: 対応するスキルを習得していなければ非表示
+					if (s.type === 'enhance') {
+						const targetLearned = p.learnedSkills[s.target_lv]
+						if (targetLearned === undefined) return
+						if (s.option !== targetLearned) return
+						// choices形式: 2択のどちらを選ぶか、または習得済みを表示
+						if (s.choices && s.choices.length >= 2) {
+							const enhLearned = learnedIdx  // learnedIdx はこのlvで選んだchoices index
+							const canEnhance = enhLearned === undefined && isUnlocked
+							const chosenUpg = enhLearned !== undefined ? p.skillUpgrades[s.target_lv] : null
+							const enhancedName = chosenUpg ? chosenUpg._enhanceName : null
+							// 強化対象スキル名を取得
+							// 強化対象スキル名を取得
+							const targetSkillBase = tree[s.target_lv] ? tree[s.target_lv][targetLearned] : null
+							const targetSkillName = targetSkillBase ? targetSkillBase.n : '?'
+							const choicesHtml = s.choices.map((ch, ci) => {
+								const isChosen    = enhLearned !== undefined && enhLearned === ci
+								const otherChosen = enhLearned !== undefined && enhLearned !== ci
+								const borderCol   = isChosen ? '#22c55e' : otherChosen ? '#1a1a1a' : canEnhance ? '#2a5a8a' : '#333'
+								const bgCol       = isChosen ? '#0a1f0a'  : otherChosen ? '#080808'  : canEnhance ? '#0a1828'  : '#0d0d0d'
+								const nameCol     = isChosen ? '#4ade80'  : canEnhance ? '#eee' : '#888'
+								const clickAct    = canEnhance ? `learnSkill(${pIdx},${lv},${ci})` : ''
+								return '<div onclick="' + clickAct + '"'
+									+ ' style="padding:8px;border-radius:6px;border:1px solid ' + borderCol + ';'
+									+ 'background:' + bgCol + ';'
+									+ 'opacity:' + (otherChosen ? 0.4 : 1) + ';cursor:' + (canEnhance ? 'pointer' : 'default') + ';">'
+									+ '<div style="font-size:0.82rem;font-weight:bold;color:' + nameCol + ';">' + ch.n + '</div>'
+									+ '<div style="font-size:0.72rem;color:#777;margin-top:3px;">' + ch.d + '</div>'
+									+ (isChosen    ? '<div style="font-size:0.65rem;color:#22c55e;margin-top:3px;">✓ 選択済</div>' : '')
+									+ (canEnhance  ? '<div style="font-size:0.65rem;color:#60a5fa;margin-top:3px;">▶ 選択</div>' : '')
+									+ '</div>'
+							}).join('')
+							treeHtml += '<div style="background:#0a0e18;border:1px solid #1e3a5f;border-radius:8px;padding:10px;margin-bottom:2px;">'
+								+ '<div style="font-size:0.72rem;color:#888;margin-bottom:8px;">⚡ 【' + targetSkillName + '】の強化を選択</div>'
+								+ '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">' + choicesHtml + '</div>'
+								+ '</div>'
+							return
+						}
+					}
 					const isLocked = learnedIdx !== undefined && learnedIdx !== sIdx
+					const isSelected = learnedIdx === sIdx
 					const canLearn = learnedIdx === undefined && isUnlocked
 					const ti = TYPE_INFO[s.type] || { label:'?', color:'#666', tip:s.type }
 
+					// 選択済みスキルは強化適用済みで表示、それ以外は元のまま
+					const _sDisplay = (isSelected && _resolvedLearned) ? _resolvedLearned : s
 					// スキル説明文
-					const desc = s.d || ''
+					const desc = _sDisplay.d || ''
 					// 名前（passiveは d表示、それ以外はn）
-					const name = s.type === 'passive' ? (s.d || '???') : (s.n || '???')
+					const name = _sDisplay.type === 'passive' ? (_sDisplay.d || '???') : (_sDisplay.n || '???')
 
 					// コスト表示
 					let costTag = ''
-					if (s.cost != null) costTag = `<span style="font-size:0.68rem;color:#888;"> MP${s.cost}</span>`
+					if (_sDisplay.cost != null) costTag = `<span style="font-size:0.68rem;color:#888;"> MP${_sDisplay.cost}</span>`
 
 					// タイプバッジ
 					const badge = `<span style="display:inline-block;font-size:0.6rem;padding:1px 5px;border-radius:3px;
@@ -5438,11 +6277,7 @@ function winBattle() {
 						margin-right:4px;" title="${ti.tip}">${ti.label}</span>`
 
 					// 選択状態のスタイル
-					let cardStyle = `cursor:${canLearn?'pointer':'default'};padding:10px;border-radius:6px;border:1px solid;
-						border-color:${isSelected?'#22c55e':isLocked?'#1a1a1a':canLearn?'#1e4060':'#1a1a1a'};
-						background:${isSelected?'#0a1f0a':isLocked?'#080808':canLearn?'#0a1828':'#0d0d0d'};
-						opacity:${isLocked?'0.45':'1'};
-						${canLearn?'box-shadow:0 0 8px #60a5fa22;':''}`
+					let cardStyle = `cursor:${canLearn?'pointer':'default'};padding:10px;border-radius:6px;border:1px solid;border-color:${isSelected?'#22c55e':isLocked?'#1a1a1a':canLearn?'#1e4060':'#1a1a1a'};background:${isSelected?'#0a1f0a':isLocked?'#080808':canLearn?'#0a1828':'#0d0d0d'};opacity:${isLocked?'0.45':'1'};${canLearn?'box-shadow:0 0 8px #60a5fa22;':''}`
 
 					treeHtml += `<div style="${cardStyle}" onclick="${canLearn ? `learnSkill(${pIdx},${lv},${sIdx})` : ''}">
 						<div style="display:flex;align-items:center;flex-wrap:wrap;gap:3px;margin-bottom:4px;">
@@ -5470,6 +6305,9 @@ function winBattle() {
 						<h2 style="margin:0;font-size:1.1rem;">${p.name} — スキルツリー</h2>
 						<div style="font-size:0.8rem;color:#888;">Lv.${p.lv} ${p.job} ／ ${jobDef.desc||''}</div>
 					</div>
+					<button onclick="confirmSkillReset(${pIdx})"
+						style="font-size:0.72rem;padding:4px 9px;background:#1a0a00;border:1px solid #6b3300;color:#d97706;border-radius:6px;cursor:pointer;white-space:nowrap;flex-shrink:0;"
+						title="スキルをすべてリセット (${SKILL_RESET_COST.toLocaleString()}G)">🔄 リセット</button>
 				</div>
 				<div style="background:#0d1a0d;border:1px solid #2a4a2a;border-radius:6px;padding:8px 10px;margin-bottom:10px;">
 					<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
@@ -5481,6 +6319,7 @@ function winBattle() {
 				<div style="max-height:52vh;overflow-y:auto;padding-right:4px;">${treeHtml}</div>
 				<button onclick="closeModal()" class="btn-action btn-blue" style="margin-top:10px;width:100%;">閉じる</button>`
 			openModalWrapper()
+			restoreModalScroll()
 		}
 
 				function exportCharacterCode(pIdx) {
@@ -5490,14 +6329,55 @@ function winBattle() {
 			shareData.hp = fs.maxHp
 			shareData.mp = fs.maxMp
 
+			// ── 共有メタ情報を埋め込む ──
+			const _now = new Date()
+			const _dateStr = _now.getFullYear() + '/' +
+				String(_now.getMonth()+1).padStart(2,'0') + '/' +
+				String(_now.getDate()).padStart(2,'0') + ' ' +
+				String(_now.getHours()).padStart(2,'0') + ':' +
+				String(_now.getMinutes()).padStart(2,'0')
+			// 初回作成日は既に _meta に入っていれば保持、なければ今日を設定
+			const _createdAt = (p._meta && p._meta.createdAt) ? p._meta.createdAt : _dateStr
+			shareData._meta = {
+				createdAt:  _createdAt,
+				sharedAt:   _dateStr,
+				shareName:  p.name,
+				ownerNote:  '',
+				shareCount: ((p._meta && p._meta.shareCount) || 0) + 1,
+				gameVer:    '4.19',
+			}
+			// キャラの _meta をゲームデータにも保存（作成日が消えないように）
+			p._meta = { ...shareData._meta }
+			save_game(true)
+
 			const code = btoa(unescape(encodeURIComponent(JSON.stringify(shareData))))
 			const c = document.getElementById('modal-content')
+			const _shareNum = shareData._meta.shareCount
 			c.innerHTML = `
-				<div style="text-align:center; padding:20px;">
-					<h2>キャラクター共有コード</h2>
-					<p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:10px;">以下のコードをコピーして他の人に共有してください。</p>
-					<textarea id="share-code-text" readonly style="width:100%;height:80px;background:#000;color:#0f0;border:1px solid #444;font-family:monospace;font-size:0.8rem;">${code}</textarea>
-					<button class="btn-action btn-blue" onclick="closeModal()" style="margin-top:10px;">閉じる</button>
+				<div style="text-align:center; padding:10px 0 6px;">
+					<div style="font-size:1.6rem;margin-bottom:4px;">📤</div>
+					<h2 style="margin:0 0 10px;">キャラクター共有コード</h2>
+				</div>
+				<div style="background:#0a1020;border:1px solid #1e3a5f;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:0.8rem;line-height:1.8;">
+					<div style="display:grid;grid-template-columns:auto 1fr;gap:2px 10px;color:#aaa;">
+						<span style="color:#666;">キャラ名</span>    <span style="color:#eee;font-weight:bold;">${p.name}</span>
+						<span style="color:#666;">職業</span>        <span style="color:#7df;">${p.job} Lv${p.lv}</span>
+						<span style="color:#666;">作成日</span>      <span style="color:#aaa;">${_createdAt}</span>
+						<span style="color:#666;">共有日時</span>    <span style="color:#4ade80;">${_dateStr}</span>
+						<span style="color:#666;">共有回数</span>    <span style="color:#f9a825;">第${_shareNum}回</span>
+					</div>
+				</div>
+				<p style="font-size:0.78rem;color:#888;margin:0 0 6px;">コードをコピーして共有してください</p>
+				<textarea id="share-code-text" readonly
+					style="width:100%;height:72px;background:#000;color:#0f0;border:1px solid #444;
+						font-family:monospace;font-size:0.72rem;padding:6px;box-sizing:border-box;
+						border-radius:4px;resize:none;">${code}</textarea>
+				<div style="display:flex;gap:8px;margin-top:8px;">
+					<button class="btn-action btn-blue" style="flex:1;"
+						onclick="navigator.clipboard&&navigator.clipboard.writeText(document.getElementById('share-code-text').value).then(()=>showMsg('コードをコピーしました！'))">
+						📋 コピー
+					</button>
+					<button class="btn-action btn-red" onclick="closeModal()" style="flex:1;">閉じる</button>
 				</div>`
 			openModalWrapper()
 		}
@@ -5541,6 +6421,11 @@ function winBattle() {
 
 				if (!char.equip) char.equip = { weapon: null, armor: null, acc: null, runes: [] }
 				if (!char.equip.runes) char.equip.runes = []
+				// 受取日時を _meta に記録
+				const _rNow = new Date()
+				const _rDate = _rNow.getFullYear() + '/' + String(_rNow.getMonth()+1).padStart(2,'0') + '/' + String(_rNow.getDate()).padStart(2,'0') + ' ' + String(_rNow.getHours()).padStart(2,'0') + ':' + String(_rNow.getMinutes()).padStart(2,'0')
+				char._meta = char._meta || {}
+				char._meta.receivedAt = _rDate
 				if (char.equip.runes.length > 3) char.equip.runes = char.equip.runes.slice(0, 3)
 
 				const fs = getFinalStats(char)
@@ -5557,8 +6442,25 @@ function winBattle() {
 				}
 				save_game()
 				updateUI()
-				openGuild('manage')
-				showMsg('雇用完了')
+				// インポート成功後に meta 情報を表示
+				const _m = char._meta || {}
+				const _metaHtml = [
+					_m.createdAt  ? `<span style="color:#666;">作成日：</span><span style="color:#aaa;">${_m.createdAt}</span>` : '',
+					_m.sharedAt   ? `<span style="color:#666;">共有日：</span><span style="color:#4ade80;">${_m.sharedAt}</span>` : '',
+					_m.shareCount ? `<span style="color:#666;">共有回数：</span><span style="color:#f9a825;">第${_m.shareCount}回</span>` : '',
+					_m.receivedAt ? `<span style="color:#666;">受取日：</span><span style="color:#60a5fa;">${_m.receivedAt}</span>` : '',
+					_m.gameVer    ? `<span style="color:#666;">Ver：</span><span style="color:#888;">${_m.gameVer}</span>` : '',
+				].filter(Boolean).join('<br>')
+				const c2 = document.getElementById('modal-content')
+				c2.innerHTML = `
+					<div style="text-align:center;padding:12px 0 6px;">
+						<div style="font-size:2rem;margin-bottom:6px;">✅</div>
+						<h2 style="margin:0 0 10px;color:#4ade80;">雇用完了！</h2>
+						<div style="font-size:0.95rem;font-weight:bold;color:#eee;margin-bottom:8px;">${char.name} <span style="color:#888;font-size:0.8rem;">${char.job} Lv${char.lv}</span></div>
+					</div>
+					${_metaHtml ? '<div style="background:#0a0a0a;border:1px solid #222;border-radius:8px;padding:8px 12px;font-size:0.78rem;line-height:2;margin-bottom:12px;">' + _metaHtml + '</div>' : ''}
+					<button onclick="openGuild('manage')" class="btn-action btn-blue" style="width:100%;padding:11px;">← メンバー管理へ</button>`
+				openModalWrapper()
 			} catch (e) {
 				console.error(e)
 				showMsg('無効なコードです')
@@ -5629,6 +6531,7 @@ function winBattle() {
 		}
 
 		function learnSkill(pIdx, lv, sIdx) {
+			if (battle.active) { showMsg('⚠️ 戦闘中はスキルを習得できません'); playSE('error'); return; }
 			const p = gameState.party[pIdx]
 			const jobKey = Object.keys(JOB_DATA).find(k => JOB_DATA[k].name === p.job)
 			const tree = JOB_DATA[jobKey] ? JOB_DATA[jobKey].skills : null
@@ -5636,14 +6539,20 @@ function winBattle() {
 			const s = tree[lv] ? tree[lv][sIdx] : null
 			if (!s) return
 
-			// enhance: 対象スキルのパラメータを上書き（learnedSkillsには記録しない）
+			// enhance: 強化パラメータをキャラ側の skillUpgrades に保存（JOB_DATAは変更しない）
 			if (s.type === 'enhance') {
-				p.learnedSkills[lv] = sIdx  // enhance自体も記録（UI選択状態のため）
-				const targetSkills = tree[s.target_lv]
-				if (targetSkills && targetSkills[s.option]) {
-					Object.assign(targetSkills[s.option], s.upgrade)
+				p.learnedSkills[lv] = sIdx
+				p.skillUpgrades = p.skillUpgrades || {}
+				// choices形式: sIdx が choices内の選択インデックス
+				if (s.choices && s.choices[sIdx]) {
+					const chosen = s.choices[sIdx]
+					p.skillUpgrades[s.target_lv] = { ...chosen.upgrade, _enhanceName: chosen.n }
+					addLog(`【強化】${p.name}がスキルを強化した：${chosen.n}`, 'log-sys')
+				} else {
+					// 旧形式フォールバック
+					p.skillUpgrades[s.target_lv] = { ...s.upgrade, _enhanceName: s.n }
+					addLog(`【強化】${p.name}がスキルを強化した：${s.n}`, 'log-sys')
 				}
-				addLog(`【強化】${p.name}がスキルを強化した：${s.n}`, 'log-sys')
 			} else if (s.type === 'talent') {
 				p.learnedSkills[lv] = sIdx  // talent記録
 				p.talents = p.talents || {}
@@ -5657,7 +6566,114 @@ function winBattle() {
 			openTraining(pIdx)
 		}
 
-		function openSkillEquip(pIdx) {
+		// ─────────────────────────────────────────────
+		// タレント発火ヘルパー
+		// ─────────────────────────────────────────────
+		function fireTalentOnKill(p) {
+			const talents = p.talents || {}
+			const fs = getFinalStats(p)
+			Object.values(talents).forEach(t => {
+				if (!t || t.trigger !== 'on_kill') return
+				const ef = t.effect || {}
+				// HP回復
+				if (ef.healPct && p.hp > 0) {
+					const amt = Math.floor(fs.maxHp * ef.healPct)
+					p.hp = Math.min(fs.maxHp, p.hp + amt)
+					addLog(`✨ ${p.name}「${t.n}」発動！ HP+${amt}`, 'log-sys')
+					const _c = getPartyCardEl(gameState.party.indexOf(p))
+					if (_c) { const {x,y}=getElCenter(_c); fxText(x, y-14, `+${amt}HP`, '#4ade80', '0.85rem') }
+				}
+				// MP回復
+				if (ef.mpRecoverPct && p.hp > 0) {
+					const amt = Math.floor(fs.maxMp * ef.mpRecoverPct)
+					p.mp = Math.min(fs.maxMp, p.mp + amt)
+					addLog(`✨ ${p.name}「${t.n}」発動！ MP+${amt}`, 'log-sys')
+					const _c = getPartyCardEl(gameState.party.indexOf(p))
+					if (_c) { const {x,y}=getElCenter(_c); fxText(x, y-14, `+${amt}MP`, '#38bdf8', '0.85rem') }
+				}
+			})
+		}
+
+		function fireTalentOnHit(p, dmgDealt, attacker) {
+			const talents = p.talents || {}
+			Object.values(talents).forEach(t => {
+				if (!t || t.trigger !== 'on_hit') return
+				const ef = t.effect || {}
+				// カウンター攻撃
+				if (ef.counterChance && attacker && Math.random() < ef.counterChance && p.hp > 0) {
+					const fs = getFinalStats(p)
+					const atkStat = ef.dType === 'magic' ? fs.matk : fs.str
+					const ctrDmg = Math.max(1, Math.floor(atkStat * ef.counterPow))
+					attacker.hp = Math.max(0, attacker.hp - ctrDmg)
+					addLog(`⚡ ${p.name}「${t.n}」カウンター！ ${attacker.name}に${ctrDmg}ダメージ！`, 'log-p-atk')
+					const _ec = getEnemyCardEl(attacker)
+					if (_ec) fxPhysicalAttack(_ec, ctrDmg, false)
+				}
+				// MDEF デバフ付与
+				if (ef.mdefDebuffChance && attacker && Math.random() < ef.mdefDebuffChance && attacker.hp > 0) {
+					const existing = (battle.enemyDebuffs||[]).find(d => d.stat === 'mdef')
+					if (!existing) {
+						(battle.enemyDebuffs = battle.enemyDebuffs || []).push({ stat: 'mdef', val: ef.mdefDebuffVal })
+						addLog(`✨ ${p.name}「${t.n}」発動！ 敵MDEF-${Math.floor(ef.mdefDebuffVal*100)}%！`, 'log-sys')
+					}
+				}
+				// MPダメージ吸収（マナ・シールド: ダメージの一部をMPで肩代わり）
+				if (ef.mpAbsorbPct && p.hp > 0 && p.mp > 0) {
+					const absorbed = Math.min(Math.floor(dmgDealt * ef.mpAbsorbPct), p.mp)
+					if (absorbed > 0) {
+						p.mp -= absorbed
+						p.hp = Math.min(getFinalStats(p).maxHp, p.hp + absorbed)
+						addLog(`💙 ${p.name}「${t.n}」発動！ ${absorbed}ダメージをMPで軽減！`, 'log-sys')
+					}
+				}
+			})
+		}
+
+				const SKILL_RESET_COST = 100000  // スキルリセット費用
+
+		function confirmSkillReset(pIdx) {
+			const c = document.getElementById('modal-content')
+			const p = gameState.party[pIdx]
+			const canAfford = gameState.gold >= SKILL_RESET_COST
+			c.innerHTML = `
+				<div style="text-align:center;padding:10px 0 6px;">
+					<div style="font-size:2rem;margin-bottom:6px;">🔄</div>
+					<h2 style="margin:0 0 8px;color:#f9a825;">スキルツリーリセット</h2>
+					<p style="font-size:0.88rem;color:#aaa;margin:0 0 14px;line-height:1.6;">
+						<b style="color:#eee;">${p.name}</b> のスキルツリーをすべてリセットします。<br>
+						習得したスキル・強化・タレントがすべて失われます。
+					</p>
+					<div style="background:#111;border:1px solid #333;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:0.85rem;">
+						<span style="color:#888;">費用：</span>
+						<span style="color:${canAfford?'var(--gold)':'#f87171'};font-weight:bold;font-size:1rem;">${SKILL_RESET_COST.toLocaleString()}G</span>
+						<span style="color:#666;font-size:0.78rem;margin-left:6px;">(所持: ${gameState.gold.toLocaleString()}G)</span>
+					</div>
+					<div style="display:flex;gap:8px;">
+						<button onclick="openTraining(${pIdx})" class="btn-action btn-red" style="flex:1;padding:11px;">キャンセル</button>
+						<button onclick="executeSkillReset(${pIdx})" class="btn-action btn-blue" style="flex:1;padding:11px;${canAfford?'':'opacity:0.4;pointer-events:none;'}"
+							${canAfford?'':'disabled'}>リセットする</button>
+					</div>
+				</div>`
+			openModalWrapper()
+		}
+
+		function executeSkillReset(pIdx) {
+			const p = gameState.party[pIdx]
+			if (gameState.gold < SKILL_RESET_COST) { showMsg('ゴールドが不足しています'); return }
+			gameState.gold -= SKILL_RESET_COST
+			// スキルデータをすべてクリア
+			p.learnedSkills = {}
+			p.skillUpgrades = {}
+			p.talents = {}
+			// 装備スキルもクリア（習得済みスキルがなくなるため）
+			p.equippedSkills = []
+			save_game()
+			updateUI()
+			addLog(`🔄 ${p.name} のスキルツリーをリセットしました。(${SKILL_RESET_COST.toLocaleString()}G)`, 'log-sys')
+			openTraining(pIdx)
+		}
+
+				function openSkillEquip(pIdx) {
 			const p = gameState.party[pIdx]
 			const jobKey = Object.keys(JOB_DATA).find(k => JOB_DATA[k].name === p.job)
 			if (!jobKey) return
@@ -5668,7 +6684,8 @@ function winBattle() {
 			const available = []
 			for (let lv in p.learnedSkills) {
 				const sIdx = p.learnedSkills[lv]
-				const s = tree[lv] ? tree[lv][sIdx] : null
+				// resolveSkill で強化適用済みスキルを取得
+				const s = resolveSkill(p, Number(lv), sIdx)
 				if (!s) continue
 				if (['passive','enhance','talent'].includes(s.type)) continue
 				available.push({ lv: Number(lv), sIdx, s })
@@ -5756,17 +6773,31 @@ function winBattle() {
 			openSkillEquip(pIdx)
 		}
 
-		// equippedSkillsのエントリからスキルオブジェクトを取得
+		// equippedSkillsのエントリからスキルオブジェクトを取得（強化適用済み）
 		function resolveEquippedSkill(p, entry) {
 			if (!entry) return null
-			// 旧形式: s が保存されていた場合はそのまま使用
-			if (entry.s && entry.s.n) return entry.s
-			// 新形式: lv と sIdx から JOB_DATA を参照
 			const jobKey = Object.keys(JOB_DATA).find(k => JOB_DATA[k].name === p.job)
 			if (!jobKey) return null
 			const skills = JOB_DATA[jobKey].skills
 			if (!skills[entry.lv]) return null
-			return skills[entry.lv][entry.sIdx] || null
+			const base = skills[entry.lv][entry.sIdx]
+			if (!base) return null
+			// skillUpgrades があれば上書きを合成して返す（JOB_DATAは汚染しない）
+			const upg = p.skillUpgrades && p.skillUpgrades[entry.lv]
+			if (upg) return { ...base, ...upg }
+			return base
+		}
+
+		// 任意の lv/sIdx からスキルオブジェクトを取得（強化適用済み）
+		function resolveSkill(p, lv, sIdx) {
+			const jobKey = Object.keys(JOB_DATA).find(k => JOB_DATA[k].name === p.job)
+			if (!jobKey) return null
+			const skills = JOB_DATA[jobKey].skills
+			const base = skills[lv] ? skills[lv][sIdx] : null
+			if (!base) return null
+			const upg = p.skillUpgrades && p.skillUpgrades[lv]
+			if (upg) return { ...base, ...upg }
+			return base
 		}
 
 		function removeEquippedSkill(pIdx, slotIdx) {
@@ -5969,11 +7000,27 @@ function winBattle() {
 			battle.targeting = null; // ターゲット選択中に閉じられた場合のリセット
 			updateBattleUI();
 		}
+		// モーダルのスクロール位置を一時保存するグローバル変数
+		let _modalScrollSave = 0
+
+		function saveModalScroll() {
+			const _mc = document.getElementById('modal-content')
+			const _ml = document.getElementById('modal-layer')
+			_modalScrollSave = (_mc ? _mc.scrollTop : 0) || (_ml ? _ml.scrollTop : 0)
+		}
+
+		function restoreModalScroll() {
+			requestAnimationFrame(() => {
+				const _mc = document.getElementById('modal-content')
+				const _ml = document.getElementById('modal-layer')
+				if (_mc) _mc.scrollTop = _modalScrollSave
+				if (_ml) _ml.scrollTop = _modalScrollSave
+			})
+		}
+
 		function openModalWrapper() {
 			const _ml = document.getElementById('modal-layer')
 			_ml.classList.remove('hidden')
-			// スマホでモーダルを開くたびにスクロール位置をリセット
-			_ml.scrollTop = 0
 		}
 		// 上部トースト通知（モーダルを邪魔しない軽量通知）
 		function showToast(msg, color = '#4ade80', duration = 2000) {
@@ -6001,44 +7048,7 @@ function winBattle() {
 			content.innerHTML = `<div style="text-align:center;padding:20px;"><h2>${msg}</h2><button class="btn-action btn-blue" onclick="closeModal()" style="width:100%; margin-top:20px;">OK</button></div>`
 			layer.classList.remove('hidden')
 		}
-		function openSettingsModal() {
-			const c = document.getElementById('modal-content')
-			const muteLabel = () => window._isMuted ? '🔇 OFF' : '🔊 ON'
-			c.innerHTML = `
-				<h2 style="margin-bottom:16px;">⚙️ 設定</h2>
-				<div style="display:flex; flex-direction:column; gap:10px; max-width:320px; margin:0 auto;">
-
-					<div style="background:#111; border:1px solid #333; border-radius:8px; padding:12px;">
-						<div style="font-size:0.75rem; color:#888; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">サウンド</div>
-						<button class="btn-icon" style="width:100%;" onclick="toggleMute(); document.getElementById('setting-mute-btn').textContent = (window._isMuted ? '🔇 ミュート中' : '🔊 サウンドON'); " id="setting-mute-btn">${window._isMuted ? '🔇 ミュート中' : '🔊 サウンドON'}</button>
-					</div>
-
-					<div style="background:#111; border:1px solid #333; border-radius:8px; padding:12px;">
-						<div style="font-size:0.75rem; color:#888; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">データ</div>
-						<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-							<button class="btn-icon" style="padding:10px;" onclick="closeModal(); openSaveModal();">💾 セーブ</button>
-							<button class="btn-icon" style="padding:10px;" onclick="closeModal(); openLoadModal();">📂 ロード</button>
-						</div>
-					</div>
-
-					<div style="background:#111; border:1px solid #333; border-radius:8px; padding:12px;">
-						<div style="font-size:0.75rem; color:#888; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">情報</div>
-						<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-							<button class="btn-icon" style="padding:10px;" onclick="closeModal(); openHelpModal();">❓ ヘルプ</button>
-							<button class="btn-icon" style="padding:10px;" onclick="closeModal(); openInfoModal();">ℹ️ ゲーム情報</button>
-							<button class="btn-icon" style="padding:10px; grid-column:1/-1; background:linear-gradient(135deg,#0d1a2e,#1a2a3e); border-color:#2a4a6e; color:#7ad;" onclick="openPatchNotesModal();">📋 パッチノート / 更新履歴</button>
-						</div>
-					</div>
-
-					<div style="background:#111; border:1px solid #3a1a1a; border-radius:8px; padding:12px;">
-					<div style="font-size:0.75rem; color:#888; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">危険ゾーン</div>
-					<button class="btn-action btn-red" style="width:100%; opacity:0.8;" onclick="resetGame_confirm1()">🗑️ ゲームをリセット</button>
-				</div>
-
-				<button onclick="closeModal()" class="btn-action btn-blue" style="margin-top:4px;">閉じる</button>
-			</div>`
-			openModalWrapper()
-		}
+		function openSettingsModal() { toggleHbMenu() }
 
 			function resetGame_confirm1() {
 			const c = document.getElementById('modal-content')
@@ -6049,7 +7059,7 @@ function winBattle() {
 					<p style="color:#aaa; font-size:0.85rem; margin:0;">セーブデータ・パーティ・所持品・ゴールドがすべて消去されます。</p>
 				</div>
 				<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-					<button onclick="closeModal(); openSettingsModal();" class="btn-action btn-blue">キャンセル</button>
+					<button onclick="closeModal(); toggleHbMenu();" class="btn-action btn-blue">キャンセル</button>
 					<button onclick="resetGame_confirm2()" class="btn-action btn-red">次へ →</button>
 				</div>`
 			openModalWrapper()
@@ -6063,7 +7073,7 @@ function winBattle() {
 					<p style="color:#888; font-size:0.82rem; margin:0;">この操作は絶対に元に戻せません。</p>
 				</div>
 				<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-					<button onclick="closeModal(); openSettingsModal();" class="btn-action btn-blue" style="font-size:0.9rem;">やめる</button>
+					<button onclick="closeModal(); toggleHbMenu();" class="btn-action btn-blue" style="font-size:0.9rem;">やめる</button>
 					<button onclick="resetGame_execute()" class="btn-action btn-red" style="font-size:0.9rem; font-weight:bold;">🗑️ 全削除する</button>
 				</div>`
 		}
@@ -6138,7 +7148,30 @@ function winBattle() {
 		// 鍛冶屋モーダル
 		// ═══════════════════════════════════════════════════════════════
 		function openSmithModal(filterType = 'all') {
-			if (!gameState.bossDefeated.includes(20)) { showMsg('20Fボス撃破後に解放されます。'); return }
+			if (!gameState.bossDefeated.includes(20)) {
+				const c = document.getElementById('modal-content')
+				c.innerHTML = `
+					<div style="text-align:center;padding:16px 0 8px;">
+						<div style="font-size:2.5rem;margin-bottom:8px;">🔒</div>
+						<h2 style="color:#f9a825;margin:0 0 8px;">🔨 鍛冶屋</h2>
+						<p style="color:#aaa;font-size:0.9rem;margin:0 0 16px;line-height:1.6;">
+							現在は施錠されています。<br>
+							<b style="color:#f9a825;">第20階層のボス</b>を討伐すると<br>鍛冶屋が開店します。
+						</p>
+						<div style="background:#111;border:1px solid #333;border-radius:8px;padding:10px 14px;margin-bottom:16px;display:inline-block;text-align:left;">
+							<div style="font-size:0.8rem;color:#888;margin-bottom:6px;">解放後にできること</div>
+							<div style="font-size:0.82rem;color:#ccc;line-height:1.7;">
+								✨ 装備に<b style="color:#f9a825;">エンチャント</b>を付与<br>
+								🎲 <b style="color:#c084fc;">サブステータス</b>を再抽選<br>
+								🔄 エンチャントのリロール
+							</div>
+						</div>
+					</div>
+					<button onclick="closeModal()" class="btn-action btn-red" style="width:100%;padding:11px;">閉じる</button>
+				`
+				openModalWrapper()
+				return
+			}
 			const c = document.getElementById('modal-content')
 
 			const tierLabel = tier => {
@@ -6232,7 +7265,7 @@ function winBattle() {
 								if (rc2 === 0) return ''
 								const cr2 = gameState.gold >= rc2
 								const sc2 = getSubCount(item.rarityLabel)
-								const subStr2 = (item.subEffects||[]).map(s => s.n + (s.k==='cri' ? '+'+(s.v*100).toFixed(0)+'%' : '+'+s.v)).join(' / ') || '—'
+								const subStr2 = (item.subEffects||[]).map(s => _fmtSub(s)).join(' / ') || '—'
 								return '<div style="margin-top:8px;padding-top:8px;border-top:1px solid #1e1e1e;">'
 									+ '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">'
 									+ '<div style="font-size:0.72rem;">'
@@ -6468,7 +7501,55 @@ function winBattle() {
 		// ─── パッチノート ───────────────────────────────────────────────
 		const PATCH_NOTES = [
 			{
-				ver: 'Ver 2.30', date: '2026', label: '最新', color: '#e060ff',
+				ver: 'Ver 2.5', date: '2026.03.15', label: '最新', color: '#e060ff',
+				sections: [
+					{ title: '🎮 UI・メニュー改善', items: [
+						'デイリーボーナスをメニュー内に統合 — 連続ログイン日数・7日カレンダー・受取状態をメニューから直接確認可能に',
+						'手動セーブボタンをヘッダーからメニュー内へ移動',
+						'メニューボタンに赤丸バッジを追加 — 未読お知らせ・未受け取りデイリーがある場合に通知',
+					]},
+					{ title: '🔊 サウンドシステム刷新', items: [
+						'BGMと効果音を独立して ON/OFF 切替可能に（メニュー → サウンドから設定）',
+						'設定はブラウザに保存され次回起動時にも反映',
+						'新効果音追加：レジェンダリー装備入手（豪華ファンファーレ）',
+						'新効果音追加：鍛冶屋解放（解禁チャイム）',
+						'新効果音追加：デイリーボーナス受け取り（コイン音）',
+					]},
+					{ title: '⚔️ 戦闘システム改善', items: [
+						'死亡キャラクターへの経験値付与を廃止 — 生存キャラのみ経験値を獲得',
+						'リザレクション（蘇生スキル）を死亡者のみ対象に変更 — revive:trueフラグによる正確な制御',
+						'単体サポートスキルのターゲット選択を実装 — ホーリー・シールド・ブレス・ウェポン・サンクチュアリ・アンチ・マジック・マナ・ポーション・ディバイン・シールドなどが使用対象を自由に選択可能',
+						'自分専用スキル（オーラ・オブ・アシュラ・マナ・フォーカス・シャドウ・ステップ・マナ・シールド）はself:trueフラグで自動的に自分にのみ適用',
+					]},
+					{ title: '📊 新サブステータス・ルーン属性', items: [
+						'武器・防具・アクセサリのサブステータスに7種追加：G獲得+（ゴールド獲得上昇）、EXP+（経験値獲得上昇）、会心威力+（会心ダメージ倍率上昇）、物理貫通+（物理防御無視）、特殊貫通+（特殊防御無視）、ダメージ+（最終ダメージ補正）、MP消費-（スキルMP消費軽減）、回避+（回避率直接加算・上限無視）',
+						'ルーン新属性4種追加：財のルーン（ゴールド獲得）・智のルーン（EXP獲得）・刃のルーン（ダメージ増加）・影のルーン（回避率）',
+						'会心威力・貫通・ダメージボーナスをダメージ計算式に組み込み',
+						'MP消費軽減をスキル実行・MP残量チェック両方に適用',
+						'回避ボーナスは上限35%を超えた分も有効（上限無視の直接加算）',
+						'ゴールド獲得ボーナスは生存パーティ平均値で計算、EXPボーナスはキャラ個別に適用',
+					]},
+					{ title: '🛒 ショップ改善', items: [
+						'各アイテムに所持数バッジを追加 — カバン内の保有数をリアルタイムで確認可能（所持数0のときは「未所持」表示）',
+						'まとめ買い機能を追加 — ±1/±5ボタンと数量入力で一度に複数購入可能。所持金・カバン空き枠から最大購入数を自動計算',
+						'購入直後に装備誘導モーダルを表示 — 「すぐに装備する」「ショップに戻る」「カバンへ」ボタンで購入後の操作をスムーズに',
+						'ショップ↔カバン間のナビゲーションボタンを追加 — ショップ下部に「カバンを開く」、カバン内に「ショップへ」ボタンを配置',
+					]},
+					{ title: '🐛 バグ修正', items: [
+						'スキルツリーのスキルカードがクリックできない問題を修正 — cardStyleのテンプレートリテラル改行がonclick属性を破壊していた根本原因を解消',
+						'鍛冶屋・冒険者ギルド・各モーダルの閉じるボタンが動作しない問題を修正 — openSmithModal内の \\` (バックスラッシュ+バッククォート) がテンプレートリテラルを正しく終了させず、後続の全関数定義を文字列に飲み込んでいた根本原因を解消',
+						'上記と同原因で発生していた「cat is not defined」「Cannot access tutState before initialization」エラーを修正',
+						'カバン画面のゴミ箱一括削除ボタン・拡張ボタンが動作しない問題を修正 — c.innerHTML のテンプレートリテラル内でネストしたバッククォートを使用していた箇所を変数化',
+						'まとめ買いダイアログで window._bulkItemPrice 設定に innerHTML 内の script タグを使用していた問題を修正 — スクリプト外への代入に変更',
+						'蘇生スキルの判定をスキル名マッチからフラグ参照に変更 — スキル名が変化しても蘇生/回復の振り分けが正しく動作するよう修正（「パーフェクト・リザレクション」等の強化後スキルも対応）',
+						'rerollSubEffects関数で isPct 対応の三項演算子が途中で切れていたコードを修正',
+						'updateUIのメニューバッジ更新が二重定義されていた問題を修正',
+						'executeDailyBonus で playSE が二重呼び出しされていた問題を修正',
+					]},
+				]
+			},
+			{
+				ver: 'Ver 2.30', date: '2026', label: '', color: '#60a5fa',
 				sections: [
 					{ title: '演出・ビジュアルエフェクト強化', items: [
 						'パーティクルシステム全面実装 — 物理攻撃（スラッシュ）・魔法（魔法陣バースト）・弓（矢エフェクト）・回復（緑キラキラ）・状態異常（毒/出血/凍結/気絶）すべてに専用エフェクト',
@@ -6633,7 +7714,7 @@ function winBattle() {
 					${contentHtml}
 				</div>
 
-				<button onclick="openSettingsModal()" class="btn-action btn-blue" style="width:100%;margin-top:12px;padding:10px;">
+				<button onclick="closeModal();toggleHbMenu()" class="btn-action btn-blue" style="width:100%;margin-top:12px;padding:10px;">
 					← 設定に戻る
 				</button>
 			`
@@ -6929,7 +8010,6 @@ function winBattle() {
 		}
 		function openShopList(cat, justBought = false) {
 			const c = document.getElementById('modal-content')
-			// 到達フロアから販売可能なTierを計算
 			const maxTier = Math.min(5, Math.floor((gameState.maxFloor - 1) / 10) + 1);
 			if (!gameState.shopFilters) gameState.shopFilters = {}
 			if (!gameState.shopSorts)   gameState.shopSorts = {}
@@ -6938,7 +8018,7 @@ function winBattle() {
 
 			let guideHtml = ''
 			if (justBought) {
-				guideHtml = `<div style="background:rgba(76, 175, 80, 0.2); border:1px solid var(--accent-green); color:#fff; padding:10px; border-radius:6px; margin-bottom:12px; font-size:0.9rem;">✅ 購入しました。カバンから装備できます。</div>`
+				guideHtml = `<div style="background:rgba(76,175,80,0.2);border:1px solid var(--accent-green);color:#fff;padding:10px;border-radius:6px;margin-bottom:12px;font-size:0.9rem;">✅ 購入しました。カバンから装備できます。</div>`
 			}
 
 			// ─── カテゴリタブ ───
@@ -7019,6 +8099,10 @@ function winBattle() {
 				const c = map[key]||'#aaa'
 				return `<span style="font-size:0.61rem;padding:1px 5px;background:${c}22;border:1px solid ${c}88;border-radius:3px;color:${c};">${key}</span>`
 			}
+
+			const maxCap = getMaxCapacity()
+			const invFree = maxCap - gameState.inventory.length
+
 			const itemCards = items.map(i => {
 				const canAfford = gameState.gold >= i.p
 				const typeBdg = itemTypeBadge(i)
@@ -7028,18 +8112,35 @@ function winBattle() {
 					cat === 'weapon' ? rangeIcon(i.range || 'short') : '',
 					typeBdg
 				].filter(Boolean).join(' ')
+				// カバン内の同idアイテムの所持数
+				const ownedCount = gameState.inventory.filter(inv => inv.id === i.id).length
+				const ownedBadge = ownedCount > 0
+					? `<span style="font-size:0.68rem;padding:1px 6px;background:rgba(74,222,128,0.15);border:1px solid #4ade8088;border-radius:8px;color:#4ade80;">所持 ${ownedCount}</span>`
+					: `<span style="font-size:0.68rem;color:#444;">未所持</span>`
+				// まとめ買い最大数
+				const maxBuy = canAfford ? Math.min(99, Math.floor(gameState.gold / i.p), invFree) : 0
+				const bulkBtn = maxBuy > 1
+					? `<button class="btn-icon" style="padding:6px 8px; font-size:0.75rem; background:#1a2a1a; border-color:#4a7a4a; color:#7df; white-space:nowrap;"
+						onclick="openBulkBuyDialog('${cat}','${i.id}',${maxBuy})">まとめ買い</button>`
+					: ''
 				return `<div style="background:${canAfford ? '#1a1a1a' : '#111'}; padding:10px 12px; border-radius:8px;
 					border:1px solid ${canAfford ? '#333' : '#1e1e1e'};
 					display:flex; justify-content:space-between; align-items:center; gap:8px;">
 					<div style="flex:1; min-width:0;">
 						${topMeta ? `<div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap; margin-bottom:4px;">${topMeta}</div>` : ''}
-						<b style="font-size:0.92rem; color:${canAfford ? '#eee' : '#555'};">${i.n}</b>
+						<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:2px;">
+							<b style="font-size:0.92rem; color:${canAfford ? '#eee' : '#555'};">${i.n}</b>
+							${ownedBadge}
+						</div>
 						<div style="font-size:0.77rem; color:#666; margin-top:2px;">${i.d}</div>
 					</div>
 					<div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0;">
 						<span style="color:${canAfford ? 'var(--gold)' : '#555'}; font-weight:bold; font-size:0.88rem; white-space:nowrap;">${i.p.toLocaleString()}G</span>
-						<button class="btn-icon btn-green" style="padding:6px 12px; font-size:0.8rem; ${canAfford ? '' : 'opacity:0.3; cursor:not-allowed;'}"
-							onclick="${canAfford ? `buyItem('${cat}','${i.id}')` : ''}">${canAfford ? '購入' : '不足'}</button>
+						<div style="display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end;">
+							<button class="btn-icon btn-green" style="padding:6px 12px; font-size:0.8rem; ${canAfford && invFree > 0 ? '' : 'opacity:0.3; cursor:not-allowed;'}"
+								onclick="${canAfford && invFree > 0 ? `buyItem('${cat}','${i.id}')` : ''}">${canAfford && invFree > 0 ? '購入' : invFree <= 0 ? '満杯' : '不足'}</button>
+							${bulkBtn}
+						</div>
 					</div>
 				</div>`
 			}).join('')
@@ -7052,10 +8153,13 @@ function winBattle() {
 				<div style="font-size:0.72rem; color:#555; margin-bottom:8px;">販売上限 Tier${maxTier}（最深 ${gameState.maxFloor}F 到達）</div>
 				${catTabHtml}
 				${guideHtml}${filterHtml}${sortHtml}
-				<div style="display:grid; gap:7px; max-height:48vh; overflow-y:auto; padding-right:2px;">
+				<div style="display:grid; gap:7px; max-height:46vh; overflow-y:auto; padding-right:2px;">
 					${itemCards || '<p style="text-align:center; color:#555; padding:20px;">販売中のアイテムがありません</p>'}
 				</div>
-				<button onclick="closeModal()" class="btn-action btn-red" style="margin-top:12px; width:100%;">閉じる</button>`
+				<div style="display:flex; gap:8px; margin-top:10px;">
+					<button onclick="openInventory()" class="btn-action btn-blue" style="flex:1; padding:10px; font-size:0.85rem;">👜 カバンを開く</button>
+					<button onclick="closeModal()" class="btn-action btn-red" style="flex:1; padding:10px; font-size:0.85rem;">閉じる</button>
+				</div>`
 			openModalWrapper()
 		}
 		// チェック済みインデックスを保持するSet（売却画面ライフタイム）
@@ -7325,30 +8429,120 @@ function winBattle() {
 			openShopSell(`✅ ${count}件を一括売却しました（合計 ${total.toLocaleString()}G）`, filterType, sortType)
 		}
 
-				function buyItem(cat, id) {
+		function buyItem(cat, id, qty = 1, fromBulk = false) {
 			const itemData = SHOP_ITEMS[cat].find(i => i.id === id)
-			if (!itemData) {
-				console.error('Item not found:', id)
-				return
-			}
+			if (!itemData) return
 			const maxCap = getMaxCapacity()
-			if (gameState.inventory.length >= maxCap) {
-				showMsg('カバンが一杯です。')
-				playSE('error')
-				return
-			}
-			if (gameState.gold >= itemData.p) {
-				gameState.gold -= itemData.p
-				// ショップ購入はコモン固定（レア/レジェンダリーはドロップ専用）
-				let newItem = applyShopRarity({ ...itemData, type: cat, locked: false })
+			const available = maxCap - gameState.inventory.length
+			const actualQty = Math.min(qty, available)
+			if (actualQty <= 0) { showMsg('カバンが一杯です。'); playSE('error'); return }
+			const totalCost = itemData.p * actualQty
+			if (gameState.gold < totalCost) { showMsg('お金が足りません。'); playSE('error'); return }
+
+			gameState.gold -= totalCost
+			const boughtItems = []
+			for (let i = 0; i < actualQty; i++) {
+				const newItem = applyShopRarity({ ...itemData, type: cat, locked: false })
 				gameState.inventory.push(newItem)
-				addLog(`${newItem.n}を購入しました。`, 'log-sys')
-				openShopList(cat, true)
-				updateUI()
-			} else {
-				showMsg('お金が足りません。')
-				playSE('error')
+				boughtItems.push(newItem)
 			}
+			addLog(`${itemData.n} ×${actualQty} を購入しました（${totalCost.toLocaleString()}G）。`, 'log-sys')
+			save_game(true)
+			updateUI()
+
+			// 1個購入かつ装備可能なら装備誘導モーダル
+			if (!fromBulk && actualQty === 1 && cat !== 'item') {
+				const newIdx = gameState.inventory.length - 1
+				const c = document.getElementById('modal-content')
+				const item = boughtItems[0]
+				const nameColor = item.rarityColor || '#eee'
+				c.innerHTML = `
+					<div style="text-align:center; padding:14px 0 8px;">
+						<div style="font-size:1.5rem; margin-bottom:6px;">🛍️</div>
+						<h2 style="margin:0 0 4px; color:#4ade80;">購入完了！</h2>
+						<div style="font-size:0.85rem; color:#888; margin-bottom:14px;">${totalCost.toLocaleString()}G を支払いました</div>
+					</div>
+					<div style="background:#0a0f0a; border:1px solid #1a3a1a; border-radius:8px; padding:12px 14px; margin-bottom:14px;">
+						<div style="font-weight:bold; color:${nameColor}; font-size:0.95rem; margin-bottom:4px;">${getItemDisplayName(item)}</div>
+						<div style="font-size:0.8rem; color:#888;">${item.d}</div>
+						${item.subEffects && item.subEffects.length > 0 ? `<div style="font-size:0.75rem; color:var(--accent-blue); margin-top:4px;">◆ ${item.subEffects.map(e => _fmtSub(e)).join(' / ')}</div>` : ''}
+					</div>
+					<div style="display:flex; flex-direction:column; gap:8px;">
+						<button onclick="closeModal(); setTimeout(()=>selectTarget(${newIdx}), 100)" class="btn-action btn-green" style="padding:12px; font-size:0.95rem;">⚔️ すぐに装備する</button>
+						<div style="display:flex; gap:8px;">
+							<button onclick="openShopList('${cat}')" class="btn-action btn-blue" style="flex:1; padding:10px; font-size:0.85rem;">🛒 ショップに戻る</button>
+							<button onclick="openInventory()" class="btn-action" style="flex:1; padding:10px; font-size:0.85rem; background:#222; border-color:#555;">👜 カバンへ</button>
+						</div>
+						<button onclick="closeModal()" class="btn-action btn-red" style="padding:10px; font-size:0.85rem;">閉じる</button>
+					</div>`
+				openModalWrapper()
+			} else {
+				openShopList(cat, true)
+			}
+		}
+		// まとめ買いダイアログ
+		function openBulkBuyDialog(cat, id, maxQty) {
+			const itemData = SHOP_ITEMS[cat].find(i => i.id === id)
+			if (!itemData) return
+			const c = document.getElementById('modal-content')
+			c.innerHTML = `
+				<div style="text-align:center; padding:8px 0 12px;">
+					<h2 style="margin:0 0 4px;">まとめ買い</h2>
+					<div style="font-size:0.88rem; color:#aaa; margin-bottom:14px;">${itemData.n}</div>
+				</div>
+				<div style="background:#0a0a0a; border:1px solid #222; border-radius:8px; padding:12px 14px; margin-bottom:14px;">
+					<div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.85rem; color:#aaa;">
+						<span>単価</span><span style="color:var(--gold);">${itemData.p.toLocaleString()}G</span>
+					</div>
+					<div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.85rem; color:#aaa;">
+						<span>所持金</span><span style="color:var(--gold);">${gameState.gold.toLocaleString()}G</span>
+					</div>
+					<div style="display:flex; justify-content:space-between; font-size:0.85rem; color:#aaa;">
+						<span>最大購入可能</span><span style="color:#eee;">${maxQty}個</span>
+					</div>
+				</div>
+				<div style="margin-bottom:14px;">
+					<div style="font-size:0.82rem; color:#aaa; margin-bottom:6px;">購入数</div>
+					<div style="display:flex; align-items:center; gap:8px;">
+						<button onclick="_bulkQtyChange(-5)" style="padding:6px 12px; background:#1a1a1a; border:1px solid #444; color:#eee; border-radius:6px; cursor:pointer; font-size:0.9rem;">-5</button>
+						<button onclick="_bulkQtyChange(-1)" style="padding:6px 12px; background:#1a1a1a; border:1px solid #444; color:#eee; border-radius:6px; cursor:pointer; font-size:0.9rem;">-1</button>
+						<input id="bulk-qty" type="number" value="1" min="1" max="${maxQty}"
+							style="flex:1; text-align:center; background:#0a0a0a; border:1px solid #444; color:#fff; padding:8px; border-radius:6px; font-size:1rem;"
+							oninput="_bulkQtyUpdate(${maxQty})">
+						<button onclick="_bulkQtyChange(1)" style="padding:6px 12px; background:#1a1a1a; border:1px solid #444; color:#eee; border-radius:6px; cursor:pointer; font-size:0.9rem;">+1</button>
+						<button onclick="_bulkQtyChange(5)" style="padding:6px 12px; background:#1a1a1a; border:1px solid #444; color:#eee; border-radius:6px; cursor:pointer; font-size:0.9rem;">+5</button>
+					</div>
+					<div id="bulk-total" style="text-align:right; font-size:0.82rem; color:var(--gold); margin-top:8px; font-weight:bold;">合計: ${itemData.p.toLocaleString()}G</div>
+				</div>
+				<div style="display:flex; gap:8px;">
+					<button onclick="openShopList('${cat}')" class="btn-action" style="flex:1; padding:12px; font-size:0.9rem; background:#222; border-color:#555;">戻る</button>
+					<button onclick="_execBulkBuy('${cat}','${id}',${maxQty})" class="btn-action btn-green" style="flex:2; padding:12px; font-size:0.95rem;">購入する</button>
+				</div>`
+			window._bulkItemPrice = itemData.p
+			window._bulkMaxQty = maxQty
+			openModalWrapper()
+		}
+		function _bulkQtyChange(delta) {
+			const el = document.getElementById('bulk-qty')
+			if (!el) return
+			const max = window._bulkMaxQty || 99
+			el.value = Math.max(1, Math.min(max, (parseInt(el.value)||1) + delta))
+			_bulkQtyUpdate(max)
+		}
+		function _bulkQtyUpdate(max) {
+			const el = document.getElementById('bulk-qty')
+			const totalEl = document.getElementById('bulk-total')
+			if (!el || !totalEl) return
+			const qty = Math.max(1, Math.min(max, parseInt(el.value)||1))
+			el.value = qty
+			const price = window._bulkItemPrice || 0
+			totalEl.textContent = `合計: ${(price * qty).toLocaleString()}G`
+			totalEl.style.color = gameState.gold >= price * qty ? 'var(--gold)' : '#f87171'
+		}
+		function _execBulkBuy(cat, id, maxQty) {
+			const el = document.getElementById('bulk-qty')
+			const qty = Math.max(1, Math.min(maxQty, parseInt(el ? el.value : 1)||1))
+			buyItem(cat, id, qty, true)
 		}
 		function toggleLock(idx) {
 			const item = gameState.inventory[idx]
@@ -7433,6 +8627,7 @@ function winBattle() {
 			openInventory()
 		}
 		function openInventory(filterType = 'all', sortType = 'default') {
+			saveModalScroll()
 			if (tutState.active) {
 				tutState._inventoryOpen = true
 				// step8: カバンを開いたら最初の装備するボタンをハイライト
@@ -7519,7 +8714,7 @@ function winBattle() {
 
 			// ─── 倉庫ボタン ───
 			const storageBtn = inTown
-				? `<button onclick="openGuildWarehouse()" class="btn-action btn-purple" style="margin-bottom:12px; width:100%;">🏦 ギルド倉庫へ (${gameState.guildWarehouse.length}/${gameState.guildWarehouseCap})</button>`
+				? `<button onclick="openGuildWarehouse()" class="btn-action btn-purple" style="margin-bottom:8px; width:100%; padding:8px 6px; font-size:0.8rem;">🏦 ギルド倉庫へ (${gameState.guildWarehouse.length}/${gameState.guildWarehouseCap})</button>`
 				: ''
 
 			// ─── 容量バー（内訳をキャラ別に表示）───
@@ -7543,37 +8738,41 @@ function winBattle() {
 				: ''
 
 			// ─── コンパクト容量バー ───
+			const _expandBtn = inTown ? '<button onclick="openBagExpandModal()" style="font-size:0.7rem;padding:2px 8px;background:#1a1a2e;border:1px solid #445;color:#9af;border-radius:4px;cursor:pointer;white-space:nowrap;">🔧 拡張</button>' : ''
 			const capBar = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:6px 10px;background:#0d0d0d;border:1px solid #222;border-radius:6px;">
 				<span style="font-size:0.75rem;color:#888;white-space:nowrap;">📦 ${gameState.inventory.length}/${maxCap}</span>
 				<div style="flex:1;background:#222;border-radius:3px;height:6px;">
 					<div style="width:${pct}%;background:${barColor};height:6px;border-radius:3px;transition:width 0.3s;"></div>
 				</div>
 				<span style="font-size:0.7rem;color:${barColor};">${pct}%</span>
-				${inTown ? `<button onclick="openBagExpandModal()" style="font-size:0.7rem;padding:2px 8px;background:#1a1a2e;border:1px solid #445;color:#9af;border-radius:4px;cursor:pointer;white-space:nowrap;">🔧 拡張</button>` : ''}
+				${_expandBtn}
 			</div>`
 			const bagExpandHtml = ''  // 拡張はボタン→モーダルに移行
 
 			// ゴミ箱アイテムの数
 			const trashCount = gameState.inventory.filter(i => i.trash).length
+			const _trashAllBtn = trashCount > 0 ? '<button onclick="deleteAllTrash()" style="padding:8px 8px;font-size:0.8rem;background:rgba(239,68,68,0.15);border:1px solid #ef4444;color:#ef4444;border-radius:6px;cursor:pointer;" title="ゴミ箱を一括削除">🗑️×全</button>' : ''
 			const actionBarHtml = inTown ? `
 				<div style="display:flex;gap:6px;margin-bottom:8px;">
 					<button onclick="openShopSellFromBag()" style="flex:1;padding:8px 6px;font-size:0.8rem;background:linear-gradient(135deg,#7a3600,#b45309);border:1px solid #d97706;color:#fff;border-radius:6px;cursor:pointer;">💰 売却</button>
 					<button onclick="openInventory('trash','${sortType}')" style="flex:1;padding:8px 6px;font-size:0.8rem;background:${filterType==='trash'?'rgba(248,113,113,0.2)':'#111'};border:1px solid ${filterType==='trash'?'#f87171':'#444'};color:${filterType==='trash'?'#f87171':'#aaa'};border-radius:6px;cursor:pointer;">🗑️ ゴミ箱 <span style="background:#333;border-radius:10px;padding:0 5px;font-size:0.7rem;">${trashCount}</span></button>
-					${trashCount > 0 ? `<button onclick="deleteAllTrash()" style="padding:8px 8px;font-size:0.8rem;background:rgba(239,68,68,0.15);border:1px solid #ef4444;color:#ef4444;border-radius:6px;cursor:pointer;" title="ゴミ箱を一括削除">🗑️×全</button>` : ''}
+					${_trashAllBtn}
 				</div>` : ''
 			// filterType===trash の場合は trash=true のみ表示
 			if (filterType === 'trash') {
 				filtered = gameState.inventory.map((item, idx) => ({ item, idx })).filter(({ item }) => item.trash)
 			}
+			const _shopBtn = inTown ? '<button onclick="openShopMenu()" style="width:100%;padding:8px 6px;font-size:0.8rem;background:linear-gradient(135deg,#0a2a3a,#1a4a6a);border:1px solid #3a7aaa;color:#7df;border-radius:6px;cursor:pointer;margin-bottom:8px;">🛒 ショップへ</button>' : ''
 			c.innerHTML = `
 				<h2 style="margin-bottom:6px;">カバン</h2>
 				${capBar}
 				${inTown ? actionBarHtml : ''}
+				${_shopBtn}
 				${storageBtn}
 				${tabHtml}
 				${sortHtml}
-				<div id="inv-list" style="display:flex;flex-direction:column;gap:8px; max-height:44vh; overflow-y:auto; padding-right:4px;"></div>
-				<button onclick="closeModal()" class="btn-action btn-red" style="margin-top:10px; width:100%;">閉じる</button>`
+				<div id="inv-list" style="display:flex;flex-direction:column;gap:8px; max-height:38vh; overflow-y:auto; padding-right:4px;"></div>
+				<button onclick="closeModal()" class="btn-action btn-red" style="margin-top:8px; width:100%; flex-shrink:0;">閉じる</button>`
 
 			const list = document.getElementById('inv-list')
 			if (filtered.length === 0) {
@@ -7588,7 +8787,7 @@ function winBattle() {
 					const nameColor = item.rarityColor || '#eee'
 					let subText = ''
 					if (item.subEffects && item.subEffects.length > 0) {
-						subText = `<div style="font-size:0.75rem; color:var(--accent-blue); margin:3px 0;">◆ ${item.subEffects.map(e => e.n + '+' + (e.k === 'cri' ? (e.v*100)+'%' : e.v)).join(' / ')}</div>`
+						subText = `<div style="font-size:0.75rem; color:var(--accent-blue); margin:3px 0;">◆ ${item.subEffects.map(e => _fmtSub(e)).join(' / ')}</div>`
 					}
 					const tierHtml = item.tier ? `<div style="margin-top:2px;">${tierLabel(item.tier)}</div>` : ''
 					const depositBtn = inTown && item.type !== 'item'
@@ -7631,6 +8830,7 @@ function winBattle() {
 				})
 			}
 			openModalWrapper()
+			restoreModalScroll()
 		}
 		// ─── ギルド倉庫 ───────────────────────────────────────────────
 		function openGuildWarehouse(filter = 'all') {
@@ -8658,6 +9858,14 @@ function winBattle() {
 		// ═══════════════════════════════════════════════════════
 		const NOTICE_DATA = [
 			{
+				id: 'notice_005',
+				date: '2026.03.15',
+				tag: '🎮 アップデート',
+				tagColor: '#e060ff',
+				title: 'ver 2.5 公開！',
+				body: `メニューUI刷新・BGM/SE独立ミュート・新SE追加・新サブステータス8種＆ルーン属性4種・蘇生スキル修正・単体サポートスキルのターゲット選択・死亡キャラEXP廃止・スキルツリークリック不具合修正など多数のアップデートを実施しました。メニュー → 更新履歴 から詳細をご確認ください。`,
+			},
+			{
 				id: 'notice_004',
 				date: '2026.03.14',
 				tag: '🎮 アップデート',
@@ -8700,6 +9908,11 @@ function winBattle() {
 				const read = getReadNotices()
 				if (!read.includes(id)) { read.push(id); localStorage.setItem('abyss_read_notices', JSON.stringify(read)) }
 			} catch {}
+			// バッジを即時更新
+			const _mb = document.getElementById('hb-menu-badge')
+			if (_mb) _mb.style.display = (hasUnreadNotices() || hasDailyBonus()) ? 'block' : 'none'
+			const _hbB = document.getElementById('hb-notice-badge')
+			if (_hbB) _hbB.style.display = hasUnreadNotices() ? 'inline' : 'none'
 		}
 		function hasUnreadNotices() {
 			const read = getReadNotices()
@@ -9039,9 +10252,16 @@ function winBattle() {
 		function returnToTown() {
 			playBGM('town');
 			document.getElementById('town-ui').classList.remove('hidden')
-			// 鍛冶屋：20Fボス討伐後に解放
+			// 鍛冶屋：20Fボス討伐前はグレーアウト、討伐後は通常表示
 			const _smithBtn = document.getElementById('town-smith-btn')
-			if (_smithBtn) _smithBtn.style.display = gameState.bossDefeated.includes(20) ? '' : 'none'
+			if (_smithBtn) {
+				const _smithUnlocked = gameState.bossDefeated.includes(20)
+				_smithBtn.style.background = _smithUnlocked ? 'linear-gradient(135deg,#3a2200,#7a4800)' : '#1a1a1a'
+				_smithBtn.style.borderColor = _smithUnlocked ? '#c0760a' : '#444'
+				_smithBtn.style.color       = _smithUnlocked ? '#f9a825' : '#555'
+				_smithBtn.style.cursor      = _smithUnlocked ? 'pointer' : 'default'
+				_smithBtn.title = _smithUnlocked ? '' : '🔒 20階層ボス討伐で解放'
+			}
 			document.getElementById('dungeon-ui').classList.add('hidden')
 			document.getElementById('battle-view').classList.add('hidden')
 			_afHeaderShow(false)
@@ -9466,7 +10686,7 @@ function winBattle() {
 
 				function updateUI() {
 			document.getElementById('h-gold').innerText = gameState.gold + (gameState.inDungeon ? gameState.tempGold : 0)
-			document.getElementById('h-max-floor').innerText = gameState.maxFloor + 'F'
+			const _mf = document.getElementById('h-max-floor'); if(_mf) _mf.innerText = gameState.maxFloor + 'F'
 			document.getElementById('h-cap').innerText = gameState.inventory.length
 			document.getElementById('h-max-cap').innerText = getMaxCapacity()
 			// ヘッダーのLvボーナス表示
@@ -9504,9 +10724,30 @@ function winBattle() {
                             <div style="font-size:0.7rem; color:#666; display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;"><span style="color:${wC}">⚔️:${wN}</span><span style="color:${aC}">🛡️:${aN}</span><span style="color:${acC}">💍:${acN}</span><span>🔷:${(p.equip.runes || []).length}</span></div></div>`
 				})
 				.join('')
+			// デイリーバッジ更新
+			const _dBadge = document.getElementById('daily-badge')
+			if (_dBadge) _dBadge.style.display = hasDailyBonus() ? 'block' : 'none'
 			// お知らせバッジ更新
 			const _badge = document.getElementById('notice-badge')
 			if (_badge) _badge.style.display = hasUnreadNotices() ? 'block' : 'none'
+			const _hbBadge = document.getElementById('hb-notice-badge')
+			if (_hbBadge) _hbBadge.style.display = hasUnreadNotices() ? 'inline' : 'none'
+			// メニューボタン赤丸バッジ（未読お知らせ OR 未受け取りデイリー）
+			const _menuBadge = document.getElementById('hb-menu-badge')
+			if (_menuBadge) _menuBadge.style.display = (hasUnreadNotices() || hasDailyBonus()) ? 'block' : 'none'
+			// ハンバーガーが開いていればパーティリストも更新
+			var _hbPanel = document.getElementById('hb-panel')
+			if (_hbPanel && _hbPanel.classList.contains('open')) { _updateHbPartyList() }
+			// 鍛冶屋ボタン見た目更新
+			const _sb = document.getElementById('town-smith-btn')
+			if (_sb) {
+				const _su = gameState.bossDefeated.includes(20)
+				_sb.style.background   = _su ? 'linear-gradient(135deg,#3a2200,#7a4800)' : '#1a1a1a'
+				_sb.style.borderColor  = _su ? '#c0760a' : '#444'
+				_sb.style.color        = _su ? '#f9a825' : '#555'
+				_sb.style.cursor       = _su ? 'pointer' : 'default'
+				_sb.title              = _su ? '' : '🔒 20階層ボス討伐で解放'
+			}
 		}
 
 		// ═══════════════════════════════════════════════
@@ -9897,9 +11138,11 @@ function winBattle() {
 			if (load_game()) {
 				addLog('セーブデータをロードしました。', 'log-sys')
 				updateUI()
-				// 未読お知らせがある場合は掲示板を先に表示
+				// 優先順位: 未読お知らせ → デイリーボーナス → タイトル
 				if (hasUnreadNotices()) {
 					openNoticeBoard(gameState.party.length === 0)
+				} else if (hasDailyBonus() && gameState.party.length > 0) {
+					openDailyBonus()
 				} else if (gameState.party.length === 0) {
 					openTitleScreen()
 				}
@@ -9981,6 +11224,346 @@ function winBattle() {
 		}
 		document.addEventListener('keydown', e => { if (e.key === 'Escape') closeStatusDetail() })
 
+		
+		// ═══ ハンバーガーメニュー ═══
+		function toggleHbMenu() {
+			var panel = document.getElementById('hb-panel')
+			var overlay = document.getElementById('hb-overlay')
+			var btn = document.getElementById('hb-btn')
+			if (!panel) return
+			var opening = !panel.classList.contains('open')
+			panel.classList.toggle('open', opening)
+			if (overlay) overlay.classList.toggle('open', opening)
+			if (btn) btn.classList.toggle('open', opening)
+			if (opening) {
+				var hm = document.getElementById('hb-mute-btn')
+				if (hm) hm.textContent = isMuted ? '🔇 ミュート中' : '🔊 サウンドON'
+				_updateHbPartyList()
+				_updateHbStats()
+				_updateHbDaily()
+				_updateSoundButtons()
+			}
+		}
+		function _updateHbStats() {
+			var el = document.getElementById('hb-stats-area')
+			if (!el || !gameState) return
+			// データ作成日（gameStateに記録、なければ今日）
+			if (!gameState.createdAt) gameState.createdAt = new Date().toLocaleDateString('ja-JP')
+			var totalExp = 0, totalKills = 0
+			if (gameState.party) {
+				gameState.party.forEach(function(p) {
+					totalExp += (p.exp || 0)
+				})
+			}
+			// 総プレイ時間（秒）
+			var playSec = gameState.playSeconds || 0
+			var ph = Math.floor(playSec / 3600)
+			var pm = Math.floor((playSec % 3600) / 60)
+			var playStr = ph > 0 ? ph + '時間' + pm + '分' : pm + '分'
+			var gold = (gameState.gold || 0) + (gameState.inDungeon ? (gameState.tempGold || 0) : 0)
+			var maxFloor = gameState.maxFloor || 1
+			var bossCount = (gameState.bossDefeated || []).length
+			var itemCount = (gameState.inventory || []).length
+			var partyCount = (gameState.party || []).length
+			var maxLv = 0
+			if (gameState.party) gameState.party.forEach(function(p){ if ((p.lv||1) > maxLv) maxLv = p.lv||1 })
+			el.innerHTML =
+				'<div style="display:grid;grid-template-columns:auto 1fr;gap:2px 12px;">'
+				+ '<span style="color:#555;">データ作成日</span><span style="color:#eee;">' + gameState.createdAt + '</span>'
+				+ '<span style="color:#555;">プレイ時間</span><span style="color:#eee;">' + playStr + '</span>'
+				+ '<span style="color:#555;">最高到達</span><span style="color:var(--accent-red);">' + maxFloor + 'F</span>'
+				+ '<span style="color:#555;">ボス討伐</span><span style="color:var(--gold);">' + bossCount + '体</span>'
+				+ '<span style="color:#555;">所持金</span><span style="color:var(--gold);">' + gold.toLocaleString() + 'G</span>'
+				+ '<span style="color:#555;">パーティ</span><span style="color:#eee;">' + partyCount + '人 (最高Lv.' + maxLv + ')</span>'
+				+ '<span style="color:#555;">アイテム</span><span style="color:#eee;">' + itemCount + '個</span>'
+				+ '</div>'
+		}
+		function _updateHbDaily() {
+			var el = document.getElementById('hb-daily-area')
+			if (!el) return
+			var state = getDailyState()
+			var today = getTodayStr()
+			var alreadyClaimed = state && state.lastDate === today
+			var streakDisp = 1
+			if (state) {
+				var last = new Date(state.lastDate)
+				var now  = new Date(today)
+				var diff = Math.round((now - last) / 86400000)
+				streakDisp = diff <= 1 ? (state.streak || 1) : 1
+			}
+			if (alreadyClaimed) streakDisp = state.streak || 1
+			var currentDayIdx = ((streakDisp - 1) % 7)
+
+			// ミニカレンダー（7マス）
+			var miniGrid = DAILY_REWARDS.map(function(r, i) {
+				var isPast   = i < currentDayIdx
+				var isToday  = i === currentDayIdx
+				var isFuture = i > currentDayIdx
+				var cellClass = 'hb-daily-cell'
+				if (isPast)    cellClass += ' past'
+				else if (isToday && r.special) cellClass += ' today special'
+				else if (isToday)  cellClass += ' today'
+				else           cellClass += ' future'
+				var checkMark = isPast ? '<div class="dc-check">✓</div>' : ''
+				var todayMark = isToday && alreadyClaimed ? '<div class="dc-check">✓</div>' : ''
+				return '<div class="' + cellClass + '">'
+					+ '<div class="dc-day">D' + r.day + '</div>'
+					+ '<div class="dc-icon">' + r.icon + '</div>'
+					+ checkMark + todayMark
+					+ '</div>'
+			}).join('')
+
+			// ステータス表示
+			var cardClass = 'hb-daily-card' + (alreadyClaimed ? ' claimed' : '')
+			var statusHtml = alreadyClaimed
+				? '<div style="font-size:0.72rem;color:#4ade80;text-align:center;padding:4px 0;">✅ 本日受取済み</div>'
+				: '<div style="font-size:0.72rem;color:#60a5fa;text-align:center;padding:4px 0;font-weight:bold;">🎁 本日のボーナスが未受け取り！</div>'
+
+			// デイリーボタンのスタイル更新
+			var btn = document.getElementById('hb-daily-btn')
+			if (btn) {
+				if (!alreadyClaimed) {
+					btn.style.borderColor = '#f59e0b'
+					btn.style.color = '#f9a825'
+					btn.style.background = '#1a1000'
+				} else {
+					btn.style.borderColor = ''
+					btn.style.color = ''
+					btn.style.background = ''
+				}
+			}
+
+			el.innerHTML = '<div class="' + cardClass + '">'
+				+ '<div class="hb-daily-streak">連続ログイン <b>' + streakDisp + '日目</b></div>'
+				+ '<div class="hb-daily-grid">' + miniGrid + '</div>'
+				+ statusHtml
+				+ '</div>'
+		}
+		function closeHbMenu() {
+			var panel = document.getElementById('hb-panel')
+			var overlay = document.getElementById('hb-overlay')
+			var btn = document.getElementById('hb-btn')
+			if (panel) panel.classList.remove('open')
+			if (overlay) overlay.classList.remove('open')
+			if (btn) btn.classList.remove('open')
+		}
+		function _updateHbPartyList() {
+			var el = document.getElementById('hb-party-list')
+			if (!el || !gameState || !gameState.party) return
+			el.innerHTML = gameState.party.map(function(p, i) {
+				var fs = getFinalStats(p)
+				var hp = Math.floor((p.hp / fs.maxHp) * 100)
+				var mp = Math.floor((p.mp / fs.maxMp) * 100)
+				var exp = Math.floor((p.exp / p.nextExp) * 100)
+				var hc = hp > 50 ? 'var(--hp-color)' : hp > 25 ? 'var(--gold)' : '#f87171'
+				var rc = p.row === 'front' ? '#f87171' : '#60a5fa'
+				var rl = p.row === 'front' ? '⚔️前衛' : '🏹後衛'
+				var wn = p.equip.weapon ? (p.equip.weapon.n || '素手') : '素手'
+				var an = p.equip.armor  ? (p.equip.armor.n  || 'なし') : 'なし'
+				var tb = hasLearnableSkill(p) ? '<span style="display:inline-block;width:8px;height:8px;background:#ef4444;border-radius:50%;margin-left:4px;vertical-align:middle;"></span>' : ''
+				return '<div class="char-card" style="margin-bottom:10px;">'
+					+ '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'
+					+ '<div><b style="font-size:0.92rem;">' + p.name + '</b><span style="font-size:0.72rem;color:#888;margin-left:6px;">Lv.' + p.lv + ' ' + p.job + '</span></div>'
+					+ '<span style="font-size:0.7rem;padding:2px 8px;background:' + rc + '22;border:1px solid ' + rc + ';color:' + rc + ';border-radius:10px;">' + rl + '</span>'
+					+ '</div>'
+					+ '<div style="margin-bottom:5px;">'
+					+ '<div style="display:flex;justify-content:space-between;font-size:0.65rem;margin-bottom:1px;"><span style="color:#f87171;">HP</span><span style="color:' + hc + ';">' + p.hp + '/' + fs.maxHp + '</span></div>'
+					+ '<div class="bar-bg" style="height:5px;"><div class="bar-fill" style="background:' + hc + ';width:' + hp + '%"></div></div>'
+					+ '<div style="display:flex;justify-content:space-between;font-size:0.65rem;margin-top:2px;margin-bottom:1px;"><span style="color:#60a5fa;">MP</span><span style="color:#aaa;">' + p.mp + '/' + fs.maxMp + '</span></div>'
+					+ '<div class="bar-bg" style="height:3px;"><div class="bar-fill" style="background:var(--mp-color);width:' + mp + '%"></div></div>'
+					+ '<div class="bar-bg" style="height:2px;margin-top:2px;"><div class="bar-fill" style="background:var(--exp-color);width:' + exp + '%"></div></div>'
+					+ '</div>'
+					+ '<div style="font-size:0.7rem;color:#aaa;margin-bottom:4px;">物攻<b>' + Math.floor(fs.str) + '</b> 特攻<b>' + Math.floor(fs.matk) + '</b> 物耐<b>' + Math.floor(fs.vit) + '</b> 特耐<b>' + Math.floor(fs.mdef) + '</b></div>'
+					+ '<div style="font-size:0.65rem;color:#666;margin-bottom:8px;"><div>⚔️ ' + wn + '</div><div>🛡️ ' + an + '</div></div>'
+					+ '<div style="display:flex;gap:6px;">'
+					+ '<button class="btn-icon" style="flex:1;padding:8px 4px;font-size:0.8rem;" onclick="closeHbMenu();setTimeout(function(){openCharDetailModal(' + i + ')},150)">詳細</button>'
+					+ '<div style="position:relative;flex:1;">'
+					+ '<button class="btn-icon" style="width:100%;padding:8px 4px;font-size:0.8rem;" onclick="closeHbMenu();setTimeout(function(){openTraining(' + i + ')},150)">育成' + tb + '</button>'
+					+ '</div>'
+					+ '</div>'
+					+ '</div>'
+			}).join('')
+		}
+
+		
+		// プレイ時間カウンター（毎秒）
+		setInterval(function() {
+			if (gameState) gameState.playSeconds = (gameState.playSeconds || 0) + 1
+		}, 1000)
+
+		
+		// ═══════════════════════════════════════════════════════
+		// デイリーログインボーナスシステム
+		// ═══════════════════════════════════════════════════════
+
+		const DAILY_REWARDS = [
+			{ day: 1, icon: '💰', label: 'ゴールド',      type: 'gold',  value: 500,   desc: '500G' },
+			{ day: 2, icon: '💰', label: 'ゴールド',      type: 'gold',  value: 1000,  desc: '1,000G' },
+			{ day: 3, icon: '⚗️', label: 'アイテム抽選', type: 'item',  value: 1,     desc: 'ランダム装備（コモン〜レア）' },
+			{ day: 4, icon: '💰', label: 'ゴールド',      type: 'gold',  value: 2000,  desc: '2,000G' },
+			{ day: 5, icon: '💰', label: 'ゴールド',      type: 'gold',  value: 3000,  desc: '3,000G' },
+			{ day: 6, icon: '⚗️', label: 'アイテム抽選', type: 'item',  value: 1,     desc: 'ランダム装備（アンコモン〜エピック）' },
+			{ day: 7, icon: '🌟', label: '豪華報酬',      type: 'gold',  value: 8000,  desc: '8,000G ＋ ランダム装備（レア以上確定）', special: true },
+		]
+
+		function getDailyState() {
+			try { return JSON.parse(localStorage.getItem('abyss_daily') || 'null') } catch { return null }
+		}
+		function saveDailyState(state) {
+			try { localStorage.setItem('abyss_daily', JSON.stringify(state)) } catch {}
+		}
+		function getTodayStr() {
+			const d = new Date()
+			return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0')
+		}
+		function hasDailyBonus() {
+			const s = getDailyState()
+			if (!s) return true
+			return s.lastDate !== getTodayStr()
+		}
+
+		function _dailyGiveItem(minTier, maxTier, minRarity) {
+			const types = ['weapon','armor','acc']
+			const t = types[Math.floor(Math.random() * types.length)]
+			let pool = (SHOP_ITEMS[t] || []).filter(i => i.tier >= minTier && i.tier <= maxTier)
+			if (pool.length === 0) pool = SHOP_ITEMS[t] || []
+			if (pool.length === 0) return null
+			const base = { ...pool[Math.floor(Math.random() * pool.length)], type: t, locked: false }
+			const rarityTable = [
+				{ label:'レジェンダリー', color:'#ff9800', weight: minRarity === 'rare' ? 3  : minRarity === 'epic' ? 8  : 1  },
+				{ label:'エピック',       color:'#c084fc', weight: minRarity === 'rare' ? 15 : minRarity === 'epic' ? 40 : 5  },
+				{ label:'レア',           color:'#60a5fa', weight: minRarity === 'rare' ? 40 : minRarity === 'epic' ? 0  : 20 },
+				{ label:'アンコモン',     color:'#4ade80', weight: minRarity === 'rare' ? 42 : minRarity === 'epic' ? 52 : 40 },
+				{ label:'コモン',         color:'#aaa',    weight: minRarity === 'rare' ? 0  : minRarity === 'epic' ? 0  : 34 },
+			].filter(r => r.weight > 0)
+			const totalW = rarityTable.reduce((s, r) => s + r.weight, 0)
+			let roll = Math.random() * totalW
+			let rarity = rarityTable[rarityTable.length - 1]
+			for (const r of rarityTable) { roll -= r.weight; if (roll <= 0) { rarity = r; break } }
+			base.rarityLabel = rarity.label
+			base.rarityColor = rarity.color
+			const subCount = { 'コモン':0, 'アンコモン':1, 'レア':2, 'エピック':3, 'レジェンダリー':4 }[rarity.label] || 0
+			if (subCount > 0) {
+				const SUB_POOL = ['maxHp','maxMp','str','matk','vit','mdef','agi','luk']
+				const subVals = { maxHp:[20,80], maxMp:[10,40], str:[8,40], matk:[8,40], vit:[6,25], mdef:[6,25], agi:[4,15], luk:[4,12] }
+				base.subEffects = []
+				const used = new Set()
+				while (base.subEffects.length < subCount) {
+					const k = SUB_POOL[Math.floor(Math.random() * SUB_POOL.length)]
+					if (used.has(k)) continue
+					used.add(k)
+					const [mn, mx] = subVals[k]
+					base.subEffects.push({ n: k.replace('maxHp','HP+').replace('maxMp','MP+').replace('str','ATK+').replace('matk','MATK+').replace('vit','DEF+').replace('mdef','MDEF+').replace('agi','AGI+').replace('luk','LUK+'), k, v: mn + Math.floor(Math.random() * (mx - mn + 1)) })
+				}
+			}
+			gameState.inventory.push(base)
+			return base
+		}
+
+		function claimDailyBonus() {
+			const state = getDailyState()
+			const today = getTodayStr()
+			let streak = 1
+			if (state) {
+				const last = new Date(state.lastDate)
+				const now  = new Date(today)
+				const diff = Math.round((now - last) / 86400000)
+				streak = diff === 1 ? (state.streak || 1) + 1 : 1
+			}
+			const dayIdx = ((streak - 1) % 7)
+			const reward = DAILY_REWARDS[dayIdx]
+			const gotItems = []
+			if (reward.type === 'gold' || reward.special) {
+				gameState.gold += reward.value
+			}
+			if (reward.type === 'item') {
+				const minR = dayIdx <= 2 ? 'common' : 'rare'
+				const item = _dailyGiveItem(1, Math.min(3, Math.ceil(gameState.maxFloor/10)+1), minR)
+				if (item) gotItems.push(item)
+			}
+			if (reward.special) {
+				const item = _dailyGiveItem(1, Math.min(4, Math.ceil(gameState.maxFloor/10)+1), 'rare')
+				if (item) gotItems.push(item)
+			}
+			saveDailyState({ lastDate: today, streak })
+			save_game(true)
+			return { reward, streak, dayIdx, gotItems }
+		}
+
+		function openDailyBonus() {
+			const state = getDailyState()
+			const today = getTodayStr()
+			const alreadyClaimed = state && state.lastDate === today
+			let streakDisp = 1
+			if (state) {
+				const last = new Date(state.lastDate)
+				const now  = new Date(today)
+				const diff = Math.round((now - last) / 86400000)
+				streakDisp = diff <= 1 ? (state.streak || 1) : 1
+			}
+			if (alreadyClaimed) streakDisp = state.streak || 1
+			const currentDayIdx = ((streakDisp - 1) % 7)
+			const calHtml = DAILY_REWARDS.map((r, i) => {
+				const isPast   = i < currentDayIdx
+				const isToday  = i === currentDayIdx
+				const isFuture = i > currentDayIdx
+				const bg     = isToday  ? (r.special ? '#1a1000' : '#0a1828') : isPast ? '#0a0f0a' : '#0a0a0a'
+				const bdr    = isToday  ? (r.special ? '#f59e0b' : '#60a5fa') : isPast ? '#22c55e' : '#222'
+				const opacity = isFuture ? '0.45' : '1'
+				const checkMark   = isPast ? '<div style="font-size:0.7rem;color:#22c55e;">✓ 受取済</div>' : ''
+				const todayMark   = isToday && !alreadyClaimed ? '<div style="font-size:0.65rem;color:#60a5fa;font-weight:bold;">← 本日</div>' : ''
+				const claimedMark = isToday && alreadyClaimed  ? '<div style="font-size:0.65rem;color:#22c55e;">✓ 受取済</div>' : ''
+				return '<div style="text-align:center;padding:8px 4px;border-radius:6px;border:1px solid ' + bdr + ';background:' + bg + ';opacity:' + opacity + ';' + (r.special?'box-shadow:0 0 6px #f59e0b44;':'') + '">'
+					+ '<div style="font-size:0.65rem;color:#555;margin-bottom:2px;">Day' + r.day + '</div>'
+					+ '<div style="font-size:1.2rem;">' + r.icon + '</div>'
+					+ '<div style="font-size:0.65rem;color:#aaa;margin-top:2px;line-height:1.3;">' + r.desc + '</div>'
+					+ checkMark + todayMark + claimedMark
+					+ '</div>'
+			}).join('')
+			const c = document.getElementById('modal-content')
+			c.innerHTML = '<div style="text-align:center;padding:8px 0 4px;">'
+				+ '<div style="font-size:1.8rem;margin-bottom:4px;">🎁</div>'
+				+ '<h2 style="margin:0 0 4px;color:#f9a825;">デイリーボーナス</h2>'
+				+ '<div style="font-size:0.78rem;color:#888;margin-bottom:12px;">連続ログイン <span style="color:#f9a825;font-weight:bold;">' + streakDisp + '日目</span></div>'
+				+ '</div>'
+				+ '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:14px;">' + calHtml + '</div>'
+				+ (alreadyClaimed
+					? '<div style="text-align:center;padding:10px;background:#0a1a0a;border:1px solid #1a3a1a;border-radius:8px;margin-bottom:12px;font-size:0.82rem;color:#4ade80;">✅ 本日のボーナスは受け取り済みです</div>'
+					: '<button onclick="executeDailyBonus()" class="btn-action btn-blue" style="width:100%;padding:14px;font-size:1rem;margin-bottom:10px;background:linear-gradient(135deg,#1a3a6a,#0a2040);border-color:#60a5fa;">🎁 ボーナスを受け取る</button>'
+				)
+				+ '<button onclick="closeModal()" class="btn-action btn-red" style="width:100%;padding:10px;font-size:0.9rem;">閉じる</button>'
+			openModalWrapper()
+		}
+
+		function executeDailyBonus() {
+			const { reward, streak, dayIdx, gotItems } = claimDailyBonus()
+			playSE('daily')
+			const itemRows = gotItems.map(item =>
+				'<div style="display:flex;align-items:center;gap:8px;background:#0a1020;border:1px solid ' + (item.rarityColor||'#333') + '44;border-radius:6px;padding:8px 10px;margin-top:6px;">'
+				+ '<span style="color:' + (item.rarityColor||'#aaa') + ';font-size:0.8rem;font-weight:bold;">' + (item.rarityLabel||'') + '</span>'
+				+ '<span style="color:#eee;font-size:0.82rem;">' + (item.n||'装備') + '</span>'
+				+ '</div>'
+			).join('')
+			const c = document.getElementById('modal-content')
+			c.innerHTML = '<div style="text-align:center;padding:12px 0 8px;">'
+				+ '<div style="font-size:2.5rem;margin-bottom:6px;">' + reward.icon + '</div>'
+				+ '<h2 style="margin:0 0 4px;color:#f9a825;">ボーナス受取！</h2>'
+				+ '<div style="font-size:0.78rem;color:#888;margin-bottom:14px;">連続 <span style="color:#f9a825;font-weight:bold;">' + streak + '日目</span></div>'
+				+ (reward.type === 'gold' || reward.special
+					? '<div style="font-size:1.4rem;color:#f9a825;font-weight:bold;margin-bottom:6px;">+' + reward.value.toLocaleString() + 'G</div>'
+					: ''
+				)
+				+ itemRows
+				+ '</div>'
+				+ '<button onclick="closeModal()" class="btn-action btn-blue" style="width:100%;margin-top:14px;padding:12px;">OK</button>'
+			updateUI()
+			openModalWrapper()
+			addLog('🎁 デイリーボーナス受取！ ' + (reward.type==='gold'||reward.special?'+'+reward.value.toLocaleString()+'G':'') + (gotItems.length?' ＋装備x'+gotItems.length:''), 'log-gold')
+			// メニューが開いていればデイリーエリアも更新
+			var _hbP = document.getElementById('hb-panel')
+			if (_hbP && _hbP.classList.contains('open')) { _updateHbDaily() }
+		}
+
 		</script>
 
 
@@ -9994,5 +11577,8 @@ function winBattle() {
 				<div id="status-detail-body" style="font-size:0.82rem;color:#ccc;line-height:1.6;"></div>
 			</div>
 		</div>
-	</body>
+	<div id="modal-layer" class="modal-overlay hidden">
+		<div class="modal" id="modal-content"></div>
+	</div>
+</body>
 </html>
