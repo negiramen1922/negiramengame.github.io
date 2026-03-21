@@ -3097,6 +3097,10 @@ const JOB_DATA = {
 				{ id: 'i3', tier: 4, n: '深淵の雫(大)', p:  1500, d: 'HPを最大値の100%回復', e: { hpPct: 1.0 } },
 				{ id: 'i4', tier: 2, n: '魔力の霊薬',   p:   500, d: 'MPを最大値の50%回復', e: { mpPct: 0.5 } },
 				{ id: 'i5', tier: 5, n: '【神薬】エリクサー', p: 10000, d: 'HPとMPを全回復', e: { hpPct: 1.0, mpPct: 1.0 } },
+				// ── 不思議な飴玉（40F以降ドロップ専用・スタック可） ──
+				{ id: 'i_candy', tier: 5, source: 'drop_only', n: '不思議な飴玉', p: 0, stackable: true,
+				  d: '【希少】1個でLv49→50に必要な経験値の1%を付与。100個まとめ使いでLv49→50に相当する経験値を獲得。40F以降の戦闘で低確率ドロップ。',
+				  e: { candyExp: true } },
 			],
 		}
 		let gameState = { gold: 500, floor: 1, inDungeon: false, party: [], guildBench: [], inventory: [], tempGold: 0, exploreCount: 0, stairsFound: false, bossDefeated: [], maxFloor: 1, guildWarehouse: [], guildWarehouseCap: 50, bagExpansion: 0, createdAt: new Date().toLocaleDateString('ja-JP'), playSeconds: 0 }
@@ -6066,6 +6070,11 @@ function winBattle() {
 			})
 			// オート周回の累計に加算
 			if (autoFarm.active) { autoFarm.gold += g; autoFarm.exp += x }
+
+			// ── 不思議な飴玉のドロップ（40F以降・低確率）──
+			if (gameState.floor >= 40 && Math.random() < 0.05) {
+				_addCandyToInventory(1)
+			}
 			setTimeout(() => {
 				// 全滅処理（handleDeath）が先に走った場合は何もしない
 				if (!gameState.inDungeon) return
@@ -8807,6 +8816,30 @@ function winBattle() {
 					const enchantBadgeInv = item.enchant
 						? `<span style="font-size:0.6rem;padding:1px 5px;background:rgba(249,168,37,0.15);border:1px solid #c0760a;border-radius:3px;color:#f9a825;margin-left:3px;">${item.enchant.icon||'✨'} ${item.enchant.name}</span>`
 						: ''
+
+					// ── 飴玉スタック専用UI ──
+					if (item.id === 'i_candy') {
+						const cnt = item.count || 1
+						div.style.cssText += 'border-color:#d97706; background:rgba(251,191,36,0.04);'
+						div.innerHTML = `
+							<div style="display:flex;justify-content:space-between;align-items:center;">
+								<div style="flex:1;min-width:0;">
+									<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+										<span style="font-size:1.2rem;">🍬</span>
+										<b style="color:#f9a825;font-size:0.95rem;">不思議な飴玉</b>
+										<span style="font-size:0.78rem;padding:1px 8px;background:rgba(249,168,37,0.2);border:1px solid #d97706;border-radius:10px;color:#f9a825;font-weight:bold;">×${cnt}</span>
+									</div>
+									<div style="font-size:0.78rem;color:#888;margin-top:4px;">Lv49→50の経験値の1%/個 | 100個で1レベル分</div>
+									<div style="font-size:0.72rem;color:#555;margin-top:2px;">40F以降ドロップ限定 / スタック可</div>
+								</div>
+								<div style="flex-shrink:0;margin-left:10px;">
+									<button class="btn-icon btn-green" style="padding:8px 14px;font-size:0.85rem;font-weight:bold;" onclick="openCandyUseModal()">🍬 使う</button>
+								</div>
+							</div>`
+						list.appendChild(div)
+						return
+					}
+
 					div.innerHTML = `
 						<div style="display:flex; justify-content:space-between; align-items:flex-start;">
 							<div style="flex:1; min-width:0;">
@@ -9038,6 +9071,11 @@ function winBattle() {
 		function selectTarget(idx) {
 			_tutClearHighlight()  // チュートリアルハイライトを解除
 			const item = gameState.inventory[idx]
+			// 飴玉はスタック専用モーダルへ
+			if (item && item.id === 'i_candy') {
+				openCandyUseModal()
+				return
+			}
 			const c = document.getElementById('modal-content')
 			c.innerHTML = `<h2>使用対象の選択</h2><div id="target-list" style="display:grid; gap:12px;"></div><button onclick="openInventory()" class="btn-action btn-red" style="margin-top:20px; width:100%;">戻る</button>`
 			const tl = document.getElementById('target-list')
@@ -9092,6 +9130,172 @@ function winBattle() {
 				setTimeout(enemyTurn, 500)
 			}
 		}
+		// ════════════════════════════════════════════════════════
+		// 不思議な飴玉 — スタック管理 & 使用処理
+		// ════════════════════════════════════════════════════════
+
+		// Lv49→50 に必要なnextExp（初期100 × 1.55^49 を整数演算で算出）
+		const CANDY_EXP_UNIT = (() => {
+			let e = 100
+			for (let i = 0; i < 49; i++) e = Math.floor(e * 1.55)
+			return Math.floor(e / 100)  // 1個あたり = 全体の1%
+		})()
+
+		// カバン内の飴玉スタックを取得（なければ null）
+		function _getCandyStack() {
+			return gameState.inventory.find(i => i.id === 'i_candy')
+		}
+
+		// 飴玉をインベントリに追加（スタックシステム）
+		function _addCandyToInventory(qty) {
+			const stack = _getCandyStack()
+			if (stack) {
+				stack.count = (stack.count || 1) + qty
+				addLog(`🍬 不思議な飴玉 ×${qty} を入手！（所持: ${stack.count}個）`, 'log-gold')
+			} else {
+				if (gameState.inventory.length >= getMaxCapacity()) {
+					addLog('🍬 不思議な飴玉をドロップしたが、カバンが一杯で拾えなかった！', 'log-sys')
+					return
+				}
+				const candyBase = SHOP_ITEMS.item.find(i => i.id === 'i_candy')
+				gameState.inventory.push({ ...candyBase, type: 'item', count: qty, locked: false })
+				addLog(`🍬 不思議な飴玉 ×${qty} を入手！`, 'log-gold')
+			}
+			updateUI()
+		}
+
+		// 飴玉まとめ使用モーダル
+		function openCandyUseModal() {
+			const stack = _getCandyStack()
+			if (!stack) return
+			const count = stack.count || 1
+			const c = document.getElementById('modal-content')
+
+			// パーティメンバー一覧と現在EXP状況
+			const memberRows = gameState.party.map((p, i) => {
+				const expToNext = p.nextExp - p.exp
+				const pct = Math.min(100, Math.floor(p.exp / p.nextExp * 100))
+				const lvCap = p.lv >= 50
+				const candiesNeeded = lvCap ? 0 : Math.ceil(expToNext / CANDY_EXP_UNIT)
+				return `<div style="padding:10px 12px;background:#0a0a14;border:1px solid #222;border-radius:8px;margin-bottom:6px;">
+					<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+						<b style="color:#eee;font-size:0.9rem;">${p.name}</b>
+						<span style="font-size:0.75rem;color:${lvCap?'#f9a825':'#888'};">${lvCap ? '🏆 最大Lv' : `Lv.${p.lv} → 次のLvまで残り約 <b style="color:#60a5fa;">${candiesNeeded}</b>個`}</span>
+					</div>
+					${lvCap ? '' : `<div style="background:#1a1a1a;border-radius:3px;height:5px;margin-bottom:4px;"><div style="width:${pct}%;background:linear-gradient(90deg,#4ade80,#22c55e);height:5px;border-radius:3px;"></div></div>`}
+					${lvCap ? '' : `<button onclick="openCandyTargetModal(${i})" class="btn-icon btn-green" style="width:100%;padding:6px;font-size:0.82rem;margin-top:4px;">🍬 この冒険者に使う</button>`}
+				</div>`
+			}).join('')
+
+			c.innerHTML = `
+				<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+					<h2 style="margin:0;">🍬 不思議な飴玉</h2>
+					<span style="font-size:0.95rem;color:#f9a825;font-weight:bold;">所持: ${count}個</span>
+				</div>
+				<div style="background:#0a0f1a;border:1px solid #1e3a5f;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:0.82rem;color:#aaa;line-height:1.7;">
+					🍬 1個 = Lv49→50に必要な経験値の <b style="color:#60a5fa;">1%</b><br>
+					🍬 100個 = Lv49→50に相当する経験値を付与<br>
+					<span style="color:#666;font-size:0.75rem;">※ 飴玉の経験値はどのレベルのキャラにも入りますが、Lv50の恩恵が最大です</span>
+				</div>
+				<div style="max-height:45vh;overflow-y:auto;padding-right:2px;">
+					${memberRows || '<p style="text-align:center;color:#666;padding:20px;">パーティにメンバーがいません</p>'}
+				</div>
+				<button onclick="openInventory()" class="btn-action btn-red" style="width:100%;margin-top:10px;padding:10px;">戻る</button>`
+			openModalWrapper()
+		}
+
+		// 飴玉 — 使用数選択モーダル
+		function openCandyTargetModal(pIdx) {
+			const stack = _getCandyStack()
+			if (!stack) return
+			const count = stack.count || 1
+			const p = gameState.party[pIdx]
+			if (!p) return
+			const c = document.getElementById('modal-content')
+
+			c.innerHTML = `
+				<div style="text-align:center;padding:8px 0 12px;">
+					<h2 style="margin:0 0 4px;">🍬 飴玉を使う</h2>
+					<div style="font-size:0.88rem;color:#aaa;margin-bottom:4px;">対象：<b style="color:#eee;">${p.name}</b>（Lv.${p.lv}）</div>
+					<div style="font-size:0.78rem;color:#666;">所持: ${count}個</div>
+				</div>
+				<div style="background:#0a0a14;border:1px solid #222;border-radius:8px;padding:12px 14px;margin-bottom:14px;">
+					<div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:0.85rem;color:#aaa;">
+						<span>1個あたりの経験値</span>
+						<span style="color:#60a5fa;">${CANDY_EXP_UNIT.toLocaleString()} EXP</span>
+					</div>
+					<div id="candy-exp-preview" style="text-align:right;font-size:0.82rem;color:#4ade80;margin-top:8px;font-weight:bold;">
+						合計: ${CANDY_EXP_UNIT.toLocaleString()} EXP
+					</div>
+				</div>
+				<div style="margin-bottom:14px;">
+					<div style="font-size:0.82rem;color:#aaa;margin-bottom:6px;">使用数</div>
+					<div style="display:flex;align-items:center;gap:8px;">
+						<button onclick="_candyQtyChange(-10,${count})" style="padding:6px 10px;background:#1a1a1a;border:1px solid #444;color:#eee;border-radius:6px;cursor:pointer;">-10</button>
+						<button onclick="_candyQtyChange(-1,${count})" style="padding:6px 12px;background:#1a1a1a;border:1px solid #444;color:#eee;border-radius:6px;cursor:pointer;">-1</button>
+						<input id="candy-qty" type="number" value="1" min="1" max="${count}"
+							style="flex:1;text-align:center;background:#0a0a0a;border:1px solid #444;color:#fff;padding:8px;border-radius:6px;font-size:1rem;"
+							oninput="_candyQtyUpdate(${count})">
+						<button onclick="_candyQtyChange(1,${count})" style="padding:6px 12px;background:#1a1a1a;border:1px solid #444;color:#eee;border-radius:6px;cursor:pointer;">+1</button>
+						<button onclick="_candyQtyChange(10,${count})" style="padding:6px 10px;background:#1a1a1a;border:1px solid #444;color:#eee;border-radius:6px;cursor:pointer;">+10</button>
+					</div>
+					<button onclick="_candyQtySetAll(${count})" style="width:100%;margin-top:6px;padding:5px;font-size:0.78rem;background:#111;border:1px solid #333;color:#888;border-radius:5px;cursor:pointer;">全部使う（${count}個）</button>
+				</div>
+				<div style="display:flex;gap:8px;">
+					<button onclick="openCandyUseModal()" class="btn-action" style="flex:1;padding:12px;font-size:0.9rem;background:#222;border-color:#555;">戻る</button>
+					<button onclick="_execCandyUse(${pIdx},${count})" class="btn-action btn-green" style="flex:2;padding:12px;font-size:0.95rem;">🍬 使用する</button>
+				</div>`
+			openModalWrapper()
+		}
+
+		function _candyQtyChange(delta, max) {
+			const el = document.getElementById('candy-qty')
+			if (!el) return
+			el.value = Math.max(1, Math.min(max, (parseInt(el.value) || 1) + delta))
+			_candyQtyUpdate(max)
+		}
+		function _candyQtySetAll(max) {
+			const el = document.getElementById('candy-qty')
+			if (!el) return
+			el.value = max
+			_candyQtyUpdate(max)
+		}
+		function _candyQtyUpdate(max) {
+			const el = document.getElementById('candy-qty')
+			const prev = document.getElementById('candy-exp-preview')
+			if (!el || !prev) return
+			const qty = Math.max(1, Math.min(max, parseInt(el.value) || 1))
+			el.value = qty
+			const totalExp = CANDY_EXP_UNIT * qty
+			prev.textContent = `合計: ${totalExp.toLocaleString()} EXP`
+		}
+		function _execCandyUse(pIdx, maxCount) {
+			const el = document.getElementById('candy-qty')
+			const qty = Math.max(1, Math.min(maxCount, parseInt(el ? el.value : 1) || 1))
+			const stack = _getCandyStack()
+			if (!stack) return
+			const p = gameState.party[pIdx]
+			if (!p) return
+
+			const totalExp = CANDY_EXP_UNIT * qty
+			p.exp += totalExp
+			let leveled = false
+			while (p.exp >= p.nextExp) { levelUp(p); leveled = true }
+
+			// スタック消費
+			stack.count = (stack.count || 1) - qty
+			if (stack.count <= 0) {
+				const idx = gameState.inventory.indexOf(stack)
+				if (idx >= 0) gameState.inventory.splice(idx, 1)
+			}
+
+			addLog(`🍬 ${p.name}は不思議な飴玉を${qty}個使った！ ${totalExp.toLocaleString()} EXP獲得${leveled ? ' — レベルアップ！' : ''}`, 'log-gold')
+			playSE('win')
+			save_game(true)
+			updateUI()
+			openCandyUseModal()
+		}
+
 		function unequipSlot(pIdx, slotType) {
 			const p = gameState.party[pIdx]
 			const item = p.equip[slotType]
