@@ -3703,13 +3703,21 @@ const JOB_DATA = {
 					loot = applyRarity({ ...pool[Math.floor(Math.random() * pool.length)], type: 'acc', locked: false });
 				} else if (lootRoll < 0.70) { // アイテム 10%
 					// アイテムは1つ上のTierまで出やすくする（救済措置）
-					const pool = SHOP_ITEMS.item.filter(i => i.tier <= currentTier + 1);
+					const pool = SHOP_ITEMS.item.filter(i => i.tier <= currentTier + 1 && i.source !== 'drop_only');
 					loot = { ...pool[Math.floor(Math.random() * pool.length)], type: 'item', locked: false };
 				} else if (lootRoll < 0.90) { // ルーン 20%
 					loot = generateRune();
-				} else { // 残り 10% その他(小銭のみ)
-					gameState.tempGold += Math.floor(baseGold / 2);
-					msg = `宝箱！ ${Math.floor(baseGold / 2)}G`;
+				} else { // 残り 10% その他(小銭のみ or 40F以降は飴玉)
+					// 40F以降は残り枠の半分を飴玉に
+					if (gameState.floor >= 40 && Math.random() < 0.5) {
+						// 飴玉ドロップ（宝箱からのみ）
+						_addCandyToInventory(1)
+						msg = `宝箱！ ${baseGold}G & 🍬 不思議な飴玉`
+						gameState.tempGold += baseGold
+					} else {
+						gameState.tempGold += Math.floor(baseGold / 2);
+						msg = `宝箱！ ${Math.floor(baseGold / 2)}G`;
+					}
 				}
 
 				if (loot) {
@@ -6070,11 +6078,6 @@ function winBattle() {
 			})
 			// オート周回の累計に加算
 			if (autoFarm.active) { autoFarm.gold += g; autoFarm.exp += x }
-
-			// ── 不思議な飴玉のドロップ（40F以降・低確率）──
-			if (gameState.floor >= 40 && Math.random() < 0.05) {
-				_addCandyToInventory(1)
-			}
 			setTimeout(() => {
 				// 全滅処理（handleDeath）が先に走った場合は何もしない
 				if (!gameState.inDungeon) return
@@ -8040,7 +8043,7 @@ function winBattle() {
 			const catTabHtml = `<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px;">
 				${catTabs.map(t => {
 					const active = cat === t.key
-					const cnt = SHOP_ITEMS[t.key] ? SHOP_ITEMS[t.key].filter(i => i.tier <= maxTier && i.source !== 'chest').length : 0
+					const cnt = SHOP_ITEMS[t.key] ? SHOP_ITEMS[t.key].filter(i => i.tier <= maxTier && i.source !== 'chest' && i.source !== 'drop_only').length : 0
 					return `<button onclick="openShopList('${t.key}')"
 						style="display:flex; align-items:center; gap:4px; padding:5px 10px; font-size:0.8rem;
 						border-radius:20px; border:1px solid ${active ? 'var(--accent-blue)' : '#444'};
@@ -8081,7 +8084,7 @@ function winBattle() {
 			</div>`
 
 			// ─── アイテム絞り込み＆ソート ───
-			let items = SHOP_ITEMS[cat].filter(i => i.tier <= maxTier && i.source !== 'chest');
+			let items = SHOP_ITEMS[cat].filter(i => i.tier <= maxTier && i.source !== 'chest' && i.source !== 'drop_only');
 			if (currentFilter !== 'all') items = items.filter(i => i.dType === currentFilter)
 			if      (currentSort === 'tier_desc')  items = [...items].sort((a,b) => (b.tier||0) - (a.tier||0))
 			else if (currentSort === 'price_asc')  items = [...items].sort((a,b) => a.p - b.p)
